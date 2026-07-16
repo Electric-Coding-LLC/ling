@@ -50,6 +50,7 @@ a {
 
 .shell {
   min-height: 100dvh;
+  background: var(--surface);
   padding:
     env(safe-area-inset-top)
     env(safe-area-inset-right)
@@ -61,23 +62,31 @@ a {
   display: flex;
   min-height: 3.75rem;
   align-items: center;
-  justify-content: space-between;
   padding-inline: clamp(1rem, 4vw, 2rem);
   border-bottom: 1px solid var(--line);
 }
 
 .wordmark {
-  font-size: 0.875rem;
-  font-weight: 620;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 1.125rem;
+  font-weight: 460;
   letter-spacing: -0.02em;
 }
 
-.status {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  background: #4e9f6f;
-  box-shadow: 0 0 0 3px rgb(78 159 111 / 0.12);
+.brand-mark {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  fill: currentColor;
+  transform: translateY(-0.08em);
+}
+
+.brand-name {
+  display: block;
+  width: 2.08em;
+  height: auto;
 }
 
 .canvas {
@@ -89,26 +98,16 @@ a {
 
 .canvas h1 {
   margin: 0;
-  color: var(--muted);
+  color: var(--foreground);
   font-size: clamp(2.25rem, 10vw, 6rem);
-  font-weight: 430;
-  letter-spacing: -0.075em;
   line-height: 0.9;
 }
 
-@media (min-width: 48rem) {
-  .shell {
-    margin: 1rem;
-    min-height: calc(100dvh - 2rem);
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 1.25rem;
-    background: var(--surface);
-  }
-
-  .canvas {
-    min-height: calc(100dvh - 5.75rem);
-  }
+.hero-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22em;
+  opacity: 0.52;
 }
 
 @media (prefers-reduced-motion: reduce) {

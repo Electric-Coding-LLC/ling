@@ -21,6 +21,38 @@ test("manifest declares a standalone app with complete icons", async () => {
   }
 });
 
+test("brand assets use the four-stroke Ling mark", async () => {
+  const favicon = await readFile(new URL("public/favicon.svg", root), "utf8");
+  const mark = await readFile(new URL("public/brand/ling-mark.svg", root), "utf8");
+  const icon = await readFile(new URL("public/brand/ling-app-icon.svg", root), "utf8");
+
+  for (const asset of [favicon, mark, icon]) {
+    assert.match(asset, /data-brand="ling-four-stroke"/);
+    assert.equal((asset.match(/<path\b/g) ?? []).length, 4);
+  }
+  assert.doesNotMatch(favicon, /#68C4FF|#0C79D8|#2E9EFF/i);
+});
+
+test("the standalone wordmark uses fixed vector outlines", async () => {
+  const wordmark = await readFile(new URL("public/brand/ling-wordmark.svg", root), "utf8");
+
+  assert.match(wordmark, /data-brand="ling-wordmark"/);
+  assert.match(wordmark, /data-glyph-style="concept-b-primary"/);
+  assert.match(wordmark, /stroke-width: 12/);
+  assert.doesNotMatch(wordmark, /<text\b/i);
+  assert.equal((wordmark.match(/<use\b/g) ?? []).length, 4);
+});
+
+test("the app shell is fullscreen at every viewport", async () => {
+  const styles = await readFile(new URL("app/globals.css", root), "utf8");
+  const shell = styles.match(/\.shell\s*\{([^}]*)\}/)?.[1] ?? "";
+
+  assert.match(shell, /min-height: 100dvh/);
+  assert.match(shell, /background: var\(--surface\)/);
+  assert.doesNotMatch(shell, /margin:/);
+  assert.doesNotMatch(shell, /border(?:-radius)?:/);
+});
+
 test("service worker caches only the static shell and bypasses private routes", async () => {
   const worker = await readFile(new URL("public/sw.js", root), "utf8");
   assert.match(worker, /OFFLINE_URL = "\/offline\.html"/);

@@ -1,9 +1,5 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .ink { fill: #181814; }
-    @media (prefers-color-scheme: dark) { .ink { fill: #f2f1eb; } }
-  </style>
-  <g class="ink" data-brand="ling-four-stroke">
+  <g fill="#181814" data-brand="ling-four-stroke">
     <path d="M8 29V18C8 12.477 12.477 8 18 8h11v12h-9v9H8Z"/>
     <path d="M35 8h11c5.523 0 10 4.477 10 10v11H44v-9h-9V8Z"/>
     <path d="M56 35v11c0 5.523-4.477 10-10 10H35V44h9v-9h12Z"/>

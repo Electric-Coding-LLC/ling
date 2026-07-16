@@ -17,16 +17,16 @@ export const metadata: Metadata = {
   title: "Ling",
   description: "Ling",
   applicationName: "Ling",
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest-d2ea2ca8.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Ling",
   },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/icons/apple-touch-icon.png",
+    icon: "/favicon-e107a3b1.svg",
+    shortcut: "/favicon-e107a3b1.svg",
+    apple: "/icons/apple-touch-icon-b2b1acaf.png",
   },
 };
 

@@ -4,8 +4,8 @@ This file routes to the active execution map. Status and checkbox state live the
 
 ## Active Plan
 
-- [Foundation](./plans/foundation/EXECMAP.md)
+- None
 
 ## Completed Plans
 
-- None
+- [Foundation](./plans/foundation/EXECMAP.md)

@@ -1,31 +1,69 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
-test("manifest declares a standalone app with complete icons", async () => {
-  const manifest = JSON.parse(await readFile(new URL("public/manifest.webmanifest", root), "utf8"));
+async function layoutAssetPath(field) {
+  const layout = await readFile(new URL("app/layout.tsx", root), "utf8");
+  const match = layout.match(new RegExp("\\b" + field + ':\\s*"([^"]+)"'));
+  assert.ok(match, "layout metadata must declare " + field);
+  return match[1];
+}
+
+async function readPublicAsset(path) {
+  assert.match(path, /^\//);
+  return readFile(new URL("public" + path, root));
+}
+
+function assertContentAddressed(path, bytes, extension) {
+  const digest = createHash("sha256").update(bytes).digest("hex").slice(0, 8);
+  assert.ok(
+    path.endsWith("-" + digest + extension),
+    path + " must include its current content fingerprint",
+  );
+}
+
+test("manifest declares a standalone app with content-addressed icons", async () => {
+  const manifestPath = await layoutAssetPath("manifest");
+  const manifestBytes = await readPublicAsset(manifestPath);
+  assertContentAddressed(manifestPath, manifestBytes, ".webmanifest");
+
+  const manifest = JSON.parse(manifestBytes.toString("utf8"));
   assert.equal(manifest.id, "/");
   assert.equal(manifest.start_url, "/");
   assert.equal(manifest.scope, "/");
   assert.equal(manifest.display, "standalone");
 
   for (const icon of manifest.icons) {
-    const path = new URL(`public${icon.src}`, root);
-    await access(path);
-    const bytes = await readFile(path);
+    const bytes = await readPublicAsset(icon.src);
+    assertContentAddressed(icon.src, bytes, ".png");
+
     const [expectedWidth, expectedHeight] = icon.sizes.split("x").map(Number);
     assert.equal(bytes.readUInt32BE(16), expectedWidth);
     assert.equal(bytes.readUInt32BE(20), expectedHeight);
   }
 });
 
-test("brand assets use the four-stroke Ling mark", async () => {
-  const favicon = await readFile(new URL("public/favicon.svg", root), "utf8");
-  const mark = await readFile(new URL("public/brand/ling-mark.svg", root), "utf8");
-  const icon = await readFile(new URL("public/brand/ling-app-icon.svg", root), "utf8");
+test("browser and Apple icons use content-addressed Ling branding", async () => {
+  const faviconPath = await layoutAssetPath("icon");
+  const shortcutPath = await layoutAssetPath("shortcut");
+  const applePath = await layoutAssetPath("apple");
+  assert.equal(shortcutPath, faviconPath);
 
+  const [faviconBytes, appleBytes, mark, icon] = await Promise.all([
+    readPublicAsset(faviconPath),
+    readPublicAsset(applePath),
+    readFile(new URL("public/brand/ling-mark.svg", root), "utf8"),
+    readFile(new URL("public/brand/ling-app-icon.svg", root), "utf8"),
+  ]);
+
+  assertContentAddressed(faviconPath, faviconBytes, ".svg");
+  assertContentAddressed(applePath, appleBytes, ".png");
+  assert.equal(appleBytes.readUInt32BE(16), appleBytes.readUInt32BE(20));
+
+  const favicon = faviconBytes.toString("utf8");
   for (const asset of [favicon, mark, icon]) {
     assert.match(asset, /data-brand="ling-four-stroke"/);
     assert.equal((asset.match(/<path\b/g) ?? []).length, 4);
@@ -53,21 +91,25 @@ test("the app shell is fullscreen at every viewport", async () => {
   assert.doesNotMatch(shell, /border(?:-radius)?:/);
 });
 
-test("service worker caches only the static shell and bypasses private routes", async () => {
+test("service worker caches only the offline fallback and bypasses private routes", async () => {
   const worker = await readFile(new URL("public/sw.js", root), "utf8");
+  assert.match(worker, /CACHE_NAME = "ling-shell-v0\.1\.1"/);
   assert.match(worker, /OFFLINE_URL = "\/offline\.html"/);
+  assert.match(worker, /SHELL_ASSETS = \[OFFLINE_URL\]/);
   assert.match(worker, /request\.mode === "navigate"/);
   assert.match(worker, /fetch\(request\)\.catch\(\(\) => caches\.match\(OFFLINE_URL\)\)/);
   assert.match(worker, /pathname\.startsWith\("\/api\/"\)/);
   assert.match(worker, /\/signin-with-chatgpt/);
   assert.match(worker, /\/signout-with-chatgpt/);
   assert.match(worker, /\/callback/);
+  assert.doesNotMatch(worker, /manifest\.webmanifest|\/icons\//);
   assert.doesNotMatch(worker, /cache\.put\(request/);
   assert.doesNotMatch(worker, /skipWaiting/);
 });
 
-test("service worker registration is production-only", async () => {
+test("service worker registration is production-only and bypasses HTTP caching", async () => {
   const registration = await readFile(new URL("app/pwa-registration.tsx", root), "utf8");
   assert.match(registration, /process\.env\.NODE_ENV !== "production"/);
   assert.match(registration, /navigator\.serviceWorker\s*\.register\("\/sw\.js"/);
+  assert.match(registration, /updateViaCache:\s*"none"/);
 });

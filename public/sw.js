@@ -1,12 +1,6 @@
-const CACHE_NAME = "ling-shell-v0.1.0";
+const CACHE_NAME = "ling-shell-v0.1.1";
 const OFFLINE_URL = "/offline.html";
-const SHELL_ASSETS = [
-  OFFLINE_URL,
-  "/manifest.webmanifest",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon-maskable-512.png",
-];
+const SHELL_ASSETS = [OFFLINE_URL];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)));

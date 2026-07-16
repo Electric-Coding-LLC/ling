@@ -25,7 +25,11 @@ test("server-renders the minimal Ling shell", async () => {
   const html = await response.text();
   assert.match(html, /<title>Ling<\/title>/i);
   assert.match(html, /rel="manifest" href="\/manifest\.webmanifest"/i);
-  assert.match(html, /aria-label="Ready"/i);
+  assert.match(html, /data-brand="ling-four-stroke"/i);
+  assert.match(html, /viewBox="7 7 50 50"/i);
+  assert.match(html, /<h1>/i);
+  assert.match(html, /alt="Ling"/i);
+  assert.doesNotMatch(html, /aria-label="Ready"/i);
   assert.doesNotMatch(html, /Your site is taking shape|Codex is working|react-loading-skeleton/i);
 });
 

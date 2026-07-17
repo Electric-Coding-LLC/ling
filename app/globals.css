@@ -84,7 +84,6 @@ a {
 }
 
 .brand-link:focus-visible,
-.network-station-link:focus-visible,
 .station-map-link:focus-visible,
 .guide-network-link:focus-visible {
   outline: 2px solid var(--foreground);
@@ -297,6 +296,10 @@ a {
 
 .network-station-link {
   cursor: pointer;
+}
+
+.network-station-link:focus-visible {
+  outline: none;
 }
 
 .network-station-link .network-interchange-outer,

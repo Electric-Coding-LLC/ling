@@ -35,6 +35,8 @@ test("manifest declares a standalone app with content-addressed icons", async ()
   assert.equal(manifest.start_url, "/");
   assert.equal(manifest.scope, "/");
   assert.equal(manifest.display, "standalone");
+  assert.equal(manifest.background_color, "#11110f");
+  assert.equal(manifest.theme_color, "#11110f");
 
   for (const icon of manifest.icons) {
     const bytes = await readPublicAsset(icon.src);
@@ -77,6 +79,9 @@ test("the standalone wordmark uses fixed vector outlines", async () => {
   assert.match(wordmark, /data-brand="ling-wordmark"/);
   assert.match(wordmark, /data-glyph-style="concept-b-primary"/);
   assert.match(wordmark, /stroke-width: 12/);
+  assert.match(wordmark, /fill: #f2f1eb/);
+  assert.match(wordmark, /stroke: #f2f1eb/);
+  assert.doesNotMatch(wordmark, /prefers-color-scheme/);
   assert.doesNotMatch(wordmark, /<text\b/i);
   assert.equal((wordmark.match(/<use\b/g) ?? []).length, 4);
 });

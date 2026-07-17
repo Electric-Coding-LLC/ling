@@ -28,7 +28,7 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /rel="manifest" href="\/manifest-[a-f0-9]{8}\.webmanifest"/i);
   assert.match(
     html,
-    /rel="apple-touch-icon" href="https:\/\/raw\.githubusercontent\.com\/Electric-Coding-LLC\/ling\/[a-f0-9]{40}\/public\/icons\/apple-touch-icon-[a-f0-9]{8}\.png"/i,
+    /rel="apple-touch-icon" href="https:\/\/raw\.githubusercontent\.com\/Electric-Coding-LLC\/ling\/[a-f0-9]{40}\/public\/icons\/icon-512-[a-f0-9]{8}\.png" sizes="512x512" type="image\/png"/i,
   );
   assert.match(html, /data-brand="ling-four-stroke"/i);
   assert.match(html, /viewBox="7 7 50 50"/i);

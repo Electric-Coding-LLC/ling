@@ -29,19 +29,27 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   const pointerDown = source.match(/function onPointerDown[\s\S]*?(?=\n  function onPointerMove)/)?.[0];
   assert.ok(pointerDown, "onPointerDown should be defined before onPointerMove");
   assert.doesNotMatch(pointerDown, /setPointerCapture/);
-  assert.match(source, /function onDesktopKeyDown\(event: KeyboardEvent<SVGSVGElement>\)/);
-  assert.match(source, /onKeyDown=\{mobile \? undefined : onDesktopKeyDown\}/);
-  assert.doesNotMatch(source, /tabIndex=\{mobile \? undefined : 0\}/);
-  assert.match(source, /event\.key === "ArrowLeft" \? "vowels" : "mora"/);
-  assert.equal((source.match(/"\.network-station-link:focus"/g) ?? []).length, 2);
+  assert.match(source, /function onDesktopKeyDown\(event: KeyboardEvent<HTMLDivElement>\)/);
+  assert.match(source, /className="network-desktop-viewport"/);
+  assert.match(source, /data-desktop-focus=\{desktopFocus\}/);
+  assert.match(source, /onKeyDown=\{onDesktopKeyDown\}/);
+  assert.match(source, /onPointerDown=\{onDesktopPointerDown\}/);
+  assert.match(source, /event\.currentTarget\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(source, /event\.target !== event\.currentTarget/);
+  assert.match(source, /setDesktopFocus\(event\.key === "ArrowLeft" \? "vowels" : "mora"\)/);
+  assert.match(source, /window\.location\.assign\(MOBILE_STATION_HREFS\[desktopFocus\]\)/);
+  assert.doesNotMatch(source, /onKeyDown=\{mobile \? undefined : onDesktopKeyDown\}/);
+  assert.equal((source.match(/"\.network-station-link:focus"/g) ?? []).length, 1);
   assert.equal((source.match(/getStationLink\(event\.currentTarget, "vowels"\)\.focus\(\)/g) ?? []).length, 1);
   assert.equal((source.match(/getStationLink\(event\.currentTarget, "mora"\)\.focus\(\)/g) ?? []).length, 1);
   assert.match(source, /event\.target\s*!==\s*event\.currentTarget\s*&&\s*!focusedStationLink/);
   assert.match(source, /event\.key\s*===\s*"Enter"\s*\|\|\s*event\.key\s*===\s*" "/);
-  assert.match(source, /container: HTMLDivElement \| SVGSVGElement/);
+  assert.match(source, /container: HTMLDivElement/);
   assert.match(source, /querySelector<SVGAElement>/);
-  assert.equal((source.match(/window\.location\.assign\(stationLink\.href\.baseVal\)/g) ?? []).length, 2);
+  assert.equal((source.match(/window\.location\.assign\(stationLink\.href\.baseVal\)/g) ?? []).length, 1);
   assert.match(styles, /\.network-mobile-track-mora\s*\{[^}]*translateX\(-50%\)/s);
+  assert.match(styles, /\.network-desktop-viewport:focus\s*\{[^}]*outline:\s*none/s);
+  assert.match(styles, /data-desktop-focus="vowels"[\s\S]*data-desktop-focus="mora"/);
   assert.match(styles, /\.network-mobile-viewport:focus-visible\s*\{[^}]*outline:\s*none/s);
   assert.match(
     styles,

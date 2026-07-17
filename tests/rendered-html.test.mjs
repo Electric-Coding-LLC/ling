@@ -35,6 +35,7 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /data-line="sound"[^>]*>Sound</i);
   assert.match(html, /data-line="script"[^>]*>Script</i);
   assert.match(html, /data-network-view="desktop"/i);
+  assert.match(html, /class="network-desktop-viewport"[^>]*tabindex="0"/i);
   assert.doesNotMatch(html, /class="network-map network-map-desktop"[^>]*tabindex=/i);
   assert.match(html, /data-network-view="mobile"/i);
   assert.match(html, /aria-label="Sound and Script network"/i);

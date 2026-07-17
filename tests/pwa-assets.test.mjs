@@ -118,25 +118,21 @@ test("the app shell is fullscreen at every viewport", async () => {
   assert.doesNotMatch(shell, /border(?:-radius)?:/);
 });
 
-test("service worker caches only the offline fallback and bypasses private routes", async () => {
+test("the retirement worker removes the legacy offline shell", async () => {
   const worker = await readFile(new URL("public/sw.js", root), "utf8");
-  assert.match(worker, /CACHE_NAME = "ling-shell-v0\.1\.2"/);
-  assert.match(worker, /OFFLINE_URL = "\/offline\.html"/);
-  assert.match(worker, /SHELL_ASSETS = \[OFFLINE_URL\]/);
   assert.match(worker, /self\.skipWaiting\(\)/);
-  assert.match(worker, /request\.mode === "navigate"/);
-  assert.match(worker, /fetch\(request, \{ cache: "no-store" \}\)/);
-  assert.match(worker, /pathname\.startsWith\("\/api\/"\)/);
-  assert.match(worker, /\/signin-with-chatgpt/);
-  assert.match(worker, /\/signout-with-chatgpt/);
-  assert.match(worker, /\/callback/);
-  assert.doesNotMatch(worker, /manifest\.webmanifest|\/icons\//);
-  assert.doesNotMatch(worker, /cache\.put\(request/);
+  assert.match(worker, /cacheName\.startsWith\("ling-shell-"\)/);
+  assert.match(worker, /self\.registration\.unregister\(\)/);
+  assert.doesNotMatch(worker, /addEventListener\("fetch"/);
+  assert.doesNotMatch(worker, /cache\.add|cache\.put/);
 });
 
-test("service worker registration is production-only and bypasses HTTP caching", async () => {
-  const registration = await readFile(new URL("app/pwa-registration.tsx", root), "utf8");
-  assert.match(registration, /process\.env\.NODE_ENV !== "production"/);
-  assert.match(registration, /navigator\.serviceWorker\s*\.register\("\/sw\.js"/);
-  assert.match(registration, /updateViaCache:\s*"none"/);
+test("production removes legacy Ling workers and caches instead of registering one", async () => {
+  const cleanup = await readFile(new URL("app/pwa-cleanup.tsx", root), "utf8");
+  assert.match(cleanup, /process\.env\.NODE_ENV !== "production"/);
+  assert.match(cleanup, /navigator\.serviceWorker\.getRegistrations\(\)/);
+  assert.match(cleanup, /registration\.unregister\(\)/);
+  assert.match(cleanup, /cacheName\.startsWith\(LING_CACHE_PREFIX\)/);
+  assert.match(cleanup, /caches\.delete\(cacheName\)/);
+  assert.doesNotMatch(cleanup, /\.register\("\/sw\.js"/);
 });

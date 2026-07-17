@@ -179,6 +179,19 @@ a {
   width: 100%;
 }
 
+.network-desktop-viewport:focus {
+  outline: none;
+}
+
+.network-desktop-viewport:focus-visible[data-desktop-focus="vowels"]
+  [data-station="vowels"]
+  .network-interchange-outer,
+.network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
+  [data-station="mora-timing"]
+  .network-single-station-outer {
+  filter: drop-shadow(0 0 0.45rem rgb(242 241 235 / 0.5));
+}
+
 .network-map-mobile {
   display: none;
 }
@@ -494,7 +507,7 @@ a {
 }
 
 @media (max-width: 600px) {
-  .network-map-desktop {
+  .network-desktop-viewport {
     display: none;
   }
 

@@ -8,7 +8,8 @@ export default async function Home({
   searchParams: Promise<{ focus?: string | string[] }>;
 }) {
   const { focus } = await searchParams;
-  const initialMobileFocus: MobileFocus = focus === "mora-timing" ? "mora" : "vowels";
+  const initialMobileFocus: MobileFocus | undefined =
+    focus === "mora-timing" ? "mora" : focus === "vowels" ? "vowels" : undefined;
 
   return (
     <main className="shell">

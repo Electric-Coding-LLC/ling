@@ -168,6 +168,112 @@ a {
   height: auto;
 }
 
+.loading-shell {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding:
+    calc(2rem + env(safe-area-inset-top))
+    calc(2rem + env(safe-area-inset-right))
+    calc(2rem + env(safe-area-inset-bottom))
+    calc(2rem + env(safe-area-inset-left));
+  background: var(--surface);
+}
+
+.loading-lockup {
+  display: grid;
+  place-items: center;
+}
+
+.loading-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.loading-brand-mark {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
+.loading-network {
+  width: 11.25rem;
+  height: 4.5rem;
+  margin-top: 1.4rem;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.loading-network-sound,
+.loading-network-script {
+  stroke-width: 4;
+}
+
+.loading-network-sound {
+  stroke: var(--sound);
+}
+
+.loading-network-script {
+  stroke: var(--script);
+}
+
+.loading-network-terminal,
+.loading-network-interchange-outer,
+.loading-network-interchange-inner {
+  fill: var(--surface);
+  vector-effect: non-scaling-stroke;
+}
+
+.loading-network-terminal {
+  stroke: var(--sound);
+  stroke-width: 3;
+}
+
+.loading-network-interchange-outer,
+.loading-network-interchange-inner {
+  stroke: var(--foreground);
+}
+
+.loading-network-interchange-outer {
+  stroke-width: 3;
+}
+
+.loading-network-interchange-inner {
+  stroke-width: 4;
+}
+
+.loading-network-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: loading-network-pulse 1.5s ease-in-out infinite;
+}
+
+.loading-lockup p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+@keyframes loading-network-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .network-home {
   min-height: calc(100dvh - 3.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow: hidden;
@@ -185,11 +291,14 @@ a {
 
 .network-desktop-viewport:focus-visible[data-desktop-focus="vowels"]
   [data-station="vowels"]
-  .network-interchange-outer,
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
   [data-station="mora-timing"]
-  .network-single-station-outer {
-  filter: drop-shadow(0 0 0.45rem rgb(242 241 235 / 0.5));
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="hiragana"]
+  [data-station="hiragana"]
+  .network-station-backlight {
+  opacity: 1;
 }
 
 .network-map-mobile {
@@ -307,6 +416,12 @@ a {
   fill: transparent;
 }
 
+.network-station-backlight {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
 .network-station-link {
   cursor: pointer;
 }
@@ -315,16 +430,17 @@ a {
   outline: none;
 }
 
-.network-station-link .network-interchange-outer,
-.network-station-link .network-single-station-outer {
-  transition: filter 160ms ease;
+.network-station-focus:focus-visible {
+  outline: none;
 }
 
-.network-station-link:hover .network-interchange-outer,
-.network-station-link:focus-visible .network-interchange-outer,
-.network-station-link:hover .network-single-station-outer,
-.network-station-link:focus-visible .network-single-station-outer {
-  filter: drop-shadow(0 0 0.35rem rgb(242 241 235 / 0.35));
+.network-station-link:hover .network-station-backlight {
+  opacity: 0.55;
+}
+
+.network-station-link:focus-visible .network-station-backlight,
+.network-station-focus:focus-visible .network-station-backlight {
+  opacity: 1;
 }
 
 .station-page {
@@ -521,15 +637,16 @@ a {
     outline: none;
   }
 
-  .network-mobile-viewport:focus-visible
-    .network-mobile-track-vowels
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="vowels"]
     [data-station="vowels"]
-    .network-interchange-outer,
-  .network-mobile-viewport:focus-visible
-    .network-mobile-track-mora
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
     [data-station="mora-timing"]
-    .network-single-station-outer {
-    filter: drop-shadow(0 0 0.45rem rgb(242 241 235 / 0.5));
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="hiragana"]
+    [data-station="hiragana"]
+    .network-station-backlight {
+    opacity: 1;
   }
 
   .network-map-mobile {
@@ -560,6 +677,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .loading-network-pulse {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

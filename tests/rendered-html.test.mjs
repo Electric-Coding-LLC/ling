@@ -21,11 +21,15 @@ test("server-renders the Ling network home", async () => {
   const response = await request();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  assert.equal(response.headers.get("cache-control"), "private, no-store");
 
   const html = await response.text();
   assert.match(html, /<title>Ling<\/title>/i);
   assert.match(html, /rel="manifest" href="\/manifest-[a-f0-9]{8}\.webmanifest"/i);
-  assert.doesNotMatch(html, /rel="apple-touch-icon"/i);
+  assert.match(
+    html,
+    /rel="apple-touch-icon" href="https:\/\/raw\.githubusercontent\.com\/Electric-Coding-LLC\/ling\/[a-f0-9]{40}\/public\/icons\/apple-touch-icon-[a-f0-9]{8}\.png"/i,
+  );
   assert.match(html, /data-brand="ling-four-stroke"/i);
   assert.match(html, /viewBox="7 7 50 50"/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);

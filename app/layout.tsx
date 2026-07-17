@@ -13,6 +13,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const safariInstallIcon =
+  "https://raw.githubusercontent.com/Electric-Coding-LLC/ling/f61a7185f12ab1d7970aca4b8d9199b74a0a749d/public/icons/apple-touch-icon-b2b1acaf.png";
+
 export const metadata: Metadata = {
   title: "Ling",
   description: "Ling",
@@ -26,6 +29,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon-e107a3b1.svg",
     shortcut: "/favicon-e107a3b1.svg",
+    apple: safariInstallIcon,
   },
 };
 

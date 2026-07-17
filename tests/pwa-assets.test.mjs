@@ -69,19 +69,27 @@ test("browser icons use content-addressed Ling branding", async () => {
   assert.doesNotMatch(favicon, /#68C4FF|#0C79D8|#2E9EFF/i);
 });
 
-test("Safari installation uses the manifest icon pipeline", async () => {
+test("Safari installation bypasses the private Sites asset perimeter", async () => {
   const layout = await readFile(new URL("app/layout.tsx", root), "utf8");
-  const manifestPath = await layoutAssetPath("manifest");
-  const manifest = JSON.parse((await readPublicAsset(manifestPath)).toString("utf8"));
-  const installIcon = manifest.icons.find(
-    (icon) => icon.sizes === "512x512" && icon.purpose === undefined,
+  const installIcon = layout.match(
+    /safariInstallIcon\s*=\s*"(https:\/\/raw\.githubusercontent\.com\/[^\"]+)"/,
   );
 
-  assert.doesNotMatch(layout, /\bapple\s*:/);
-  assert.ok(installIcon, "manifest must provide a full-bleed 512px install icon");
-  const bytes = await readPublicAsset(installIcon.src);
-  assert.equal(bytes.readUInt32BE(16), 512);
-  assert.equal(bytes.readUInt32BE(20), 512);
+  assert.ok(installIcon, "Safari install icon must be publicly fetchable");
+  assert.match(layout, /\bapple:\s*safariInstallIcon/);
+  assert.match(
+    installIcon[1],
+    /^https:\/\/raw\.githubusercontent\.com\/Electric-Coding-LLC\/ling\/[a-f0-9]{40}\/public\/icons\/apple-touch-icon-[a-f0-9]{8}\.png$/,
+  );
+
+  const publicPath = new URL(installIcon[1]).pathname.replace(
+    /^\/Electric-Coding-LLC\/ling\/[a-f0-9]{40}\/public/,
+    "",
+  );
+  const bytes = await readPublicAsset(publicPath);
+  assertContentAddressed(publicPath, bytes, ".png");
+  assert.equal(bytes.readUInt32BE(16), 180);
+  assert.equal(bytes.readUInt32BE(20), 180);
 });
 
 test("the standalone wordmark uses fixed vector outlines", async () => {
@@ -109,18 +117,18 @@ test("the app shell is fullscreen at every viewport", async () => {
 
 test("service worker caches only the offline fallback and bypasses private routes", async () => {
   const worker = await readFile(new URL("public/sw.js", root), "utf8");
-  assert.match(worker, /CACHE_NAME = "ling-shell-v0\.1\.1"/);
+  assert.match(worker, /CACHE_NAME = "ling-shell-v0\.1\.2"/);
   assert.match(worker, /OFFLINE_URL = "\/offline\.html"/);
   assert.match(worker, /SHELL_ASSETS = \[OFFLINE_URL\]/);
+  assert.match(worker, /self\.skipWaiting\(\)/);
   assert.match(worker, /request\.mode === "navigate"/);
-  assert.match(worker, /fetch\(request\)\.catch\(\(\) => caches\.match\(OFFLINE_URL\)\)/);
+  assert.match(worker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(worker, /pathname\.startsWith\("\/api\/"\)/);
   assert.match(worker, /\/signin-with-chatgpt/);
   assert.match(worker, /\/signout-with-chatgpt/);
   assert.match(worker, /\/callback/);
   assert.doesNotMatch(worker, /manifest\.webmanifest|\/icons\//);
   assert.doesNotMatch(worker, /cache\.put\(request/);
-  assert.doesNotMatch(worker, /skipWaiting/);
 });
 
 test("service worker registration is production-only and bypasses HTTP caching", async () => {

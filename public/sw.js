@@ -1,9 +1,14 @@
-const CACHE_NAME = "ling-shell-v0.1.1";
+const CACHE_NAME = "ling-shell-v0.1.2";
 const OFFLINE_URL = "/offline.html";
 const SHELL_ASSETS = [OFFLINE_URL];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)));
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(SHELL_ASSETS))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -23,7 +28,9 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin || isPrivatePath(url.pathname)) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_URL)));
+    event.respondWith(
+      fetch(request, { cache: "no-store" }).catch(() => caches.match(OFFLINE_URL)),
+    );
     return;
   }
 

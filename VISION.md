@@ -41,6 +41,16 @@ The network describes the language itself, not a course-completion ladder. These
 
 Suggestions may quietly use prior evidence to direct attention, but they are an overlay on the network rather than a locked route through it.
 
+## Network Visual Grammar
+
+- A single-line station uses that line's color on its outer ring.
+- An interchange shared by multiple visible lines uses a larger neutral white outer ring.
+- Every station keeps a white inner ring as the common affordance for an enterable place.
+- Importance, lesson availability, selection, hover, and learning state do not change the structural ring treatment.
+- A line ending at a station communicates the current endpoint; do not add speculative continuation.
+- A station interior uses a text-free locator glyph that shows one current stop and only its local line topology.
+- Activating a station locator returns to the network with that same station focused.
+
 ## Learning Contract
 
 - Build from real study needs, one useful increment at a time.
@@ -70,12 +80,12 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## First Seed Network
 
-Begin with one line and two stations:
+Begin with two lines and three stations:
 
 ```text
-Sound
-
-Vowels ── Mora timing
+Sound    Vowels ── Mora timing
+           │
+Script   Hiragana
 ```
 
 `Vowels` is the current place. Its first learning material is `あ`:
@@ -87,7 +97,7 @@ Vowels ── Mora timing
 - Recall `あ` from sound.
 - Recall the sound from `あ`.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. Add adjacent stations only when real study creates the need. As a Script line grows, `Vowels` may become an interchange connecting sound and writing.
+This seed is a valid piece of the eventual network, not a disposable prototype. `Vowels` is the first interchange, connecting sound and writing. The Script line currently stops at `Hiragana`; add adjacent stations only when real study creates the need.
 
 ## First Proof
 

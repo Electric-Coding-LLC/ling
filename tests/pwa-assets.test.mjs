@@ -76,10 +76,13 @@ test("Safari installation bypasses the private Sites asset perimeter", async () 
   );
 
   assert.ok(installIcon, "Safari install icon must be publicly fetchable");
-  assert.match(layout, /\bapple:\s*safariInstallIcon/);
+  assert.match(
+    layout,
+    /\bapple:\s*\[\{ url: safariInstallIcon, sizes: "512x512", type: "image\/png" \}\]/,
+  );
   assert.match(
     installIcon[1],
-    /^https:\/\/raw\.githubusercontent\.com\/Electric-Coding-LLC\/ling\/[a-f0-9]{40}\/public\/icons\/apple-touch-icon-[a-f0-9]{8}\.png$/,
+    /^https:\/\/raw\.githubusercontent\.com\/Electric-Coding-LLC\/ling\/[a-f0-9]{40}\/public\/icons\/icon-512-[a-f0-9]{8}\.png$/,
   );
 
   const publicPath = new URL(installIcon[1]).pathname.replace(
@@ -88,8 +91,8 @@ test("Safari installation bypasses the private Sites asset perimeter", async () 
   );
   const bytes = await readPublicAsset(publicPath);
   assertContentAddressed(publicPath, bytes, ".png");
-  assert.equal(bytes.readUInt32BE(16), 180);
-  assert.equal(bytes.readUInt32BE(20), 180);
+  assert.equal(bytes.readUInt32BE(16), 512);
+  assert.equal(bytes.readUInt32BE(20), 512);
 });
 
 test("the standalone wordmark uses fixed vector outlines", async () => {

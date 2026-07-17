@@ -29,13 +29,18 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   const pointerDown = source.match(/function onPointerDown[\s\S]*?(?=\n  function onPointerMove)/)?.[0];
   assert.ok(pointerDown, "onPointerDown should be defined before onPointerMove");
   assert.doesNotMatch(pointerDown, /setPointerCapture/);
-  assert.doesNotMatch(source, /event\.target\s*!==\s*event\.currentTarget/);
-  assert.match(source, /getMobileStationLink\(event\.currentTarget, "vowels"\)\.focus\(\)/);
-  assert.match(source, /getMobileStationLink\(event\.currentTarget, "mora"\)\.focus\(\)/);
-  assert.match(source, /event\.target\s*===\s*event\.currentTarget/);
+  assert.match(source, /function onDesktopKeyDown\(event: KeyboardEvent<SVGSVGElement>\)/);
+  assert.match(source, /onKeyDown=\{mobile \? undefined : onDesktopKeyDown\}/);
+  assert.match(source, /tabIndex=\{mobile \? undefined : 0\}/);
+  assert.match(source, /event\.key === "ArrowLeft" \? "vowels" : "mora"/);
+  assert.equal((source.match(/"\.network-station-link:focus"/g) ?? []).length, 2);
+  assert.equal((source.match(/getStationLink\(event\.currentTarget, "vowels"\)\.focus\(\)/g) ?? []).length, 1);
+  assert.equal((source.match(/getStationLink\(event\.currentTarget, "mora"\)\.focus\(\)/g) ?? []).length, 1);
+  assert.match(source, /event\.target\s*!==\s*event\.currentTarget\s*&&\s*!focusedStationLink/);
   assert.match(source, /event\.key\s*===\s*"Enter"\s*\|\|\s*event\.key\s*===\s*" "/);
+  assert.match(source, /container: HTMLDivElement \| SVGSVGElement/);
   assert.match(source, /querySelector<SVGAElement>/);
-  assert.match(source, /window\.location\.assign\(stationLink\.href\.baseVal\)/);
+  assert.equal((source.match(/window\.location\.assign\(stationLink\.href\.baseVal\)/g) ?? []).length, 2);
   assert.match(styles, /\.network-mobile-track-mora\s*\{[^}]*translateX\(-50%\)/s);
   assert.match(styles, /\.network-mobile-viewport:focus-visible\s*\{[^}]*outline:\s*none/s);
   assert.match(

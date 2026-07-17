@@ -22,6 +22,7 @@ export type MobileFocus = "vowels" | "mora";
 type NetworkViewProps = {
   mobile?: boolean;
   mobileFocus?: MobileFocus;
+  onDesktopKeyDown: (event: KeyboardEvent<SVGSVGElement>) => void;
   onLinePointerLeave: () => void;
   onLinePointerMove: (event: PointerEvent<SVGLineElement>, label: string) => void;
 };
@@ -76,6 +77,7 @@ function LinkedStation({
 function NetworkView({
   mobile = false,
   mobileFocus = "vowels",
+  onDesktopKeyDown,
   onLinePointerLeave,
   onLinePointerMove,
 }: NetworkViewProps) {
@@ -167,7 +169,9 @@ function NetworkView({
       aria-label="Sound and Script network"
       className={`network-map network-map-${view}`}
       data-network-view={view}
+      onKeyDown={mobile ? undefined : onDesktopKeyDown}
       role="img"
+      tabIndex={mobile ? undefined : 0}
       viewBox={`0 0 ${width} 500`}
     >
       <desc id={`${view}-network-description`}>
@@ -238,7 +242,10 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
     });
   }
 
-  function getMobileStationLink(container: HTMLDivElement, focus: MobileFocus) {
+  function getStationLink(
+    container: HTMLDivElement | SVGSVGElement,
+    focus: MobileFocus,
+  ) {
     const stationLink = container.querySelector<SVGAElement>(
       `a[href="${MOBILE_STATION_HREFS[focus]}"]`,
     );
@@ -246,34 +253,62 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
     return stationLink;
   }
 
+  function onDesktopKeyDown(event: KeyboardEvent<SVGSVGElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      const stationLink = event.currentTarget.querySelector<SVGAElement>(
+        ".network-station-link:focus",
+      );
+      if (!stationLink) return;
+
+      event.preventDefault();
+      window.location.assign(stationLink.href.baseVal);
+      return;
+    }
+
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+
+    event.preventDefault();
+    getStationLink(
+      event.currentTarget,
+      event.key === "ArrowLeft" ? "vowels" : "mora",
+    ).focus();
+  }
+
   function onMobileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft") {
       event.preventDefault();
       setMobileFocus("vowels");
-      getMobileStationLink(event.currentTarget, "vowels").focus();
+      getStationLink(event.currentTarget, "vowels").focus();
       return;
     }
 
     if (event.key === "ArrowRight") {
       event.preventDefault();
       setMobileFocus("mora");
-      getMobileStationLink(event.currentTarget, "mora").focus();
+      getStationLink(event.currentTarget, "mora").focus();
       return;
     }
 
-    if (
-      event.target === event.currentTarget &&
-      (event.key === "Enter" || event.key === " ")
-    ) {
+    if (event.key === "Enter" || event.key === " ") {
+      const focusedStationLink = event.currentTarget.querySelector<SVGAElement>(
+        ".network-station-link:focus",
+      );
+      if (event.target !== event.currentTarget && !focusedStationLink) return;
+
       event.preventDefault();
-      const stationLink = getMobileStationLink(event.currentTarget, mobileFocus);
+      const stationLink =
+        focusedStationLink ?? getStationLink(event.currentTarget, mobileFocus);
       window.location.assign(stationLink.href.baseVal);
     }
   }
 
   return (
     <div className="network-views">
-      <NetworkView onLinePointerLeave={() => setTooltip(null)} onLinePointerMove={onLinePointerMove} />
+      <NetworkView
+        onDesktopKeyDown={onDesktopKeyDown}
+        onLinePointerLeave={() => setTooltip(null)}
+        onLinePointerMove={onLinePointerMove}
+      />
       <div
         aria-label="Explore the network horizontally"
         className="network-mobile-viewport"
@@ -295,6 +330,7 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
         <NetworkView
           mobile
           mobileFocus={mobileFocus}
+          onDesktopKeyDown={onDesktopKeyDown}
           onLinePointerLeave={() => setTooltip(null)}
           onLinePointerMove={onLinePointerMove}
         />

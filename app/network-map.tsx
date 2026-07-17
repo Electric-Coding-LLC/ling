@@ -22,7 +22,6 @@ export type MobileFocus = "vowels" | "mora";
 type NetworkViewProps = {
   mobile?: boolean;
   mobileFocus?: MobileFocus;
-  onDesktopKeyDown: (event: KeyboardEvent<SVGSVGElement>) => void;
   onLinePointerLeave: () => void;
   onLinePointerMove: (event: PointerEvent<SVGLineElement>, label: string) => void;
 };
@@ -77,7 +76,6 @@ function LinkedStation({
 function NetworkView({
   mobile = false,
   mobileFocus = "vowels",
-  onDesktopKeyDown,
   onLinePointerLeave,
   onLinePointerMove,
 }: NetworkViewProps) {
@@ -169,7 +167,6 @@ function NetworkView({
       aria-label="Sound and Script network"
       className={`network-map network-map-${view}`}
       data-network-view={view}
-      onKeyDown={mobile ? undefined : onDesktopKeyDown}
       role="img"
       viewBox={`0 0 ${width} 500`}
     >
@@ -186,6 +183,7 @@ function NetworkView({
 }
 
 export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFocus?: MobileFocus }) {
+  const [desktopFocus, setDesktopFocus] = useState<MobileFocus>(initialMobileFocus);
   const [mobileFocus, setMobileFocus] = useState<MobileFocus>(initialMobileFocus);
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
   const pointerStart = useRef<{ id: number; x: number } | null>(null);
@@ -242,7 +240,7 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
   }
 
   function getStationLink(
-    container: HTMLDivElement | SVGSVGElement,
+    container: HTMLDivElement,
     focus: MobileFocus,
   ) {
     const stationLink = container.querySelector<SVGAElement>(
@@ -252,25 +250,24 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
     return stationLink;
   }
 
-  function onDesktopKeyDown(event: KeyboardEvent<SVGSVGElement>) {
-    if (event.key === "Enter" || event.key === " ") {
-      const stationLink = event.currentTarget.querySelector<SVGAElement>(
-        ".network-station-link:focus",
-      );
-      if (!stationLink) return;
+  function onDesktopKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) return;
 
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
-      window.location.assign(stationLink.href.baseVal);
+      setDesktopFocus(event.key === "ArrowLeft" ? "vowels" : "mora");
       return;
     }
 
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    if (event.key !== "Enter" && event.key !== " ") return;
 
     event.preventDefault();
-    getStationLink(
-      event.currentTarget,
-      event.key === "ArrowLeft" ? "vowels" : "mora",
-    ).focus();
+    window.location.assign(MOBILE_STATION_HREFS[desktopFocus]);
+  }
+
+  function onDesktopPointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (event.target instanceof Element && event.target.closest("a")) return;
+    event.currentTarget.focus({ preventScroll: true });
   }
 
   function onMobileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -303,11 +300,23 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
 
   return (
     <div className="network-views">
-      <NetworkView
-        onDesktopKeyDown={onDesktopKeyDown}
-        onLinePointerLeave={() => setTooltip(null)}
-        onLinePointerMove={onLinePointerMove}
-      />
+      <div
+        aria-label="Explore the network with the Left and Right arrow keys"
+        className="network-desktop-viewport"
+        data-desktop-focus={desktopFocus}
+        onKeyDown={onDesktopKeyDown}
+        onPointerDown={onDesktopPointerDown}
+        role="group"
+        tabIndex={0}
+      >
+        <NetworkView
+          onLinePointerLeave={() => setTooltip(null)}
+          onLinePointerMove={onLinePointerMove}
+        />
+        <span aria-live="polite" className="sr-only">
+          {desktopFocus === "vowels" ? "Vowels selected" : "Mora timing selected"}
+        </span>
+      </div>
       <div
         aria-label="Explore the network horizontally"
         className="network-mobile-viewport"
@@ -329,7 +338,6 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
         <NetworkView
           mobile
           mobileFocus={mobileFocus}
-          onDesktopKeyDown={onDesktopKeyDown}
           onLinePointerLeave={() => setTooltip(null)}
           onLinePointerMove={onLinePointerMove}
         />

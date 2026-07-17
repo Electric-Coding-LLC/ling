@@ -29,7 +29,10 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   const pointerDown = source.match(/function onPointerDown[\s\S]*?(?=\n  function onPointerMove)/)?.[0];
   assert.ok(pointerDown, "onPointerDown should be defined before onPointerMove");
   assert.doesNotMatch(pointerDown, /setPointerCapture/);
-  assert.match(source, /event\.target\s*!==\s*event\.currentTarget/);
+  assert.doesNotMatch(source, /event\.target\s*!==\s*event\.currentTarget/);
+  assert.match(source, /getMobileStationLink\(event\.currentTarget, "vowels"\)\.focus\(\)/);
+  assert.match(source, /getMobileStationLink\(event\.currentTarget, "mora"\)\.focus\(\)/);
+  assert.match(source, /event\.target\s*===\s*event\.currentTarget/);
   assert.match(source, /event\.key\s*===\s*"Enter"\s*\|\|\s*event\.key\s*===\s*" "/);
   assert.match(source, /querySelector<SVGAElement>/);
   assert.match(source, /window\.location\.assign\(stationLink\.href\.baseVal\)/);
@@ -40,6 +43,8 @@ test("the network keeps the approved desktop and mobile geography", async () => 
     /\.network-mobile-viewport:focus-visible[\s\S]*\.network-mobile-track-vowels[\s\S]*\.network-mobile-track-mora/,
   );
   assert.doesNotMatch(styles, /\.network-mobile-viewport:focus-visible\s*\{[^}]*outline:\s*2px/s);
+  assert.match(styles, /\.network-station-link:focus-visible\s*\{[^}]*outline:\s*none/s);
+  assert.match(styles, /\.network-station-link:focus-visible \.network-interchange-outer/);
   assert.match(styles, /\.guide-button:hover\s*\{[^}]*background:\s*rgb\(242 241 235 \/ 0\.06\)/s);
   assert.match(styles, /\.guide-button-primary:hover\s*\{[^}]*background:\s*#deddd7/s);
   assert.doesNotMatch(styles, /\.guide-button-primary:hover\s*\{[^}]*(?:var\(--sound\)|box-shadow|transform)/s);

@@ -1,14 +1,11 @@
 <svg width="524" height="253" viewBox="27 72 524 253" fill="none" xmlns="http://www.w3.org/2000/svg">
   <style>
     .ink {
-      fill: #181814;
-      stroke: #181814;
+      fill: #f2f1eb;
+      stroke: #f2f1eb;
       stroke-width: 12;
       stroke-linejoin: round;
       paint-order: stroke fill;
-    }
-    @media (prefers-color-scheme: dark) {
-      .ink { fill: #f2f1eb; stroke: #f2f1eb; }
     }
   </style>
   <defs>

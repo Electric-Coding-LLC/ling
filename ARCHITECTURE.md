@@ -20,4 +20,4 @@ Sites access policy is the owner-only perimeter. Server routes still require ide
 
 ## PWA
 
-The service worker is registered only in production. It pre-caches the manifest, icons, and generic offline page, uses the network for navigation, and never stores API, authentication, or personalized responses. D1 remains the source of truth; offline writes are intentionally unsupported.
+The service worker is registered only in production. It pre-caches only the generic offline page, uses the network for navigation, and never stores API, authentication, or personalized responses. The private Sites access perimeter also protects the manifest, icons, and service worker until sign-in; those assets are available to the authenticated app, while the pre-authentication page remains platform-owned. D1 remains the source of truth; offline writes are intentionally unsupported.

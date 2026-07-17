@@ -238,27 +238,35 @@ export function NetworkMap({ initialMobileFocus = "vowels" }: { initialMobileFoc
     });
   }
 
-  function onMobileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.target !== event.currentTarget) return;
+  function getMobileStationLink(container: HTMLDivElement, focus: MobileFocus) {
+    const stationLink = container.querySelector<SVGAElement>(
+      `a[href="${MOBILE_STATION_HREFS[focus]}"]`,
+    );
+    if (!stationLink) throw new Error(`Missing link for centered station: ${focus}`);
+    return stationLink;
+  }
 
+  function onMobileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft") {
       event.preventDefault();
       setMobileFocus("vowels");
+      getMobileStationLink(event.currentTarget, "vowels").focus();
       return;
     }
 
     if (event.key === "ArrowRight") {
       event.preventDefault();
       setMobileFocus("mora");
+      getMobileStationLink(event.currentTarget, "mora").focus();
       return;
     }
 
-    if (event.key === "Enter" || event.key === " ") {
+    if (
+      event.target === event.currentTarget &&
+      (event.key === "Enter" || event.key === " ")
+    ) {
       event.preventDefault();
-      const stationLink = event.currentTarget.querySelector<SVGAElement>(
-        `a[href="${MOBILE_STATION_HREFS[mobileFocus]}"]`,
-      );
-      if (!stationLink) throw new Error(`Missing link for centered station: ${mobileFocus}`);
+      const stationLink = getMobileStationLink(event.currentTarget, mobileFocus);
       window.location.assign(stationLink.href.baseVal);
     }
   }

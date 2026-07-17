@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Ling",
   description: "Ling",
   applicationName: "Ling",
-  manifest: "/manifest-d2ea2ca8.webmanifest",
+  manifest: "/manifest-13187544.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -31,7 +31,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.doesNotMatch(pointerDown, /setPointerCapture/);
   assert.match(source, /function onDesktopKeyDown\(event: KeyboardEvent<SVGSVGElement>\)/);
   assert.match(source, /onKeyDown=\{mobile \? undefined : onDesktopKeyDown\}/);
-  assert.match(source, /tabIndex=\{mobile \? undefined : 0\}/);
+  assert.doesNotMatch(source, /tabIndex=\{mobile \? undefined : 0\}/);
   assert.match(source, /event\.key === "ArrowLeft" \? "vowels" : "mora"/);
   assert.equal((source.match(/"\.network-station-link:focus"/g) ?? []).length, 2);
   assert.equal((source.match(/getStationLink\(event\.currentTarget, "vowels"\)\.focus\(\)/g) ?? []).length, 1);

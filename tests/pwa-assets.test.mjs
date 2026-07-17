@@ -48,22 +48,18 @@ test("manifest declares a standalone app with content-addressed icons", async ()
   }
 });
 
-test("browser and Apple icons use content-addressed Ling branding", async () => {
+test("browser icons use content-addressed Ling branding", async () => {
   const faviconPath = await layoutAssetPath("icon");
   const shortcutPath = await layoutAssetPath("shortcut");
-  const applePath = await layoutAssetPath("apple");
   assert.equal(shortcutPath, faviconPath);
 
-  const [faviconBytes, appleBytes, mark, icon] = await Promise.all([
+  const [faviconBytes, mark, icon] = await Promise.all([
     readPublicAsset(faviconPath),
-    readPublicAsset(applePath),
     readFile(new URL("public/brand/ling-mark.svg", root), "utf8"),
     readFile(new URL("public/brand/ling-app-icon.svg", root), "utf8"),
   ]);
 
   assertContentAddressed(faviconPath, faviconBytes, ".svg");
-  assertContentAddressed(applePath, appleBytes, ".png");
-  assert.equal(appleBytes.readUInt32BE(16), appleBytes.readUInt32BE(20));
 
   const favicon = faviconBytes.toString("utf8");
   for (const asset of [favicon, mark, icon]) {
@@ -71,6 +67,21 @@ test("browser and Apple icons use content-addressed Ling branding", async () => 
     assert.equal((asset.match(/<path\b/g) ?? []).length, 4);
   }
   assert.doesNotMatch(favicon, /#68C4FF|#0C79D8|#2E9EFF/i);
+});
+
+test("Safari installation uses the manifest icon pipeline", async () => {
+  const layout = await readFile(new URL("app/layout.tsx", root), "utf8");
+  const manifestPath = await layoutAssetPath("manifest");
+  const manifest = JSON.parse((await readPublicAsset(manifestPath)).toString("utf8"));
+  const installIcon = manifest.icons.find(
+    (icon) => icon.sizes === "512x512" && icon.purpose === undefined,
+  );
+
+  assert.doesNotMatch(layout, /\bapple\s*:/);
+  assert.ok(installIcon, "manifest must provide a full-bleed 512px install icon");
+  const bytes = await readPublicAsset(installIcon.src);
+  assert.equal(bytes.readUInt32BE(16), 512);
+  assert.equal(bytes.readUInt32BE(20), 512);
 });
 
 test("the standalone wordmark uses fixed vector outlines", async () => {

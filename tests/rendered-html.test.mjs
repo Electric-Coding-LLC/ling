@@ -25,6 +25,7 @@ test("server-renders the Ling network home", async () => {
   const html = await response.text();
   assert.match(html, /<title>Ling<\/title>/i);
   assert.match(html, /rel="manifest" href="\/manifest-[a-f0-9]{8}\.webmanifest"/i);
+  assert.doesNotMatch(html, /rel="apple-touch-icon"/i);
   assert.match(html, /data-brand="ling-four-stroke"/i);
   assert.match(html, /viewBox="7 7 50 50"/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);

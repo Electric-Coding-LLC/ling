@@ -1,15 +1,27 @@
+import Link from "next/link";
 import { LingWordmark } from "./brand";
+import { NetworkMap, type MobileFocus } from "./network-map";
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ focus?: string | string[] }>;
+}) {
+  const { focus } = await searchParams;
+  const initialMobileFocus: MobileFocus = focus === "mora-timing" ? "mora" : "vowels";
+
   return (
     <main className="shell">
       <header className="topbar">
-        <LingWordmark className="wordmark" />
+        <Link aria-label="Ling home" className="brand-link" href="/">
+          <LingWordmark className="wordmark" />
+        </Link>
       </header>
-      <section className="canvas" aria-label="Ling">
-        <h1>
-          <LingWordmark className="hero-wordmark" />
+      <section className="network-home" aria-labelledby="network-title">
+        <h1 className="sr-only" id="network-title">
+          Japanese mastery network
         </h1>
+        <NetworkMap initialMobileFocus={initialMobileFocus} />
       </section>
     </main>
   );

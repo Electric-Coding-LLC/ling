@@ -171,7 +171,6 @@ function NetworkView({
       data-network-view={view}
       onKeyDown={mobile ? undefined : onDesktopKeyDown}
       role="img"
-      tabIndex={mobile ? undefined : 0}
       viewBox={`0 0 ${width} 500`}
     >
       <desc id={`${view}-network-description`}>

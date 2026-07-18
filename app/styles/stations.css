@@ -1,0 +1,323 @@
+.station-topbar {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  gap: 1rem;
+  background: var(--surface);
+}
+
+.station-nav {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.station-map-link {
+  display: inline-flex;
+  width: 2.5rem;
+  min-height: 2.25rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.station-map-link:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 5px;
+}
+
+.station-map-link svg {
+  width: 2.5rem;
+  height: auto;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 150ms ease;
+}
+
+.station-map-link:hover svg {
+  opacity: 0.78;
+}
+
+.station-map-sound,
+.station-map-script {
+  stroke-width: 3;
+}
+
+.station-map-sound {
+  stroke: var(--sound);
+}
+
+.station-map-script {
+  stroke: var(--script);
+}
+
+.station-map-current {
+  fill: var(--surface);
+  stroke: var(--foreground);
+  stroke-width: 2;
+}
+
+.station-page {
+  width: min(100%, 46rem);
+  margin-inline: auto;
+  padding: clamp(1.75rem, 5vw, 3rem) clamp(1.25rem, 5vw, 3rem) 4rem;
+}
+
+.station-heading {
+  margin-bottom: clamp(1.75rem, 5vw, 2.75rem);
+}
+
+.station-memberships {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.station-membership {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.station-membership::before {
+  width: 1.5rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+}
+
+.station-membership-sound {
+  color: var(--sound);
+}
+
+.station-membership-script {
+  color: var(--script);
+}
+
+.station-heading h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.station-preview h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.65rem, 5vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.station-preview p {
+  max-width: 32rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.vowels-reference audio {
+  display: none;
+}
+
+.vowels-intro {
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.vowels-table {
+  width: min(100%, 32rem);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.vowels-table th {
+  padding: 0 0.75rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.vowels-table th:last-child {
+  padding-right: 0;
+}
+
+.vowels-table th:first-child {
+  width: 33.333%;
+}
+
+.vowels-table th:nth-child(2) {
+  width: 33.333%;
+}
+
+.vowels-table th:nth-child(3) {
+  width: 33.334%;
+}
+
+.vowel-row-wrap td {
+  height: 4rem;
+  padding: 0 0.75rem 0;
+  border-bottom: 1px solid transparent;
+  vertical-align: middle;
+}
+
+.vowel-row-wrap:not(:last-child) td {
+  border-bottom: 1px solid var(--line);
+}
+
+.vowel-row-wrap td:last-child {
+  padding-right: 0;
+}
+
+.vowel-audio-button {
+  display: flex;
+  width: 100%;
+  height: 4rem;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.vowel-audio-button:hover {
+  color: var(--muted);
+}
+
+.vowel-audio-button:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.vowel-kana {
+  margin: 0;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.vowel-sound-cell {
+  color: var(--muted);
+}
+
+.vowel-sound-button {
+  width: 2.5rem;
+}
+
+.vowel-example-word {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.25rem;
+}
+
+.vowel-listen-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.vowel-error {
+  width: 12rem;
+  margin: 0.5rem 0;
+  color: var(--sound);
+}
+
+.vowels-notes {
+  display: grid;
+  max-width: 38rem;
+  gap: 0.6rem;
+  margin-top: 2rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.vowels-notes p {
+  margin: 0;
+}
+
+.vowels-notes strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .station-page {
+    padding: 1.5rem 1.25rem 2.5rem;
+  }
+
+  .station-heading {
+    margin-bottom: 1.25rem;
+  }
+
+  .station-heading h1 {
+    font-size: 2.5rem;
+  }
+
+  .vowels-intro {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .vowels-table {
+    width: 100%;
+  }
+
+  .vowels-table th {
+    padding-right: 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .vowels-table th:last-child {
+    padding-right: 0;
+  }
+
+  .vowel-row-wrap td {
+    height: 3.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .vowel-kana {
+    font-size: 1.9rem;
+  }
+
+  .vowel-audio-button {
+    height: 3.5rem;
+  }
+
+  .vowel-example-word {
+    font-size: 1.125rem;
+    line-height: 1.2;
+  }
+
+  .vowel-error {
+    width: auto;
+    margin: 0.25rem 0 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .vowels-notes {
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    font-size: 0.875rem;
+  }
+}

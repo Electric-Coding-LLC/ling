@@ -1,0 +1,105 @@
+.loading-shell {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding:
+    calc(2rem + env(safe-area-inset-top))
+    calc(2rem + env(safe-area-inset-right))
+    calc(2rem + env(safe-area-inset-bottom))
+    calc(2rem + env(safe-area-inset-left));
+  background: var(--surface);
+}
+
+.loading-lockup {
+  display: grid;
+  place-items: center;
+}
+
+.loading-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.loading-brand-mark {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
+.loading-network {
+  width: 11.25rem;
+  height: 4.5rem;
+  margin-top: 1.4rem;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.loading-network-sound,
+.loading-network-script {
+  stroke-width: 4;
+}
+
+.loading-network-sound {
+  stroke: var(--sound);
+}
+
+.loading-network-script {
+  stroke: var(--script);
+}
+
+.loading-network-terminal,
+.loading-network-interchange-outer,
+.loading-network-interchange-inner {
+  fill: var(--surface);
+  vector-effect: non-scaling-stroke;
+}
+
+.loading-network-terminal {
+  stroke: var(--sound);
+  stroke-width: 3;
+}
+
+.loading-network-interchange-outer,
+.loading-network-interchange-inner {
+  stroke: var(--foreground);
+}
+
+.loading-network-interchange-outer {
+  stroke-width: 3;
+}
+
+.loading-network-interchange-inner {
+  stroke-width: 4;
+}
+
+.loading-network-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: loading-network-pulse 1.5s ease-in-out infinite;
+}
+
+.loading-lockup p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+@keyframes loading-network-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

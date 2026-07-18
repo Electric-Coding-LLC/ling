@@ -88,20 +88,24 @@ Sound    Vowels ── Mora timing
 Script   Hiragana
 ```
 
-`Vowels` is the current place. Its first learning material is `あ`:
+`Vowels` is the current place. Its interior exposes the five Japanese vowels directly:
 
-- Hear the Japanese vowel.
-- Understand its articulation.
-- Produce it accurately.
-- See its hiragana form.
-- Recall `あ` from sound.
-- Recall the sound from `あ`.
+```text
+あ  い  う  え  お
+```
+
+Each vowel row:
+
+- Shows the hiragana form.
+- Plays the isolated Japanese vowel.
+- Provides one playable Japanese example word.
+- Remains directly revisitable without staged gates.
 
 This seed is a valid piece of the eventual network, not a disposable prototype. `Vowels` is the first interchange, connecting sound and writing. The Script line currently stops at `Hiragana`; add adjacent stations only when real study creates the need.
 
 ## First Proof
 
-The first product slice makes the `Vowels` station usable, beginning with `あ`. It connects replayable Japanese pronunciation, the hiragana form, a concise articulation insight, production practice, and recall in both directions. It uses static content and records no score or visible progress.
+The first product slice presents `あ い う え お` as one compact reference table on the `Vowels` page. Its three columns pair each kana with a bundled synthetic pronunciation control and one playable Japanese example word. Two concise notes establish the useful system-level ideas: Japanese vowels stay comparatively steady, and vowel length can change meaning. The station records no score or visible progress.
 
 ## Not Yet
 

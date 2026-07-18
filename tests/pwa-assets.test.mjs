@@ -109,7 +109,7 @@ test("the standalone wordmark uses fixed vector outlines", async () => {
 });
 
 test("the app shell is fullscreen at every viewport", async () => {
-  const styles = await readFile(new URL("app/globals.css", root), "utf8");
+  const styles = await readFile(new URL("app/styles/shell.css", root), "utf8");
   const shell = styles.match(/\.shell\s*\{([^}]*)\}/)?.[1] ?? "";
 
   assert.match(shell, /min-height: 100dvh/);

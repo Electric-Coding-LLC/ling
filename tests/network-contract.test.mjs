@@ -7,7 +7,7 @@ const root = new URL("../", import.meta.url);
 test("the network keeps the approved desktop and mobile geography", async () => {
   const source = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
-  const styles = await readFile(new URL("app/globals.css", root), "utf8");
+  const styles = await readFile(new URL("app/styles/network.css", root), "utf8");
 
   assert.match(source, /NETWORK_SEGMENT_LENGTH\s*=\s*180/);
   assert.match(source, /DESKTOP_VOWELS_X\s*=\s*250/);
@@ -101,17 +101,27 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(styles, /\.network-station-link:focus-visible \.network-station-backlight/);
   assert.match(styles, /\.network-station-focus:focus-visible \.network-station-backlight/);
   assert.doesNotMatch(styles, /drop-shadow\(/);
-  assert.match(styles, /\.guide-button:hover\s*\{[^}]*background:\s*rgb\(242 241 235 \/ 0\.06\)/s);
-  assert.match(styles, /\.guide-button-primary:hover\s*\{[^}]*background:\s*#deddd7/s);
-  assert.doesNotMatch(styles, /\.guide-button-primary:hover\s*\{[^}]*(?:var\(--sound\)|box-shadow|transform)/s);
 });
 
-test("the Vowels sequence uses the bundled pronunciation asset", async () => {
+test("the Vowels station uses bundled pronunciation assets", async () => {
   const source = await readFile(new URL("app/stations/vowels/vowels-guide.tsx", root), "utf8");
-  const audio = await readFile(new URL("public/audio/ja-a.wav", root));
+  const audioAssets = await Promise.all(
+    ["a", "i", "u", "e", "o", "asa", "inu", "umi", "eki", "oto"].map((vowel) =>
+      readFile(new URL(`public/audio/ja-${vowel}.wav`, root)),
+    ),
+  );
 
-  assert.match(source, /\/audio\/ja-a\.wav/);
-  assert.equal(audio.subarray(0, 4).toString("ascii"), "RIFF");
-  assert.equal(audio.subarray(8, 12).toString("ascii"), "WAVE");
-  assert.ok(audio.length > 9_000, "pronunciation asset should contain audio samples");
+  for (const vowel of ["a", "i", "u", "e", "o"]) {
+    assert.match(source, new RegExp(`audio: "\\/audio\\/ja-${vowel}\\.wav"`));
+  }
+  for (const word of ["asa", "inu", "umi", "eki", "oto"]) {
+    assert.match(source, new RegExp(`exampleAudio: "\\/audio\\/ja-${word}\\.wav"`));
+  }
+  assert.match(source, /VOWELS\.map/);
+  assert.doesNotMatch(source, /role="tablist"|aria-selected|ArrowRight|ArrowLeft/);
+  for (const audio of audioAssets) {
+    assert.equal(audio.subarray(0, 4).toString("ascii"), "RIFF");
+    assert.equal(audio.subarray(8, 12).toString("ascii"), "WAVE");
+    assert.ok(audio.length > 9_000, "pronunciation asset should contain audio samples");
+  }
 });

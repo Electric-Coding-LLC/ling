@@ -1,57 +1,34 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useState } from "react";
 
-const AUDIO_SOURCE = "/audio/ja-a.wav";
-const LAST_STAGE = 4;
+const VOWELS = [
+  { audio: "/audio/ja-a.wav", example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ" },
+  { audio: "/audio/ja-i.wav", example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い" },
+  { audio: "/audio/ja-u.wav", example: "うみ", exampleAudio: "/audio/ja-umi.wav", kana: "う" },
+  { audio: "/audio/ja-e.wav", example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え" },
+  { audio: "/audio/ja-o.wav", example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お" },
+] as const;
 
-function EarIcon() {
+function SpeakerIcon() {
   return (
-    <svg aria-hidden="true" className="guide-button-icon" data-icon="ear" viewBox="0 0 24 24">
-      <path d="M6 10a6 6 0 0 1 12 0c0 3.5-2 4.3-3.4 5.7-.8.8-.6 2.3-1.6 3.3a3 3 0 0 1-5-2.2" />
-      <path d="M9 10a3 3 0 0 1 6 0c0 2-2.5 2.5-3 4" />
+    <svg aria-hidden="true" className="vowel-listen-icon" data-icon="speaker" viewBox="0 0 24 24">
+      <path d="M11 5 6.5 9H3v6h3.5l4.5 4V5Z" />
+      <path d="M15 9.5a4 4 0 0 1 0 5" />
+      <path d="M18 7a7 7 0 0 1 0 10" />
     </svg>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg aria-hidden="true" className="guide-button-icon" data-icon="eye" viewBox="0 0 24 24">
-      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-      <circle cx="12" cy="12" r="2.5" />
-    </svg>
-  );
-}
-
-function ActionButton({
-  children,
-  onClick,
-  primary = false,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  primary?: boolean;
-}) {
-  return (
-    <button className={primary ? "guide-button guide-button-primary" : "guide-button"} onClick={onClick} type="button">
-      {children}
-    </button>
   );
 }
 
 export function VowelsGuide() {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [audioError, setAudioError] = useState(false);
-  const [coldRevealed, setColdRevealed] = useState(false);
-  const [soundRecallRevealed, setSoundRecallRevealed] = useState(false);
-  const [stage, setStage] = useState(0);
+  const exampleAudioRefs = useRef<Array<HTMLAudioElement | null>>([]);
+  const vowelAudioRefs = useRef<Array<HTMLAudioElement | null>>([]);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
-  async function playAudio() {
-    setAudioError(false);
-    const audio = audioRef.current;
+  async function playAudio(audio: HTMLAudioElement | null, errorKey: string) {
+    setAudioError(null);
     if (!audio) {
-      setAudioError(true);
+      setAudioError(errorKey);
       return;
     }
 
@@ -59,123 +36,79 @@ export function VowelsGuide() {
       audio.currentTime = 0;
       await audio.play();
     } catch {
-      setAudioError(true);
+      setAudioError(errorKey);
     }
   }
 
-  function next() {
-    setStage((current) => Math.min(current + 1, LAST_STAGE));
-  }
-
-  function restart() {
-    setColdRevealed(false);
-    setSoundRecallRevealed(false);
-    setStage(0);
-  }
-
   return (
-    <section className="vowels-guide" aria-label="Guided practice for あ">
-      <audio onError={() => setAudioError(true)} preload="auto" ref={audioRef} src={AUDIO_SOURCE} />
+    <section className="vowels-reference">
+      <p className="vowels-intro">Japanese has five clear, steady vowels. Tap a sound or example to hear it.</p>
 
-      <section className="guide-step" hidden={stage !== 0}>
-        <h2>Listen. Can you picture the kana?</h2>
-        <div className="guide-actions">
-          <ActionButton onClick={playAudio} primary>
-            <EarIcon />
-            Listen
-          </ActionButton>
-          <ActionButton onClick={() => setColdRevealed(true)}>
-            <EyeIcon />
-            Reveal
-          </ActionButton>
-        </div>
-        <div aria-live="polite" className="guide-reveal" hidden={!coldRevealed}>
-          <p className="kana" lang="ja">あ</p>
-          <ActionButton onClick={next} primary>
-            Continue
-          </ActionButton>
-        </div>
-      </section>
-
-      <section className="guide-step" hidden={stage !== 1}>
-        <p className="guide-kicker">Meet the sound</p>
-        <p className="kana" lang="ja">あ</p>
-        <h2>One clear, steady vowel</h2>
-        <p className="guide-copy">
-          Open your mouth naturally. Keep your lips relaxed. Make one clear, steady sound without letting it glide.
-        </p>
-        <div className="guide-actions">
-          <ActionButton onClick={playAudio}>
-            <EarIcon />
-            Listen again
-          </ActionButton>
-          <ActionButton onClick={next} primary>
-            Continue
-          </ActionButton>
-        </div>
-      </section>
-
-      <section className="guide-step" hidden={stage !== 2}>
-        <p className="guide-kicker">Production</p>
-        <h2>Listen, then say it aloud</h2>
-        <p className="guide-copy">Match the single steady sound. There is no recording or automated judgment.</p>
-        <div className="guide-actions">
-          <ActionButton onClick={playAudio}>
-            <EarIcon />
-            Listen
-          </ActionButton>
-          <ActionButton onClick={playAudio}>
-            <EarIcon />
-            Replay
-          </ActionButton>
-          <ActionButton onClick={next} primary>
-            I said it
-          </ActionButton>
-        </div>
-      </section>
-
-      <section className="guide-step" hidden={stage !== 3}>
-        <p className="guide-kicker">Sound to writing</p>
-        <h2>Listen. Recall the kana before revealing it.</h2>
-        <div className="guide-actions">
-          <ActionButton onClick={playAudio} primary>
-            <EarIcon />
-            Listen
-          </ActionButton>
-          <ActionButton onClick={() => setSoundRecallRevealed(true)}>
-            <EyeIcon />
-            Reveal
-          </ActionButton>
-        </div>
-        <div aria-live="polite" className="guide-reveal" hidden={!soundRecallRevealed}>
-          <p className="kana" lang="ja">あ</p>
-          <ActionButton onClick={next} primary>
-            Continue
-          </ActionButton>
-        </div>
-      </section>
-
-      <section className="guide-step" hidden={stage !== 4}>
-        <p className="guide-kicker">Writing to sound</p>
-        <p className="kana" lang="ja">あ</p>
-        <h2>Say the sound, then check it.</h2>
-        <div className="guide-actions">
-          <ActionButton onClick={playAudio} primary>
-            <EarIcon />
-            Check with audio
-          </ActionButton>
-          <ActionButton onClick={restart}>Practice again</ActionButton>
-        </div>
-        <Link className="guide-network-link" href="/?focus=vowels">
-          Return to the network
-        </Link>
-      </section>
+      <table aria-label="Japanese vowels" className="vowels-table">
+        <thead>
+          <tr>
+            <th scope="col">Kana</th>
+            <th scope="col">Sound</th>
+            <th scope="col">Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          {VOWELS.map((vowel, index) => (
+            <tr className="vowel-row-wrap" key={vowel.kana}>
+              <td className="vowel-kana-cell">
+                <span className="vowel-kana" lang="ja">{vowel.kana}</span>
+              </td>
+              <td className="vowel-sound-cell">
+                <audio
+                  onError={() => setAudioError(`${vowel.kana}-vowel`)}
+                  preload="auto"
+                  ref={(element) => {
+                    vowelAudioRefs.current[index] = element;
+                  }}
+                  src={vowel.audio}
+                />
+                <button
+                  aria-label={`Play isolated vowel ${vowel.kana}`}
+                  className="vowel-audio-button vowel-sound-button vowel-row"
+                  onClick={() => playAudio(vowelAudioRefs.current[index], `${vowel.kana}-vowel`)}
+                  type="button"
+                >
+                  <SpeakerIcon />
+                </button>
+              </td>
+              <td className="vowel-example-cell">
+                <audio
+                  onError={() => setAudioError(`${vowel.kana}-example`)}
+                  preload="auto"
+                  ref={(element) => {
+                    exampleAudioRefs.current[index] = element;
+                  }}
+                  src={vowel.exampleAudio}
+                />
+                <button
+                  aria-label={`Play example word ${vowel.example}`}
+                  className="vowel-audio-button vowel-example"
+                  onClick={() => playAudio(exampleAudioRefs.current[index], `${vowel.kana}-example`)}
+                  type="button"
+                >
+                  <span className="vowel-example-word" lang="ja">{vowel.example}</span>
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {audioError ? (
-        <p className="guide-error" role="alert">
+        <p className="vowel-error" role="alert">
           Audio could not play. Try again.
         </p>
       ) : null}
+
+      <div className="vowels-notes">
+        <p><strong>One symbol, one steady sound.</strong> English vowels often glide; Japanese vowels stay comparatively clean.</p>
+        <p><strong>Length matters.</strong> Holding a vowel longer can change a word&apos;s meaning.</p>
+      </div>
     </section>
   );
 }

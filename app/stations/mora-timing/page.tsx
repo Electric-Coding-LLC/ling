@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { StationTopbar } from "../station-topbar";
 
 export default function MoraTimingPage() {
@@ -17,9 +16,6 @@ export default function MoraTimingPage() {
         <section aria-labelledby="mora-preview-title" className="station-preview">
           <h2 id="mora-preview-title">Mapped for later</h2>
           <p>This station is mapped, but its lesson has not been built yet.</p>
-          <Link className="guide-network-link" href="/?focus=mora-timing">
-            Return to the network
-          </Link>
         </section>
       </div>
     </main>

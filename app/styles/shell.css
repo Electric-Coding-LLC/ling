@@ -1,0 +1,50 @@
+.shell {
+  min-height: 100dvh;
+  background: var(--surface);
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.topbar {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand-link {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.brand-link:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 5px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 1.125rem;
+  font-weight: 460;
+  letter-spacing: -0.02em;
+}
+
+.brand-mark {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  fill: currentColor;
+  transform: translateY(-0.08em);
+}
+
+.brand-name {
+  display: block;
+  width: 2.08em;
+  height: auto;
+}

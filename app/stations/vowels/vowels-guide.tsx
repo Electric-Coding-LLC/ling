@@ -3,22 +3,47 @@
 import { useRef, useState } from "react";
 
 const VOWELS = [
-  { audio: "/audio/ja-a.wav", example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ" },
-  { audio: "/audio/ja-i.wav", example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い" },
-  { audio: "/audio/ja-u.wav", example: "うみ", exampleAudio: "/audio/ja-umi.wav", kana: "う" },
-  { audio: "/audio/ja-e.wav", example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え" },
-  { audio: "/audio/ja-o.wav", example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お" },
+  {
+    audio: "/audio/ja-a.wav",
+    english: "a",
+    example: "あさ",
+    exampleAudio: "/audio/ja-asa.wav",
+    kana: "あ",
+    translation: "morning",
+  },
+  {
+    audio: "/audio/ja-i.wav",
+    english: "i",
+    example: "いぬ",
+    exampleAudio: "/audio/ja-inu.wav",
+    kana: "い",
+    translation: "dog",
+  },
+  {
+    audio: "/audio/ja-u.wav",
+    english: "u",
+    example: "うみ",
+    exampleAudio: "/audio/ja-umi.wav",
+    kana: "う",
+    translation: "sea",
+  },
+  {
+    audio: "/audio/ja-e.wav",
+    english: "e",
+    example: "えき",
+    exampleAudio: "/audio/ja-eki.wav",
+    kana: "え",
+    translation: "station",
+  },
+  {
+    audio: "/audio/ja-o.wav",
+    english: "o",
+    example: "おと",
+    exampleAudio: "/audio/ja-oto.wav",
+    kana: "お",
+    translation: "sound",
+  },
 ] as const;
-
-function SpeakerIcon() {
-  return (
-    <svg aria-hidden="true" className="vowel-listen-icon" data-icon="speaker" viewBox="0 0 24 24">
-      <path d="M11 5 6.5 9H3v6h3.5l4.5 4V5Z" />
-      <path d="M15 9.5a4 4 0 0 1 0 5" />
-      <path d="M18 7a7 7 0 0 1 0 10" />
-    </svg>
-  );
-}
 
 export function VowelsGuide() {
   const exampleAudioRefs = useRef<Array<HTMLAudioElement | null>>([]);
@@ -42,23 +67,27 @@ export function VowelsGuide() {
 
   return (
     <section className="vowels-reference">
-      <p className="vowels-intro">Japanese has five clear, steady vowels. Tap a sound or example to hear it.</p>
+      <p className="vowels-intro">Japanese has five clear, steady vowels. Tap a kana or example to hear it.</p>
 
       <table aria-label="Japanese vowels" className="vowels-table">
+        <colgroup>
+          <col className="vowels-col-kana" />
+          <col className="vowels-col-english" />
+          <col className="vowels-col-example" />
+          <col className="vowels-col-translation" />
+        </colgroup>
         <thead>
           <tr>
             <th scope="col">Kana</th>
-            <th scope="col">Sound</th>
+            <th className="vowels-english-heading" scope="col">English</th>
             <th scope="col">Example</th>
+            <th scope="col">Translation</th>
           </tr>
         </thead>
         <tbody>
           {VOWELS.map((vowel, index) => (
             <tr className="vowel-row-wrap" key={vowel.kana}>
               <td className="vowel-kana-cell">
-                <span className="vowel-kana" lang="ja">{vowel.kana}</span>
-              </td>
-              <td className="vowel-sound-cell">
                 <audio
                   onError={() => setAudioError(`${vowel.kana}-vowel`)}
                   preload="auto"
@@ -69,13 +98,14 @@ export function VowelsGuide() {
                 />
                 <button
                   aria-label={`Play isolated vowel ${vowel.kana}`}
-                  className="vowel-audio-button vowel-sound-button vowel-row"
+                  className="vowel-audio-button vowel-kana-button"
                   onClick={() => playAudio(vowelAudioRefs.current[index], `${vowel.kana}-vowel`)}
                   type="button"
                 >
-                  <SpeakerIcon />
+                  <span className="vowel-kana" lang="ja">{vowel.kana}</span>
                 </button>
               </td>
+              <td className="vowel-english-cue">{vowel.english}</td>
               <td className="vowel-example-cell">
                 <audio
                   onError={() => setAudioError(`${vowel.kana}-example`)}
@@ -94,6 +124,7 @@ export function VowelsGuide() {
                   <span className="vowel-example-word" lang="ja">{vowel.example}</span>
                 </button>
               </td>
+              <td className="vowel-translation">{vowel.translation}</td>
             </tr>
           ))}
         </tbody>

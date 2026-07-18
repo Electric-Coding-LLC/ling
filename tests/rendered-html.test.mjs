@@ -85,14 +85,27 @@ test("server-renders the minimal Vowels station", async () => {
   assert.match(html, /data-line="script"[^>]*>Script</i);
   assert.match(html, /Vowels/i);
   assert.match(html, /aria-label="Japanese vowels"/i);
+  assert.match(html, /class="station-page station-page-vowels"/i);
   assert.match(html, /<th scope="col">Kana<\/th>/i);
-  assert.match(html, /<th scope="col">Sound<\/th>/i);
+  assert.match(
+    html,
+    /<th class="vowels-english-heading" scope="col">English<\/th>/i,
+  );
   assert.match(html, /<th scope="col">Example<\/th>/i);
-  assert.equal((html.match(/class="vowel-audio-button vowel-sound-button vowel-row"/gi) ?? []).length, 5);
+  assert.match(html, /<th scope="col">Translation<\/th>/i);
+  assert.equal((html.match(/class="vowel-audio-button vowel-kana-button"/gi) ?? []).length, 5);
   assert.match(html, />あ<.*>い<.*>う<.*>え<.*>お</is);
   assert.match(html, /Japanese has five clear, steady vowels/i);
-  assert.doesNotMatch(html, /father|machine|relaxed oo|pure oh|>morning<|>dog<|>sea<|>station</i);
+  assert.match(
+    html,
+    /<td class="vowel-english-cue">a<\/td>.*<td class="vowel-english-cue">i<\/td>.*<td class="vowel-english-cue">u<\/td>.*<td class="vowel-english-cue">e<\/td>.*<td class="vowel-english-cue">o<\/td>/is,
+  );
   assert.match(html, /あさ.*いぬ.*うみ.*えき.*おと/is);
+  assert.match(
+    html,
+    /<td class="vowel-translation">morning<\/td>.*<td class="vowel-translation">dog<\/td>.*<td class="vowel-translation">sea<\/td>.*<td class="vowel-translation">station<\/td>.*<td class="vowel-translation">sound<\/td>/is,
+  );
+  assert.doesNotMatch(html, /father|machine|relaxed oo|pure oh/i);
   assert.match(html, /One symbol, one steady sound/i);
   assert.match(html, /Length matters/i);
   assert.doesNotMatch(html, /role="tablist"|role="tab"|aria-selected/i);
@@ -100,7 +113,7 @@ test("server-renders the minimal Vowels station", async () => {
   assert.doesNotMatch(html, /Cold check/i);
   assert.equal((html.match(/aria-label="Play isolated vowel [あいうえお]"/gi) ?? []).length, 5);
   assert.equal((html.match(/aria-label="Play example word (?:あさ|いぬ|うみ|えき|おと)"/gi) ?? []).length, 5);
-  assert.equal((html.match(/data-icon="speaker"/gi) ?? []).length, 5);
+  assert.equal((html.match(/data-icon="speaker"/gi) ?? []).length, 0);
   assert.match(html, /あ/);
   assert.doesNotMatch(html, /Open your mouth naturally/i);
   assert.doesNotMatch(html, /Reveal|Continue|I said it|Practice again/i);

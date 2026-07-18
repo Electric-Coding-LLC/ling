@@ -8,7 +8,7 @@ export default function VowelsPage() {
         current="Vowels"
         mapPosition="vowels"
       />
-      <div className="station-page">
+      <div className="station-page station-page-vowels">
         <header className="station-heading">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-sound" data-line="sound">

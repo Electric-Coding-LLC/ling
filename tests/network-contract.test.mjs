@@ -4,6 +4,25 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
+function wavDuration(audio) {
+  let byteRate;
+  let dataSize;
+
+  for (let offset = 12; offset + 8 <= audio.length;) {
+    const chunkId = audio.subarray(offset, offset + 4).toString("ascii");
+    const chunkSize = audio.readUInt32LE(offset + 4);
+    const chunkStart = offset + 8;
+
+    if (chunkId === "fmt ") byteRate = audio.readUInt32LE(chunkStart + 8);
+    if (chunkId === "data") dataSize = chunkSize;
+    offset = chunkStart + chunkSize + (chunkSize % 2);
+  }
+
+  assert.ok(byteRate, "pronunciation asset should declare a byte rate");
+  assert.ok(dataSize, "pronunciation asset should contain audio samples");
+  return dataSize / byteRate;
+}
+
 test("the network keeps the approved desktop and mobile geography", async () => {
   const source = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
@@ -105,9 +124,15 @@ test("the network keeps the approved desktop and mobile geography", async () => 
 
 test("the Vowels station uses bundled pronunciation assets", async () => {
   const source = await readFile(new URL("app/stations/vowels/vowels-guide.tsx", root), "utf8");
-  const audioAssets = await Promise.all(
-    ["a", "i", "u", "e", "o", "asa", "inu", "umi", "eki", "oto"].map((vowel) =>
+  const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
+  const isolatedVowelAssets = await Promise.all(
+    ["a", "i", "u", "e", "o"].map((vowel) =>
       readFile(new URL(`public/audio/ja-${vowel}.wav`, root)),
+    ),
+  );
+  const exampleWordAssets = await Promise.all(
+    ["asa", "inu", "umi", "eki", "oto"].map((word) =>
+      readFile(new URL(`public/audio/ja-${word}.wav`, root)),
     ),
   );
 
@@ -119,9 +144,25 @@ test("the Vowels station uses bundled pronunciation assets", async () => {
   }
   assert.match(source, /VOWELS\.map/);
   assert.doesNotMatch(source, /role="tablist"|aria-selected|ArrowRight|ArrowLeft/);
-  for (const audio of audioAssets) {
+  assert.doesNotMatch(source, /playbackRate|preservesPitch/);
+  assert.match(styles, /\.station-page-vowels \.station-heading\s*\{[^}]*margin-bottom:\s*1\.25rem/s);
+  assert.match(styles, /\.vowels-intro\s*\{[^}]*margin:\s*0 0 2rem/s);
+  assert.match(
+    styles,
+    /\.vowels-col-kana,[\s\S]*\.vowels-col-english,[\s\S]*\.vowels-col-example\s*\{[^}]*width:\s*25%/,
+  );
+  assert.match(styles, /\.vowels-col-translation\s*\{[^}]*width:\s*25%/);
+  assert.match(styles, /\.vowels-table th\s*\{[^}]*text-align:\s*center/s);
+  assert.match(styles, /\.vowel-row-wrap td\s*\{[^}]*text-align:\s*center/s);
+  assert.match(styles, /\.vowel-audio-button\s*\{[^}]*justify-content:\s*center/s);
+  for (const audio of [...isolatedVowelAssets, ...exampleWordAssets]) {
     assert.equal(audio.subarray(0, 4).toString("ascii"), "RIFF");
     assert.equal(audio.subarray(8, 12).toString("ascii"), "WAVE");
-    assert.ok(audio.length > 9_000, "pronunciation asset should contain audio samples");
+  }
+  for (const audio of isolatedVowelAssets) {
+    assert.ok(wavDuration(audio) >= 0.14, "isolated vowel should not be clipped too short");
+  }
+  for (const audio of exampleWordAssets) {
+    assert.ok(wavDuration(audio) >= 0.28, "example word should not be clipped too short");
   }
 });

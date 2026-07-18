@@ -17,7 +17,7 @@ Ship the first usable Ling slice: a responsive mastery-network home and a minima
 
 - [x] Establish focused rendered-route tests for the network geography, navigation, and Vowels learning contract.
 - [x] Build the responsive network home with Sound, Script, Vowels, Mora timing, and Hiragana.
-- [x] Build the minimal Vowels station as one compact reference table for あ, い, う, え, and お.
+- [x] Build the minimal Vowels station as one compact Kana, English, Example, and Translation table for あ, い, う, え, and お.
 - [x] Add and verify bundled synthesized pronunciation assets for each isolated vowel and example word without a distracting provenance disclaimer.
 - [x] Run the full repository gate, inspect the final diff, and verify `/` and `/stations/vowels` at mobile and desktop widths.
 
@@ -29,7 +29,7 @@ Ship the first usable Ling slice: a responsive mastery-network home and a minima
 - Vowels opens `/stations/vowels`; the station's Network link returns with Vowels focused.
 - The Ling navbar remains present inside stations.
 - あ, い, う, え, and お appear in order as rows in one compact table, without local navigation.
-- Every vowel has the same compact treatment: kana, isolated playback, and one playable example word without a reveal flow or staged completion gates.
-- Pronunciation is replayable from bundled synthesized assets, and the UI makes no human-review claim.
+- Every vowel has the same compact treatment: a clickable kana for isolated playback, its English vowel, one playable example word, and that word's translation without a reveal flow or staged completion gates.
+- Pronunciation is replayable from bundled synthesized assets at their authored speed, and the UI makes no human-review claim.
 - The routes are keyboard accessible, responsive, server-rendered where practical, and covered by focused tests.
 - `npm run check` passes and both affected routes are visually verified locally.

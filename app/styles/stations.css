@@ -68,6 +68,10 @@
   margin-bottom: clamp(1.75rem, 5vw, 2.75rem);
 }
 
+.station-page-vowels .station-heading {
+  margin-bottom: 1.25rem;
+}
+
 .station-memberships {
   display: flex;
   gap: 1rem;
@@ -127,7 +131,7 @@
 
 .vowels-intro {
   max-width: 38rem;
-  margin: 0 0 1.5rem;
+  margin: 0 0 2rem;
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.6;
@@ -145,29 +149,24 @@
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 500;
-  text-align: left;
+  text-align: center;
 }
 
-.vowels-table th:last-child {
-  padding-right: 0;
+.vowels-col-kana,
+.vowels-col-english,
+.vowels-col-example {
+  width: 25%;
 }
 
-.vowels-table th:first-child {
-  width: 33.333%;
-}
-
-.vowels-table th:nth-child(2) {
-  width: 33.333%;
-}
-
-.vowels-table th:nth-child(3) {
-  width: 33.334%;
+.vowels-col-translation {
+  width: 25%;
 }
 
 .vowel-row-wrap td {
   height: 4rem;
   padding: 0 0.75rem 0;
   border-bottom: 1px solid transparent;
+  text-align: center;
   vertical-align: middle;
 }
 
@@ -175,15 +174,12 @@
   border-bottom: 1px solid var(--line);
 }
 
-.vowel-row-wrap td:last-child {
-  padding-right: 0;
-}
-
 .vowel-audio-button {
   display: flex;
   width: 100%;
   height: 4rem;
   align-items: center;
+  justify-content: center;
   margin: 0;
   padding: 0;
   border: 0;
@@ -191,7 +187,7 @@
   background: transparent;
   cursor: pointer;
   font: inherit;
-  text-align: left;
+  text-align: center;
 }
 
 .vowel-audio-button:hover {
@@ -211,27 +207,19 @@
   line-height: 1;
 }
 
-.vowel-sound-cell {
+.vowel-english-cue,
+.vowel-translation {
   color: var(--muted);
+  font-size: 0.95rem;
 }
 
-.vowel-sound-button {
-  width: 2.5rem;
+.vowel-kana-button {
+  width: 100%;
 }
 
 .vowel-example-word {
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   font-size: 1.25rem;
-}
-
-.vowel-listen-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
 }
 
 .vowel-error {
@@ -268,12 +256,16 @@
     margin-bottom: 1.25rem;
   }
 
+  .station-page-vowels .station-heading {
+    margin-bottom: 1rem;
+  }
+
   .station-heading h1 {
     font-size: 2.5rem;
   }
 
   .vowels-intro {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     font-size: 0.95rem;
     line-height: 1.5;
   }
@@ -285,10 +277,6 @@
   .vowels-table th {
     padding-right: 0.5rem;
     font-size: 0.6875rem;
-  }
-
-  .vowels-table th:last-child {
-    padding-right: 0;
   }
 
   .vowel-row-wrap td {
@@ -307,6 +295,12 @@
   .vowel-example-word {
     font-size: 1.125rem;
     line-height: 1.2;
+  }
+
+  .vowel-english-cue,
+  .vowel-translation {
+    font-size: 0.875rem;
+    line-height: 1.25;
   }
 
   .vowel-error {

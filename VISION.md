@@ -105,7 +105,7 @@ This seed is a valid piece of the eventual network, not a disposable prototype. 
 
 ## First Proof
 
-The first product slice presents `あ い う え お` as one compact reference table on the `Vowels` page. Its three columns pair each kana with a bundled synthetic pronunciation control and one playable Japanese example word. Two concise notes establish the useful system-level ideas: Japanese vowels stay comparatively steady, and vowel length can change meaning. The station records no score or visible progress.
+The first product slice presents `あ い う え お` as one compact reference table on the `Vowels` page. Its four columns pair each clickable kana with its English vowel, one playable Japanese example word, and that word's translation. The kana plays the bundled synthetic pronunciation at its authored speed. Two concise notes establish the useful system-level ideas: Japanese vowels stay comparatively steady, and vowel length can change meaning. The station records no score or visible progress.
 
 ## Not Yet
 

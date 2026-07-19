@@ -305,6 +305,10 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.match(source, /Hiragana developed from flowing, cursive forms of Chinese characters/);
   assert.match(source, /Katakana developed from selected pieces of those characters/);
   assert.match(source, /Hiragana looks rounded while Katakana looks more angular/);
+  assert.ok(
+    source.indexOf("Why do they look different?") > source.indexOf("<table"),
+    "the character-origin explanation should follow the chart",
+  );
   assert.match(source, /borrowed words, foreign names, emphasis, and sound effects/);
   assert.match(source, /aria-label="The 46 basic Katakana paired with Hiragana"/);
   assert.match(source, /fetch\("\/api\/stations\/katakana\/introduction"/);

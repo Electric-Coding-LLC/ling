@@ -140,7 +140,6 @@ export function KatakanaGuide() {
       <audio onError={() => setAudioError(true)} preload="none" ref={audioRef} />
       <div className="station-intro katakana-intro">
         <p><strong>Katakana is the second basic sound-writing system of Japanese.</strong> It represents the same sounds as Hiragana, so <span lang="ja">あ</span> and <span lang="ja">ア</span> are different shapes for the same sound.</p>
-        <p><strong>Why do they look different?</strong> Hiragana developed from flowing, cursive forms of Chinese characters. Katakana developed from selected pieces of those characters. That history is why Hiragana looks rounded while Katakana looks more angular.</p>
         <p>Katakana commonly appears in borrowed words, foreign names, emphasis, and sound effects. Because the sounds are familiar, focus on connecting each new shape to the Hiragana you already know.</p>
         <p>Tap any Katakana to hear its sound. Its Hiragana match and approximate sound spelling appear underneath.</p>
       </div>
@@ -175,6 +174,7 @@ export function KatakanaGuide() {
 
       <div className="station-notes">
         <p><strong>Same sounds, different shapes.</strong> The rows follow the same five-vowel order as Hiragana.</p>
+        <p><strong>Why do they look different?</strong> Hiragana developed from flowing, cursive forms of Chinese characters. Katakana developed from selected pieces of those characters. That history is why Hiragana looks rounded while Katakana looks more angular.</p>
         <p><strong>This is the base chart.</strong> Sound marks and small Katakana extend these forms later.</p>
       </div>
     </section>

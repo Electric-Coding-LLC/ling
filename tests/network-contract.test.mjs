@@ -230,8 +230,17 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /HIRAGANA_VOWEL_COLUMNS = \["あ", "い", "う", "え", "お"\]/);
   assert.match(source, /aria-label=\{`Column of sounds ending in \$\{vowel\}`\}/);
   assert.doesNotMatch(source, /[あいうえお]段/);
-  assert.match(source, /title: "The five vowels"/);
-  assert.match(source, /title: "The next five sounds"/);
+  assert.match(source, /title: "The vowel row"/);
+  assert.match(source, /title: "The K row"/);
+  assert.match(source, /title: "The S row"/);
+  assert.match(source, /title: "The T row"/);
+  assert.match(source, /title: "The N row"/);
+  assert.match(source, /title: "The H row"/);
+  assert.match(source, /title: "The M row"/);
+  assert.match(source, /title: "The Y row"/);
+  assert.match(source, /title: "The R row"/);
+  assert.match(source, /title: "The W row and ん"/);
+  assert.doesNotMatch(source, /The next five sounds|Start with the first ten/);
   assert.match(source, /English spellings are approximate; follow the audio/);
   assert.match(source, /english: "ah".*english: "ee".*english: "oo".*english: "eh".*english: "oh"/s);
   assert.match(source, /english: "kah".*english: "kee".*english: "koo".*english: "keh".*english: "koh"/s);
@@ -245,7 +254,8 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.kana-study-button\s*\{[^}]*justify-content:\s*center/s);
   assert.doesNotMatch(source, /romaji|score|streak|timer|progress/i);
 
-  assert.equal(exampleAudioPaths.length, 10);
+  assert.equal(exampleAudioPaths.length, 46);
+  assert.equal(new Set(exampleAudioPaths).size, 46);
   for (const audioPath of [...audioPaths, ...exampleAudioPaths]) {
     const audio = await readFile(new URL(`public${audioPath}`, root));
     assert.equal(audio.subarray(0, 4).toString("ascii"), "RIFF");

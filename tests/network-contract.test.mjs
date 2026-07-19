@@ -301,7 +301,10 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.match(page, /data-line="script"/);
   assert.match(api, /recordStationIntroduction\(user\.id, "katakana"\)/);
   assert.match(source, /Katakana is the second basic sound-writing system of Japanese/);
-  assert.match(source, /same sounds as Hiragana with a more angular set of characters/);
+  assert.match(source, /different shapes for the same sound/);
+  assert.match(source, /Hiragana developed from flowing, cursive forms of Chinese characters/);
+  assert.match(source, /Katakana developed from selected pieces of those characters/);
+  assert.match(source, /Hiragana looks rounded while Katakana looks more angular/);
   assert.match(source, /borrowed words, foreign names, emphasis, and sound effects/);
   assert.match(source, /aria-label="The 46 basic Katakana paired with Hiragana"/);
   assert.match(source, /fetch\("\/api\/stations\/katakana\/introduction"/);

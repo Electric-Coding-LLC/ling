@@ -126,10 +126,11 @@ test("server-renders the Kana orientation", async () => {
   assert.match(html, /class="station-map-writing"/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);
   assert.match(html, /data-line="writing"[^>]*>Writing</i);
-  assert.match(html, /Kana is how Japanese writes sound/i);
-  assert.match(html, /two character systems represent the same sounds with different shapes/i);
-  assert.match(html, /<dt>Hiragana<\/dt>.*Everyday words and grammar/is);
-  assert.match(html, /<dt>Katakana<\/dt>.*Borrowed words, foreign names, emphasis, and sound effects/is);
+  assert.match(html, /Kana is the name for Japan(?:&apos;|&#x27;|')s two sound-based writing systems: Hiragana and Katakana/i);
+  assert.match(html, /They represent the same sounds with different shapes/i);
+  assert.match(html, /Hiragana is used for everyday Japanese words and grammar/i);
+  assert.match(html, /Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects/i);
+  assert.doesNotMatch(html, /<dl|<dt|<dd/i);
   assert.match(html, /Start with the five vowel sounds.*Tap a Kana pair or example word to hear it/is);
   assert.match(html, /aria-label="The five Japanese vowels in Hiragana and Katakana"/i);
   assert.equal((html.match(/class="kana-study-button kana-study-kana-button"/gi) ?? []).length, 5);

@@ -264,18 +264,18 @@ test("the Kana station introduces both writing systems through the five vowels",
   assert.equal(new Set(audioPaths).size, 10);
   assert.match(page, /data-line="sound"/);
   assert.match(page, /data-line="writing"/);
-  assert.match(source, /Kana is how Japanese writes sound/);
-  assert.match(source, /two character systems represent the same sounds with different shapes/);
-  assert.match(source, /<dt>Hiragana<\/dt>[\s\S]*Everyday words and grammar/);
-  assert.match(source, /<dt>Katakana<\/dt>[\s\S]*Borrowed words, foreign names, emphasis, and sound effects/);
+  assert.match(source, /Kana is the name for Japan&apos;s two sound-based writing systems: Hiragana and Katakana/);
+  assert.match(source, /They represent the same sounds with different shapes/);
+  assert.match(source, /Hiragana is used for everyday Japanese words and grammar/);
+  assert.match(source, /Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects/);
   assert.match(source, /className="kana-table-intro"/);
   assert.match(source, /Kanji primarily carries meaning and can have multiple readings/);
   assert.match(source, /aria-label="The five Japanese vowels in Hiragana and Katakana"/);
   assert.match(source, /fetch\("\/api\/stations\/kana\/introduction"/);
   assert.match(api, /recordStationIntroduction\(user\.id, "kana"\)/);
   assert.match(styles, /\.kana-vowels-table \.kana-pair\s*\{[^}]*white-space:\s*nowrap/s);
-  assert.match(styles, /\.kana-systems\s*\{[^}]*border-top:\s*1px solid var\(--line\)[^}]*border-bottom:\s*1px solid var\(--line\)/s);
-  assert.match(styles, /\.kana-systems > div\s*\{[^}]*grid-template-columns:\s*7\.5rem minmax\(0, 1fr\)/s);
+  assert.match(styles, /\.kana-intro\s*\{[^}]*display:\s*grid[^}]*gap:\s*0\.65rem/s);
+  assert.doesNotMatch(source, /<dl|<dt|<dd/);
 
   for (const audioPath of audioPaths) {
     const audio = await readFile(new URL(`public${audioPath}`, root));

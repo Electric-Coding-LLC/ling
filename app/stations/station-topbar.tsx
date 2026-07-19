@@ -11,9 +11,9 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
         data-position={position}
         viewBox="0 0 40 24"
       >
-        <path className="station-map-script" d="M20 2v14" />
-        <path className="station-map-sound" d="M20 16h18" />
-        <circle className="station-map-current station-map-interchange" cx="20" cy="16" r="5" />
+        <path className="station-map-script" d="M20 8v14" />
+        <path className="station-map-sound" d="M20 8h18" />
+        <circle className="station-map-current station-map-interchange" cx="20" cy="8" r="5" />
       </svg>
     );
   }
@@ -26,8 +26,8 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
         data-terminal="true"
         viewBox="0 0 40 24"
       >
-        <path className="station-map-script" d="M20 5v17" />
-        <circle className="station-map-current" cx="20" cy="5" r="4" />
+        <path className="station-map-script" d="M20 2v17" />
+        <circle className="station-map-current" cx="20" cy="19" r="4" />
       </svg>
     );
   }

@@ -83,11 +83,11 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 Begin with two lines and three stations:
 
 ```text
-                     Katakana
+Sound            Hiragana ── Mora timing
                          │
 Script                   │
                          │
-Sound            Hiragana ── Mora timing
+                     Katakana
 ```
 
 `Hiragana` is the starting station. Its interior begins with the five Japanese vowels:

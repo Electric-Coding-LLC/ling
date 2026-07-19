@@ -19,9 +19,9 @@ const MOBILE_HIRAGANA_X = NETWORK_SEGMENT_LENGTH;
 const MOBILE_MORA_X = MOBILE_HIRAGANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_VIEW_WIDTH = MOBILE_MORA_X;
 const NETWORK_VIEW_HEIGHT = 440;
-const KATAKANA_Y = 80;
-const SOUND_Y = KATAKANA_Y + NETWORK_SEGMENT_LENGTH;
-const SCRIPT_LABEL_Y = KATAKANA_Y + NETWORK_SEGMENT_LENGTH / 2;
+const SOUND_Y = 180;
+const KATAKANA_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
+const SCRIPT_LABEL_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH / 2;
 const MOBILE_SWIPE_THRESHOLD = 40;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
@@ -39,8 +39,8 @@ const STATION_NEIGHBORS: Record<
   StationFocus,
   Partial<Record<StationDirection, StationFocus>>
 > = {
-  hiragana: { ArrowRight: "mora", ArrowUp: "katakana" },
-  katakana: { ArrowDown: "hiragana" },
+  hiragana: { ArrowDown: "katakana", ArrowRight: "mora" },
+  katakana: { ArrowUp: "hiragana" },
   mora: { ArrowLeft: "hiragana" },
 };
 
@@ -243,8 +243,8 @@ function NetworkView({
               strokeWidth="24"
               x1={hiraganaX}
               x2={hiraganaX}
-              y1={KATAKANA_Y + NETWORK_LINE_NODE_OFFSET}
-              y2={SOUND_Y - NETWORK_INTERCHANGE_NODE_OFFSET}
+              y1={SOUND_Y + NETWORK_INTERCHANGE_NODE_OFFSET}
+              y2={KATAKANA_Y - NETWORK_LINE_NODE_OFFSET}
             />
             <line
               aria-hidden="true"
@@ -252,8 +252,8 @@ function NetworkView({
               pointerEvents="none"
               x1={hiraganaX}
               x2={hiraganaX}
-              y1={KATAKANA_Y + NETWORK_LINE_NODE_OFFSET}
-              y2={SOUND_Y - NETWORK_INTERCHANGE_NODE_OFFSET}
+              y1={SOUND_Y + NETWORK_INTERCHANGE_NODE_OFFSET}
+              y2={KATAKANA_Y - NETWORK_LINE_NODE_OFFSET}
             />
           </g>
         </>
@@ -308,10 +308,10 @@ function NetworkView({
           <stop offset="1" stopColor="#4c689c" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={`${backlightId}-junction`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#4c689c" stopOpacity="0.76" />
-          <stop offset="0.48" stopColor="#4c689c" stopOpacity="0.68" />
-          <stop offset="0.52" stopColor="#db4e3a" stopOpacity="0.64" />
-          <stop offset="1" stopColor="#db4e3a" stopOpacity="0.72" />
+          <stop offset="0" stopColor="#db4e3a" stopOpacity="0.72" />
+          <stop offset="0.48" stopColor="#db4e3a" stopOpacity="0.64" />
+          <stop offset="0.52" stopColor="#4c689c" stopOpacity="0.68" />
+          <stop offset="1" stopColor="#4c689c" stopOpacity="0.76" />
         </linearGradient>
         <radialGradient id={`${backlightId}-falloff`}>
           <stop offset="0" stopColor="white" stopOpacity="0.72" />

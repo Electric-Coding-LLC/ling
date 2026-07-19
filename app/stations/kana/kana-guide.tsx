@@ -81,7 +81,7 @@ export function KanaGuide() {
       <audio onError={() => setAudioError(true)} preload="none" ref={audioRef} />
 
       <div className="station-intro kana-intro">
-        <p><strong>Kana is the name for Japan&apos;s two sound-based writing systems: Hiragana and Katakana.</strong> They represent the same sounds with different shapes.</p>
+        <p><strong>Kana is the collective name for Hiragana and Katakana.</strong> They are two sets of characters used to write how Japanese words sound. Both sets represent the same sounds with different shapes.</p>
         <p>Hiragana is used for everyday Japanese words and grammar. Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects.</p>
       </div>
 

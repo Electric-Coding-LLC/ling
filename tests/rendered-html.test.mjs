@@ -126,8 +126,9 @@ test("server-renders the Kana orientation", async () => {
   assert.match(html, /class="station-map-writing"/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);
   assert.match(html, /data-line="writing"[^>]*>Writing</i);
-  assert.match(html, /Kana is the name for Japan(?:&apos;|&#x27;|')s two sound-based writing systems: Hiragana and Katakana/i);
-  assert.match(html, /They represent the same sounds with different shapes/i);
+  assert.match(html, /Kana is the collective name for Hiragana and Katakana/i);
+  assert.match(html, /used to write how Japanese words sound/i);
+  assert.match(html, /Both sets represent the same sounds with different shapes/i);
   assert.match(html, /Hiragana is used for everyday Japanese words and grammar/i);
   assert.match(html, /Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects/i);
   assert.doesNotMatch(html, /<dl|<dt|<dd/i);

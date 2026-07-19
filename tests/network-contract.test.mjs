@@ -264,8 +264,9 @@ test("the Kana station introduces both writing systems through the five vowels",
   assert.equal(new Set(audioPaths).size, 10);
   assert.match(page, /data-line="sound"/);
   assert.match(page, /data-line="writing"/);
-  assert.match(source, /Kana is the name for Japan&apos;s two sound-based writing systems: Hiragana and Katakana/);
-  assert.match(source, /They represent the same sounds with different shapes/);
+  assert.match(source, /Kana is the collective name for Hiragana and Katakana/);
+  assert.match(source, /used to write how Japanese words sound/);
+  assert.match(source, /Both sets represent the same sounds with different shapes/);
   assert.match(source, /Hiragana is used for everyday Japanese words and grammar/);
   assert.match(source, /Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects/);
   assert.match(source, /className="kana-table-intro"/);

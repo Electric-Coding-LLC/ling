@@ -296,7 +296,7 @@ export function HiraganaGuide() {
               <thead>
                 <tr>
                   <th scope="col">Kana</th>
-                  <th scope="col">English</th>
+                  <th scope="col">Sound</th>
                   <th scope="col">Example</th>
                   <th scope="col">Translation</th>
                 </tr>

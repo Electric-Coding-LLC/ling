@@ -12,12 +12,17 @@ export default async function Home({
 }) {
   const { focus } = await searchParams;
   const initialStationFocus: StationFocus | undefined =
-    focus === "mora-timing"
+    focus === "katakana"
+      ? "katakana"
+      : focus === "mora-timing"
       ? "mora"
       : focus === "hiragana" || focus === "vowels"
         ? "hiragana"
         : undefined;
-  const moraTimingAvailable = await isStationAvailableToCurrentUser("mora-timing");
+  const [katakanaAvailable, moraTimingAvailable] = await Promise.all([
+    isStationAvailableToCurrentUser("katakana"),
+    isStationAvailableToCurrentUser("mora-timing"),
+  ]);
 
   return (
     <main className="shell">
@@ -32,6 +37,7 @@ export default async function Home({
         </h1>
         <NetworkMap
           initialStationFocus={initialStationFocus}
+          katakanaAvailable={katakanaAvailable}
           moraTimingAvailable={moraTimingAvailable}
         />
       </section>

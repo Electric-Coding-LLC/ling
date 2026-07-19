@@ -47,6 +47,7 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /data-tooltip="Script line"/i);
   assert.doesNotMatch(html, /<title>(?:Sound|Script) line<\/title>/i);
   assert.doesNotMatch(html, /data-station="mora-timing"/i);
+  assert.doesNotMatch(html, /data-station="katakana"/i);
   assert.match(html, /data-station="hiragana"/i);
   assert.doesNotMatch(html, /data-station="vowels"/i);
   assert.match(html, /data-station="hiragana"[^>]*data-station-kind="single-line"/i);
@@ -70,6 +71,12 @@ test("server-renders only station locations the learner has revealed", async () 
   assert.match(html, /data-mobile-focus="hiragana"/i);
   assert.doesNotMatch(html, /network-mobile-track-mora/i);
 
+  const katakanaResponse = await request("/?focus=katakana");
+  assert.equal(katakanaResponse.status, 200);
+  const katakanaHtml = await katakanaResponse.text();
+  assert.match(katakanaHtml, /data-mobile-focus="hiragana"/i);
+  assert.doesNotMatch(katakanaHtml, /data-station="katakana"/i);
+
   const hiraganaResponse = await request("/?focus=hiragana");
   assert.equal(hiraganaResponse.status, 200);
   const hiraganaHtml = await hiraganaResponse.text();
@@ -89,6 +96,12 @@ test("redirects Mora timing until Hiragana has been introduced", async () => {
   assert.match(response.headers.get("location") ?? "", /\/\?focus=mora-timing$/i);
 });
 
+test("redirects Katakana until Hiragana has been introduced", async () => {
+  const response = await request("/stations/katakana");
+  assert.ok([307, 308].includes(response.status));
+  assert.match(response.headers.get("location") ?? "", /\/\?focus=katakana$/i);
+});
+
 test("server-renders the basic Hiragana reference", async () => {
   const response = await request("/stations/hiragana");
   assert.equal(response.status, 200);
@@ -103,9 +116,9 @@ test("server-renders the basic Hiragana reference", async () => {
   assert.match(html, /data-position="hiragana"/i);
   assert.doesNotMatch(html, /data-terminal="true"/i);
   assert.match(html, /class="station-map-sound"/i);
-  assert.doesNotMatch(html, /class="station-map-script"/i);
+  assert.match(html, /class="station-map-script"/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);
-  assert.doesNotMatch(html, /data-line="script"[^>]*>Script</i);
+  assert.match(html, /data-line="script"[^>]*>Script</i);
   assert.match(html, /aria-label="The 46 basic hiragana"/i);
   assert.match(html, /aria-label="Column of sounds ending in あ"[^>]*>.*>あ<.*aria-label="Column of sounds ending in い"[^>]*>.*>い<.*aria-label="Column of sounds ending in う"[^>]*>.*>う<.*aria-label="Column of sounds ending in え"[^>]*>.*>え<.*aria-label="Column of sounds ending in お"[^>]*>.*>お</is);
   assert.doesNotMatch(html, /[あいうえお]段/);
@@ -127,7 +140,8 @@ test("server-renders the basic Hiragana reference", async () => {
   assert.match(html, /The R row/i);
   assert.match(html, /The W row and ん/i);
   assert.doesNotMatch(html, /The next five sounds/i);
-  assert.match(html, /<th scope="col">English<\/th>/i);
+  assert.match(html, /<th scope="col">Sound<\/th>/i);
+  assert.doesNotMatch(html, /<th scope="col">English<\/th>/i);
   assert.doesNotMatch(html, /English cue|>car<|>key<|>coo<|>kept<|>coat</i);
   assert.match(html, />ah<.*>ee<.*>oo<.*>eh<.*>oh</is);
   assert.match(html, />kah<.*>kee<.*>koo<.*>keh<.*>koh</is);
@@ -170,4 +184,12 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(introduction.status, 401);
   assert.equal(introduction.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await introduction.json(), { error: "unauthorized" });
+
+  const katakanaIntroduction = await request(
+    "/api/stations/katakana/introduction",
+    { method: "POST" },
+  );
+  assert.equal(katakanaIntroduction.status, 401);
+  assert.equal(katakanaIntroduction.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await katakanaIntroduction.json(), { error: "unauthorized" });
 });

@@ -47,10 +47,19 @@
   stroke: var(--sound);
 }
 
+.station-map-script {
+  stroke: var(--script);
+  stroke-width: 3;
+}
+
 .station-map-current {
   fill: var(--surface);
   stroke: var(--foreground);
   stroke-width: 2;
+}
+
+.station-map-interchange {
+  stroke-width: 2.5;
 }
 
 .station-page {
@@ -64,7 +73,8 @@
 }
 
 .station-page-mora .station-heading,
-.station-page-hiragana .station-heading {
+.station-page-hiragana .station-heading,
+.station-page-katakana .station-heading {
   margin-bottom: 1.25rem;
 }
 
@@ -95,6 +105,10 @@
   color: var(--sound);
 }
 
+.station-membership-script {
+  color: var(--script);
+}
+
 .station-heading h1 {
   margin: 0;
   font-size: clamp(2.25rem, 7vw, 3.5rem);
@@ -103,7 +117,8 @@
 }
 
 .mora-guide audio,
-.hiragana-guide audio {
+.hiragana-guide audio,
+.katakana-guide audio {
   display: none;
 }
 
@@ -449,6 +464,85 @@
   width: 20%;
 }
 
+.katakana-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.katakana-intro p {
+  margin: 0;
+}
+
+.katakana-table {
+  width: min(100%, 38rem);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.katakana-table th {
+  padding: 0 0 0.65rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.katakana-table td {
+  height: 5rem;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.katakana-button {
+  display: flex;
+  width: calc(100% - 0.35rem);
+  height: 4.65rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+}
+
+.katakana-button:hover {
+  color: var(--muted);
+}
+
+.katakana-button:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.katakana-character {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.katakana-match {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.katakana-empty {
+  background: rgb(242 241 235 / 0.015);
+}
+
+.katakana-final .katakana-button {
+  width: 20%;
+  margin-inline: auto;
+}
+
 @media (max-width: 600px) {
   .station-page {
     padding: 1.5rem 1.25rem 2.5rem;
@@ -459,7 +553,8 @@
   }
 
   .station-page-mora .station-heading,
-  .station-page-hiragana .station-heading {
+  .station-page-hiragana .station-heading,
+  .station-page-katakana .station-heading {
     margin-bottom: 1rem;
   }
 
@@ -559,5 +654,25 @@
   .hiragana-button {
     height: 2.8rem;
     font-size: 1.45rem;
+  }
+
+  .katakana-table th {
+    font-size: 0.8rem;
+  }
+
+  .katakana-table td {
+    height: 4.5rem;
+  }
+
+  .katakana-button {
+    height: 4.15rem;
+  }
+
+  .katakana-character {
+    font-size: 1.45rem;
+  }
+
+  .katakana-match {
+    font-size: 0.625rem;
   }
 }

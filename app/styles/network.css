@@ -16,6 +16,9 @@
 .network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
   [data-station="mora-timing"]
   .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="katakana"]
+  [data-station="katakana"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="hiragana"]
   [data-station="hiragana"]
   .network-station-backlight {
@@ -49,6 +52,10 @@
   fill: var(--sound);
 }
 
+.network-line-label-script {
+  fill: var(--script);
+}
+
 .network-line {
   stroke-width: 6;
   stroke-linecap: round;
@@ -80,15 +87,31 @@
   stroke: var(--sound);
 }
 
+.network-line-script {
+  stroke: var(--script);
+}
+
 .network-station-label {
   fill: var(--foreground);
   text-anchor: middle;
 }
 
+.network-interchange-outer,
+.network-interchange-inner,
 .network-single-station-outer,
 .network-single-station-inner {
   fill: var(--surface);
   vector-effect: non-scaling-stroke;
+}
+
+.network-interchange-outer {
+  stroke: var(--foreground);
+  stroke-width: 3;
+}
+
+.network-interchange-inner {
+  stroke: var(--foreground);
+  stroke-width: 5;
 }
 
 .network-single-station-outer {
@@ -97,6 +120,10 @@
 
 .network-single-station-outer-sound {
   stroke: var(--sound);
+}
+
+.network-single-station-outer-script {
+  stroke: var(--script);
 }
 
 .network-single-station-inner {
@@ -147,6 +174,9 @@
 
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
     [data-station="mora-timing"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="katakana"]
+    [data-station="katakana"]
     .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="hiragana"]
     [data-station="hiragana"]

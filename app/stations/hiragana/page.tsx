@@ -11,6 +11,9 @@ export default function HiraganaPage() {
             <span className="station-membership station-membership-sound" data-line="sound">
               Sound
             </span>
+            <span className="station-membership station-membership-script" data-line="script">
+              Script
+            </span>
           </div>
           <h1>Hiragana</h1>
         </header>

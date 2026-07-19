@@ -1,10 +1,11 @@
-export const STATION_IDS = ["hiragana", "mora-timing"] as const;
+export const STATION_IDS = ["hiragana", "katakana", "mora-timing"] as const;
 
 export type StationId = (typeof STATION_IDS)[number];
 
 export const STATION_PREREQUISITES: Partial<
   Record<StationId, readonly StationId[]>
 > = {
+  katakana: ["hiragana"],
   "mora-timing": ["hiragana"],
 };
 

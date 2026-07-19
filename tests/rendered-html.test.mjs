@@ -46,29 +46,29 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /data-tooltip="Sound line"/i);
   assert.doesNotMatch(html, /data-tooltip="Script line"/i);
   assert.doesNotMatch(html, /<title>(?:Sound|Script) line<\/title>/i);
-  assert.match(html, /data-station="mora-timing"/i);
+  assert.doesNotMatch(html, /data-station="mora-timing"/i);
   assert.match(html, /data-station="hiragana"/i);
   assert.doesNotMatch(html, /data-station="vowels"/i);
   assert.match(html, /data-station="hiragana"[^>]*data-station-kind="single-line"/i);
-  assert.match(html, /data-station="mora-timing"[^>]*data-station-kind="single-line"/i);
-  assert.match(html, /href="\/stations\/mora-timing"/i);
+  assert.doesNotMatch(html, /data-station="mora-timing"[^>]*data-station-kind="single-line"/i);
+  assert.doesNotMatch(html, /href="\/stations\/mora-timing"/i);
   assert.match(html, /href="\/stations\/hiragana"/i);
-  assert.equal((html.match(/aria-disabled="true"/gi) ?? []).length, 2);
-  assert.equal((html.match(/data-available="false"/gi) ?? []).length, 2);
-  assert.match(html, /Learn Hiragana to activate Mora timing/i);
+  assert.doesNotMatch(html, /aria-disabled="true"|data-available=/i);
+  assert.doesNotMatch(html, /Learn Hiragana to activate Mora timing/i);
+  assert.match(html, /Hiragana is the first explored station on the Sound line/i);
   assert.doesNotMatch(html, /After Hiragana/i);
   assert.match(html, /alt="Ling"/i);
   assert.doesNotMatch(html, /aria-label="Ready"/i);
   assert.doesNotMatch(html, /Your site is taking shape|Codex is working|react-loading-skeleton/i);
 });
 
-test("server-renders the network at a linked station location", async () => {
+test("server-renders only station locations the learner has revealed", async () => {
   const response = await request("/?focus=mora-timing");
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /data-mobile-focus="mora"/i);
-  assert.match(html, /network-mobile-track-mora/i);
+  assert.match(html, /data-mobile-focus="hiragana"/i);
+  assert.doesNotMatch(html, /network-mobile-track-mora/i);
 
   const hiraganaResponse = await request("/?focus=hiragana");
   assert.equal(hiraganaResponse.status, 200);

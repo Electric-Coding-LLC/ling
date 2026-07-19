@@ -11,6 +11,7 @@ type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 
 // A station-to-station edge uses one visual unit unless its meaning requires otherwise.
 const NETWORK_SEGMENT_LENGTH = 180;
+const NETWORK_LINE_NODE_OFFSET = 18;
 const DESKTOP_HIRAGANA_X = 250;
 const DESKTOP_MORA_X = DESKTOP_HIRAGANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_HIRAGANA_X = NETWORK_SEGMENT_LENGTH;
@@ -21,7 +22,6 @@ const SOUND_Y = 180;
 const MOBILE_SWIPE_THRESHOLD = 40;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
-const MORA_UNAVAILABLE_REASON = "Learn Hiragana to activate Mora timing";
 const ROUTABLE_STATION_HREFS = {
   hiragana: "/stations/hiragana",
   mora: "/stations/mora-timing",
@@ -45,7 +45,6 @@ type NetworkViewProps = {
   onLinePointerLeave: () => void;
   onStationFocus: (focus: StationFocus) => void;
   onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
-  onUnavailableStation: () => void;
 };
 
 function readStoredStationFocus(): StationFocus | null {
@@ -78,36 +77,27 @@ function storeStationFocus(focus: StationFocus) {
 }
 
 function LinkedStation({
-  available = true,
   backlightId,
   label,
   href,
   onFocus,
   onPointerLeave,
-  onTooltipPointerMove,
-  onUnavailable,
   slug,
-  unavailableReason,
   x,
   y = SOUND_Y,
 }: {
-  available?: boolean;
   backlightId: string;
   label: string;
   href: string;
   onFocus: () => void;
   onPointerLeave: () => void;
-  onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
-  onUnavailable?: () => void;
   slug: string;
-  unavailableReason?: string;
   x: number;
   y?: number;
 }) {
   const station = (
     <g
-      className={`network-station${available ? "" : " network-station-unavailable"}`}
-      data-available={available}
+      className="network-station"
       data-station={slug}
       data-station-kind="single-line"
       transform={`translate(${x} ${y})`}
@@ -128,28 +118,12 @@ function LinkedStation({
 
   return (
     <Link
-      aria-disabled={available ? undefined : true}
-      aria-label={available ? `Open ${label}` : `${label}, unavailable. ${unavailableReason}`}
+      aria-label={`Open ${label}`}
       className="network-station-link"
       href={href}
-      onClick={(event) => {
-        if (available) return;
-        event.preventDefault();
-        onUnavailable?.();
-      }}
       onFocus={onFocus}
-      onPointerEnter={(event) => {
-        if (!available && unavailableReason) {
-          onTooltipPointerMove(event, unavailableReason);
-        }
-      }}
       onPointerLeave={onPointerLeave}
-      onPointerMove={(event) => {
-        if (!available && unavailableReason) {
-          onTooltipPointerMove(event, unavailableReason);
-        }
-      }}
-      prefetch={available}
+      prefetch
     >
       {station}
     </Link>
@@ -163,7 +137,6 @@ function NetworkView({
   onLinePointerLeave,
   onStationFocus,
   onTooltipPointerMove,
-  onUnavailableStation,
 }: NetworkViewProps) {
   const width = mobile ? MOBILE_VIEW_WIDTH : 1000;
   const hiraganaX = mobile ? MOBILE_HIRAGANA_X : DESKTOP_HIRAGANA_X;
@@ -183,56 +156,46 @@ function NetworkView({
       >
         SOUND
       </text>
-      <g className="network-line-target">
-        <line
-          aria-label={moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON}
-          className={`network-line-hit${moraTimingAvailable ? "" : " network-line-hit-unavailable"}`}
-          data-tooltip={moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON}
-          onPointerEnter={(event) =>
-            onTooltipPointerMove(
-              event,
-              moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON,
-            )
-          }
+      {moraTimingAvailable ? (
+        <g className="network-line-target">
+          <line
+            aria-label="Sound line"
+            className="network-line-hit"
+            data-tooltip="Sound line"
+            onPointerEnter={(event) => onTooltipPointerMove(event, "Sound line")}
+            onPointerLeave={onLinePointerLeave}
+            onPointerMove={(event) => onTooltipPointerMove(event, "Sound line")}
+            pointerEvents="stroke"
+            stroke="transparent"
+            strokeWidth="24"
+            x1={hiraganaX + NETWORK_LINE_NODE_OFFSET}
+            x2={moraX - NETWORK_LINE_NODE_OFFSET}
+            y1={SOUND_Y}
+            y2={SOUND_Y}
+          />
+          <line
+            aria-hidden="true"
+            className="network-line network-line-sound"
+            pointerEvents="none"
+            x1={hiraganaX + NETWORK_LINE_NODE_OFFSET}
+            x2={moraX - NETWORK_LINE_NODE_OFFSET}
+            y1={SOUND_Y}
+            y2={SOUND_Y}
+          />
+        </g>
+      ) : null}
+      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.hiragana} label="Hiragana" onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} slug="hiragana" x={hiraganaX} />
+      {moraTimingAvailable ? (
+        <LinkedStation
+          backlightId={backlightId}
+          href={ROUTABLE_STATION_HREFS.mora}
+          label="Mora timing"
+          onFocus={() => onStationFocus("mora")}
           onPointerLeave={onLinePointerLeave}
-          onPointerMove={(event) =>
-            onTooltipPointerMove(
-              event,
-              moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON,
-            )
-          }
-          pointerEvents="stroke"
-          stroke="transparent"
-          strokeWidth="24"
-          x1={hiraganaX}
-          x2={moraX}
-          y1={SOUND_Y}
-          y2={SOUND_Y}
+          slug="mora-timing"
+          x={moraX}
         />
-        <line
-          aria-hidden="true"
-          className={`network-line network-line-sound${moraTimingAvailable ? "" : " network-line-unavailable"}`}
-          pointerEvents="none"
-          x1={hiraganaX}
-          x2={moraX}
-          y1={SOUND_Y}
-          y2={SOUND_Y}
-        />
-      </g>
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.hiragana} label="Hiragana" onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} onTooltipPointerMove={onTooltipPointerMove} slug="hiragana" x={hiraganaX} />
-      <LinkedStation
-        available={moraTimingAvailable}
-        backlightId={backlightId}
-        href={ROUTABLE_STATION_HREFS.mora}
-        label="Mora timing"
-        onFocus={() => onStationFocus("mora")}
-        onPointerLeave={onLinePointerLeave}
-        onTooltipPointerMove={onTooltipPointerMove}
-        onUnavailable={onUnavailableStation}
-        slug="mora-timing"
-        unavailableReason={MORA_UNAVAILABLE_REASON}
-        x={moraX}
-      />
+      ) : null}
     </>
   );
 
@@ -253,7 +216,9 @@ function NetworkView({
         </radialGradient>
       </defs>
       <desc id={`${view}-network-description`}>
-        Hiragana begins the Sound line, which continues to Mora timing.
+        {moraTimingAvailable
+          ? "Hiragana begins the Sound line, which continues to Mora timing."
+          : "Hiragana is the first explored station on the Sound line."}
       </desc>
       {mobile ? (
         <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>
@@ -280,7 +245,11 @@ export function NetworkMap({
   const [selectedStationFocus, setSelectedStationFocus] = useState<StationFocus | null>(
     initialStationFocus ?? null,
   );
-  const stationFocus = selectedStationFocus ?? storedStationFocus;
+  const requestedStationFocus = selectedStationFocus ?? storedStationFocus;
+  const stationFocus =
+    requestedStationFocus === "mora" && !moraTimingAvailable
+      ? "hiragana"
+      : requestedStationFocus;
   const mobileFocus: MobileFocus = stationFocus;
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
   const desktopViewport = useRef<HTMLDivElement>(null);
@@ -289,8 +258,10 @@ export function NetworkMap({
   const dragged = useRef(false);
 
   useEffect(() => {
-    if (initialStationFocus) storeStationFocus(initialStationFocus);
-  }, [initialStationFocus]);
+    if (initialStationFocus === "hiragana" || moraTimingAvailable) {
+      if (initialStationFocus) storeStationFocus(initialStationFocus);
+    }
+  }, [initialStationFocus, moraTimingAvailable]);
 
   useEffect(() => {
     if (document.activeElement !== document.body) return;
@@ -307,14 +278,10 @@ export function NetworkMap({
   }
 
   function openStation(focus: StationFocus) {
-    if (focus === "mora" && !moraTimingAvailable) return;
     router.push(ROUTABLE_STATION_HREFS[focus]);
   }
 
-  const stationAnnouncement =
-    stationFocus === "mora" && !moraTimingAvailable
-      ? `Mora timing selected. ${MORA_UNAVAILABLE_REASON}.`
-      : `${STATION_LABELS[stationFocus]} selected`;
+  const stationAnnouncement = `${STATION_LABELS[stationFocus]} selected`;
 
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -337,7 +304,7 @@ export function NetworkMap({
 
     const distance = event.clientX - start.x;
     if (dragged.current) {
-      if (distance <= -MOBILE_SWIPE_THRESHOLD) {
+      if (distance <= -MOBILE_SWIPE_THRESHOLD && moraTimingAvailable) {
         selectStation("mora");
       }
       if (distance >= MOBILE_SWIPE_THRESHOLD) {
@@ -393,7 +360,9 @@ export function NetworkMap({
     ) {
       event.preventDefault();
       const nextFocus = STATION_NEIGHBORS[stationFocus][direction];
-      if (nextFocus) selectStation(nextFocus);
+      if (nextFocus && (nextFocus !== "mora" || moraTimingAvailable)) {
+        selectStation(nextFocus);
+      }
       return;
     }
 
@@ -418,7 +387,7 @@ export function NetworkMap({
     ) {
       event.preventDefault();
       const nextFocus = STATION_NEIGHBORS[stationFocus][direction];
-      if (!nextFocus) return;
+      if (!nextFocus || (nextFocus === "mora" && !moraTimingAvailable)) return;
 
       selectStation(nextFocus);
       getStationTarget(event.currentTarget, nextFocus).focus();
@@ -435,7 +404,6 @@ export function NetworkMap({
       const stationLink =
         focusedStationLink ?? getStationTarget(event.currentTarget, stationFocus);
       if (!(stationLink instanceof SVGAElement)) return;
-      if (stationLink.getAttribute("aria-disabled") === "true") return;
       router.push(stationLink.href.baseVal);
     }
   }
@@ -457,7 +425,6 @@ export function NetworkMap({
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
           onTooltipPointerMove={onTooltipPointerMove}
-          onUnavailableStation={() => selectStation("mora")}
         />
         <span aria-live="polite" className="sr-only">
           {stationAnnouncement}
@@ -490,7 +457,6 @@ export function NetworkMap({
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
           onTooltipPointerMove={onTooltipPointerMove}
-          onUnavailableStation={() => selectStation("mora")}
         />
         <span aria-live="polite" className="sr-only">
           {stationAnnouncement}

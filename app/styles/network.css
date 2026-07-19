@@ -80,15 +80,6 @@
   stroke: var(--sound);
 }
 
-.network-line-unavailable {
-  stroke: var(--muted);
-  opacity: 0.46;
-}
-
-.network-line-hit-unavailable {
-  cursor: help;
-}
-
 .network-station-label {
   fill: var(--foreground);
   text-anchor: middle;
@@ -137,24 +128,6 @@
 
 .network-station-link:focus-visible .network-station-backlight {
   opacity: 1;
-}
-
-.network-station-link[aria-disabled="true"] {
-  cursor: help;
-}
-
-.network-station-unavailable .network-station-backlight {
-  display: none;
-}
-
-.network-station-unavailable .network-station-label {
-  fill: var(--muted);
-}
-
-.network-station-unavailable .network-single-station-outer,
-.network-station-unavailable .network-single-station-inner {
-  stroke: var(--muted);
-  stroke-opacity: 0.68;
 }
 
 @media (max-width: 600px) {

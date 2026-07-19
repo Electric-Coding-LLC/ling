@@ -29,6 +29,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   const styles = await readFile(new URL("app/styles/network.css", root), "utf8");
 
   assert.match(source, /NETWORK_SEGMENT_LENGTH\s*=\s*180/);
+  assert.match(source, /NETWORK_LINE_NODE_OFFSET\s*=\s*18/);
   assert.match(source, /DESKTOP_HIRAGANA_X\s*=\s*250/);
   assert.match(source, /DESKTOP_MORA_X\s*=\s*DESKTOP_HIRAGANA_X \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /MOBILE_HIRAGANA_X\s*=\s*NETWORK_SEGMENT_LENGTH/);
@@ -36,8 +37,8 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /MOBILE_VIEW_WIDTH\s*=\s*MOBILE_MORA_X/);
   assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*360/);
   assert.match(source, /viewBox=\{`0 0 \$\{width\} \$\{NETWORK_VIEW_HEIGHT\}`\}/);
-  assert.equal((source.match(/x2=\{moraX\}/g) ?? []).length, 2);
-  assert.equal((source.match(/x1=\{hiraganaX\}/g) ?? []).length, 2);
+  assert.equal((source.match(/x2=\{moraX - NETWORK_LINE_NODE_OFFSET\}/g) ?? []).length, 2);
+  assert.equal((source.match(/x1=\{hiraganaX \+ NETWORK_LINE_NODE_OFFSET\}/g) ?? []).length, 2);
   assert.match(source, /data-line="sound"[\s\S]*?dominantBaseline="middle"[\s\S]*?textAnchor="end"[\s\S]*?x=\{hiraganaX - 48\}[\s\S]*?y=\{SOUND_Y\}/);
   assert.doesNotMatch(source, /x1="0"|network-line-script|data-line="script"/);
   assert.doesNotMatch(source, /x2=\{mobile \? 720 : 1000\}/);
@@ -49,7 +50,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.hiragana\}/);
   assert.match(source, /import Link from "next\/link"/);
   assert.match(source, /import \{ useRouter \} from "next\/navigation"/);
-  assert.match(source, /<Link[\s\S]*className="network-station-link"[\s\S]*prefetch=\{available\}/);
+  assert.match(source, /<Link[\s\S]*className="network-station-link"[\s\S]*prefetch/);
   assert.doesNotMatch(source, /<a[^>]*className="network-station-link"/);
   assert.match(source, /MOBILE_SWIPE_THRESHOLD\s*=\s*40/);
   assert.match(source, /STATION_FOCUS_STORAGE_KEY\s*=\s*"ling:network-station-focus"/);
@@ -58,7 +59,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /window\.dispatchEvent\(new Event\(STATION_FOCUS_EVENT\)\)/);
   assert.match(source, /window\.addEventListener\("storage", onStoreChange\)/);
   assert.match(source, /if \(initialStationFocus\) storeStationFocus\(initialStationFocus\)/);
-  assert.match(source, /const stationFocus = selectedStationFocus \?\? storedStationFocus/);
+  assert.match(source, /const requestedStationFocus = selectedStationFocus \?\? storedStationFocus/);
   assert.match(source, /const mobileFocus: MobileFocus = stationFocus/);
   assert.doesNotMatch(source, /const \[(?:desktopFocus|mobileStationFocus),/);
   assert.match(page, /focus === "hiragana" \|\| focus === "vowels"/);
@@ -124,12 +125,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(styles, /\.network-station-backlight\s*\{[^}]*opacity:\s*0[^}]*transition:\s*opacity 160ms ease/s);
   assert.match(styles, /\.network-station-link:hover \.network-station-backlight\s*\{[^}]*opacity:\s*0\.55/s);
   assert.match(styles, /\.network-station-link:focus-visible \.network-station-backlight/);
-  assert.match(styles, /\.network-line-unavailable\s*\{[^}]*stroke:\s*var\(--muted\)[^}]*opacity:\s*0\.46/s);
-  assert.match(styles, /\.network-line-hit-unavailable\s*\{[^}]*cursor:\s*help/s);
-  assert.match(styles, /\.network-station-unavailable \.network-station-backlight\s*\{[^}]*display:\s*none/s);
-  assert.match(styles, /\.network-station-unavailable \.network-station-label\s*\{[^}]*fill:\s*var\(--muted\)/s);
-  assert.match(styles, /\.network-station-unavailable \.network-single-station-outer,[\s\S]*stroke-opacity:\s*0\.68/s);
-  assert.doesNotMatch(styles, /\.network-station-unavailable\s*\{[^}]*opacity:/s);
+  assert.doesNotMatch(styles, /network-(?:line-hit-|line-|station-)unavailable|aria-disabled/);
   assert.doesNotMatch(styles, /\.network-station-focus/);
   assert.doesNotMatch(styles, /drop-shadow\(/);
 });
@@ -167,11 +163,10 @@ test("Mora timing depends on an account-scoped Hiragana introduction", async () 
   assert.match(hiragana, /fetch\("\/api\/stations\/hiragana\/introduction"/);
   assert.match(hiragana, /useEffect\(\(\) => \{/);
   assert.doesNotMatch(hiragana, /Continue to Mora timing|station-next/);
-  assert.match(source, /MORA_UNAVAILABLE_REASON = "Learn Hiragana to activate Mora timing"/);
-  assert.match(source, /network-line-unavailable/);
-  assert.match(source, /unavailableReason=\{MORA_UNAVAILABLE_REASON\}/);
-  assert.match(source, /aria-disabled=\{available \? undefined : true\}/);
-  assert.match(source, /if \(focus === "mora" && !moraTimingAvailable\) return/);
+  assert.match(source, /\{moraTimingAvailable \? \([\s\S]*?className="network-line-target"/);
+  assert.match(source, /requestedStationFocus === "mora" && !moraTimingAvailable[\s\S]*?\? "hiragana"/);
+  assert.match(source, /nextFocus !== "mora" \|\| moraTimingAvailable/);
+  assert.doesNotMatch(source, /MORA_UNAVAILABLE_REASON|network-line-unavailable|unavailableReason|aria-disabled/);
   assert.doesNotMatch(source, /After Hiragana|network-station-dependency/);
   assert.doesNotMatch(hiragana, /score|streak|timer|progress meter/i);
 });

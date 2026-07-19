@@ -94,7 +94,7 @@ Sound    Hiragana ── Mora timing
 
 Each study row shows a hiragana form, plays its isolated sound, provides one playable Japanese example word, and remains directly revisitable without staged gates.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. The Sound line begins at `Hiragana` and continues to `Mora timing`. A Script line should appear only when another real station creates a path; add no line segments for speculative geography.
+This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Hiragana` alone, then reveals the segment to `Mora timing` after the learner explores Hiragana. Future stations and connecting segments stay hidden until their preceding station has been explored. Do not use faint or inactive geography, and add no line segments for speculative stations.
 
 ## Current Station Interiors
 

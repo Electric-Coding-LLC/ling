@@ -178,7 +178,7 @@ function NetworkView({
         data-line="sound"
         dominantBaseline="middle"
         textAnchor="end"
-        x={hiraganaX - 24}
+        x={hiraganaX - 48}
         y={SOUND_Y}
       >
         SOUND

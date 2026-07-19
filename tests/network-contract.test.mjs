@@ -38,7 +38,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /viewBox=\{`0 0 \$\{width\} \$\{NETWORK_VIEW_HEIGHT\}`\}/);
   assert.equal((source.match(/x2=\{moraX\}/g) ?? []).length, 2);
   assert.equal((source.match(/x1=\{hiraganaX\}/g) ?? []).length, 2);
-  assert.match(source, /data-line="sound"[\s\S]*?dominantBaseline="middle"[\s\S]*?textAnchor="end"[\s\S]*?x=\{hiraganaX - 24\}[\s\S]*?y=\{SOUND_Y\}/);
+  assert.match(source, /data-line="sound"[\s\S]*?dominantBaseline="middle"[\s\S]*?textAnchor="end"[\s\S]*?x=\{hiraganaX - 48\}[\s\S]*?y=\{SOUND_Y\}/);
   assert.doesNotMatch(source, /x1="0"|network-line-script|data-line="script"/);
   assert.doesNotMatch(source, /x2=\{mobile \? 720 : 1000\}/);
   assert.match(source, /data-line="sound"/);

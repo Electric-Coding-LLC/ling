@@ -93,7 +93,6 @@
 
 .network-station-label {
   fill: var(--foreground);
-  text-anchor: middle;
 }
 
 .network-interchange-outer,

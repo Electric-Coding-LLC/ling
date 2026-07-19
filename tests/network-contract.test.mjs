@@ -43,7 +43,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.equal((source.match(/x2=\{moraX - NETWORK_LINE_NODE_OFFSET\}/g) ?? []).length, 2);
   assert.equal((source.match(/x1=\{hiraganaX \+ hiraganaLineOffset\}/g) ?? []).length, 2);
   assert.match(source, /data-line="sound"[\s\S]*?dominantBaseline="middle"[\s\S]*?textAnchor="end"[\s\S]*?x=\{hiraganaX - 48\}[\s\S]*?y=\{SOUND_Y\}/);
-  assert.match(source, /data-line="script"[\s\S]*?x=\{hiraganaX - 48\}[\s\S]*?y=\{SCRIPT_LABEL_Y\}/);
+  assert.match(source, /data-line="script"[\s\S]*?x=\{hiraganaX - 20\}[\s\S]*?y=\{SCRIPT_LABEL_Y\}/);
   assert.equal((source.match(/y1=\{SOUND_Y \+ NETWORK_INTERCHANGE_NODE_OFFSET\}/g) ?? []).length, 2);
   assert.equal((source.match(/y2=\{KATAKANA_Y - NETWORK_LINE_NODE_OFFSET\}/g) ?? []).length, 2);
   assert.doesNotMatch(source, /<line\b(?=[^>]*x1="0")/);
@@ -56,6 +56,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.mora\}/);
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.hiragana\}/);
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.katakana\}/);
+  assert.match(source, /label="Katakana"\s*labelPlacement="right"/);
   assert.match(source, /import Link from "next\/link"/);
   assert.match(source, /import \{ useRouter \} from "next\/navigation"/);
   assert.match(source, /<Link[\s\S]*className="network-station-link"[\s\S]*prefetch/);

@@ -97,6 +97,7 @@ function LinkedStation({
   backlightId,
   kind,
   label,
+  labelPlacement = "above",
   href,
   onFocus,
   onPointerLeave,
@@ -107,6 +108,7 @@ function LinkedStation({
   backlightId: string;
   kind: "interchange" | "script" | "sound";
   label: string;
+  labelPlacement?: "above" | "right";
   href: string;
   onFocus: () => void;
   onPointerLeave: () => void;
@@ -128,7 +130,13 @@ function LinkedStation({
         mask={interchange ? `url(#${backlightId}-mask)` : undefined}
         r={interchange ? 76 : 58}
       />
-      <text className="network-station-label" y={interchange ? -48 : -36}>
+      <text
+        className={`network-station-label network-station-label-${labelPlacement}`}
+        dominantBaseline={labelPlacement === "right" ? "middle" : undefined}
+        textAnchor={labelPlacement === "right" ? "start" : "middle"}
+        x={labelPlacement === "right" ? 26 : 0}
+        y={labelPlacement === "right" ? 0 : interchange ? -48 : -36}
+      >
         {label}
       </text>
       {interchange ? (
@@ -225,7 +233,7 @@ function NetworkView({
             data-line="script"
             dominantBaseline="middle"
             textAnchor="end"
-            x={hiraganaX - 48}
+            x={hiraganaX - 20}
             y={SCRIPT_LABEL_Y}
           >
             SCRIPT
@@ -265,6 +273,7 @@ function NetworkView({
           href={ROUTABLE_STATION_HREFS.katakana}
           kind="script"
           label="Katakana"
+          labelPlacement="right"
           onFocus={() => onStationFocus("katakana")}
           onPointerLeave={onLinePointerLeave}
           slug="katakana"

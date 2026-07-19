@@ -232,7 +232,9 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.doesNotMatch(source, /[あいうえお]段/);
   assert.match(source, /title: "The five vowels"/);
   assert.match(source, /title: "The next five sounds"/);
-  assert.match(source, /English words are only nearby sound cues; follow the audio/);
+  assert.match(source, /English spellings are approximate; follow the audio/);
+  assert.match(source, /english: "ah".*english: "ee".*english: "oo".*english: "eh".*english: "oh"/s);
+  assert.match(source, /english: "kah".*english: "kee".*english: "koo".*english: "keh".*english: "koh"/s);
   assert.match(source, /あさ.*いぬ.*うみ.*えき.*おと/s);
   assert.match(source, /かさ.*きく.*くち.*けさ.*こえ/s);
   assert.match(source, /preload="none"/);

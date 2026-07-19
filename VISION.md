@@ -98,7 +98,7 @@ This seed is a valid piece of the eventual network, not a disposable prototype. 
 
 ## Current Station Interiors
 
-`Hiragana` presents the complete 46-character basic chart without romaji. Every kana plays bundled synthetic pronunciation directly. Beneath that overview, compact study groups pair each clickable kana with a nearby English sound cue, one playable Japanese example word, and that word's translation. The first group absorbs the former Vowels station and establishes that Japanese vowels stay comparatively steady and vowel length can change meaning; the second applies the same pattern to `か き く け こ`.
+`Hiragana` presents the complete 46-character basic chart without Japanese romanization. Every kana plays bundled synthetic pronunciation directly. Beneath that overview, compact study groups pair each clickable kana with an approximate English pronunciation spelling, one playable Japanese example word, and that word's translation. The first group absorbs the former Vowels station and establishes that Japanese vowels stay comparatively steady and vowel length can change meaning; the second applies the same pattern to `か き く け こ`.
 
 `Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. Every visible timing unit is independently playable. Its examples make small combined kana, long vowels, and `ん` perceptible without introducing a score, timer, or staged exercise.
 

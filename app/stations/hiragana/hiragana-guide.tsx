@@ -81,11 +81,11 @@ const HIRAGANA_STUDY_GROUPS = [
   {
     description: "Japanese has five clear, steady vowels.",
     entries: [
-      { cue: "a", example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ", kanaAudio: "/audio/ja-a.wav", translation: "morning" },
-      { cue: "i", example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い", kanaAudio: "/audio/ja-i.wav", translation: "dog" },
-      { cue: "u", example: "うみ", exampleAudio: "/audio/ja-umi.wav", kana: "う", kanaAudio: "/audio/ja-u.wav", translation: "sea" },
-      { cue: "e", example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え", kanaAudio: "/audio/ja-e.wav", translation: "station" },
-      { cue: "o", example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お", kanaAudio: "/audio/ja-o.wav", translation: "sound" },
+      { english: "ah", example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ", kanaAudio: "/audio/ja-a.wav", translation: "morning" },
+      { english: "ee", example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い", kanaAudio: "/audio/ja-i.wav", translation: "dog" },
+      { english: "oo", example: "うみ", exampleAudio: "/audio/ja-umi.wav", kana: "う", kanaAudio: "/audio/ja-u.wav", translation: "sea" },
+      { english: "eh", example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え", kanaAudio: "/audio/ja-e.wav", translation: "station" },
+      { english: "oh", example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お", kanaAudio: "/audio/ja-o.wav", translation: "sound" },
     ],
     id: "hiragana-vowels",
     title: "The five vowels",
@@ -93,11 +93,11 @@ const HIRAGANA_STUDY_GROUPS = [
   {
     description: "These add a short consonant sound before the same five vowels.",
     entries: [
-      { cue: "car", example: "かさ", exampleAudio: "/audio/ja-kasa.wav", kana: "か", kanaAudio: "/audio/ja-ka.wav", translation: "umbrella" },
-      { cue: "key", example: "きく", exampleAudio: "/audio/ja-kiku.wav", kana: "き", kanaAudio: "/audio/ja-ki.wav", translation: "listen" },
-      { cue: "coo", example: "くち", exampleAudio: "/audio/ja-kuchi.wav", kana: "く", kanaAudio: "/audio/ja-ku.wav", translation: "mouth" },
-      { cue: "kept", example: "けさ", exampleAudio: "/audio/ja-kesa.wav", kana: "け", kanaAudio: "/audio/ja-ke.wav", translation: "this morning" },
-      { cue: "coat", example: "こえ", exampleAudio: "/audio/ja-koe.wav", kana: "こ", kanaAudio: "/audio/ja-ko.wav", translation: "voice" },
+      { english: "kah", example: "かさ", exampleAudio: "/audio/ja-kasa.wav", kana: "か", kanaAudio: "/audio/ja-ka.wav", translation: "umbrella" },
+      { english: "kee", example: "きく", exampleAudio: "/audio/ja-kiku.wav", kana: "き", kanaAudio: "/audio/ja-ki.wav", translation: "listen" },
+      { english: "koo", example: "くち", exampleAudio: "/audio/ja-kuchi.wav", kana: "く", kanaAudio: "/audio/ja-ku.wav", translation: "mouth" },
+      { english: "keh", example: "けさ", exampleAudio: "/audio/ja-kesa.wav", kana: "け", kanaAudio: "/audio/ja-ke.wav", translation: "this morning" },
+      { english: "koh", example: "こえ", exampleAudio: "/audio/ja-koe.wav", kana: "こ", kanaAudio: "/audio/ja-ko.wav", translation: "voice" },
     ],
     id: "hiragana-next-five",
     title: "The next five sounds",
@@ -187,7 +187,7 @@ export function HiraganaGuide() {
       <section aria-labelledby="hiragana-groups-title" className="hiragana-groups">
         <header className="hiragana-groups-heading">
           <h2 id="hiragana-groups-title">Hear them in words</h2>
-          <p>Start with the first ten. Tap a kana or example to hear it. English words are only nearby sound cues; follow the audio.</p>
+          <p>Start with the first ten. Tap a kana or example to hear it. English spellings are approximate; follow the audio.</p>
         </header>
 
         {HIRAGANA_STUDY_GROUPS.map((group) => (
@@ -204,7 +204,7 @@ export function HiraganaGuide() {
               <thead>
                 <tr>
                   <th scope="col">Kana</th>
-                  <th scope="col">English cue</th>
+                  <th scope="col">English</th>
                   <th scope="col">Example</th>
                   <th scope="col">Translation</th>
                 </tr>
@@ -222,7 +222,7 @@ export function HiraganaGuide() {
                         <span lang="ja">{entry.kana}</span>
                       </button>
                     </td>
-                    <td className="kana-study-cue">{entry.cue}</td>
+                    <td className="kana-study-cue">{entry.english}</td>
                     <td>
                       <button
                         aria-label={`Play example word ${entry.example}`}

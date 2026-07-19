@@ -118,6 +118,10 @@ test("server-renders the basic Hiragana reference", async () => {
   assert.match(html, /Hear them in words/i);
   assert.match(html, /The five vowels/i);
   assert.match(html, /The next five sounds/i);
+  assert.match(html, /<th scope="col">English<\/th>/i);
+  assert.doesNotMatch(html, /English cue|>car<|>key<|>coo<|>kept<|>coat</i);
+  assert.match(html, />ah<.*>ee<.*>oo<.*>eh<.*>oh</is);
+  assert.match(html, />kah<.*>kee<.*>koo<.*>keh<.*>koh</is);
   assert.equal((html.match(/class="kana-study-button kana-study-kana-button"/gi) ?? []).length, 10);
   assert.equal((html.match(/class="kana-study-button kana-study-example-button"/gi) ?? []).length, 10);
   assert.match(html, /あさ.*いぬ.*うみ.*えき.*おと/is);

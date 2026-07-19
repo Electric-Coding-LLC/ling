@@ -176,9 +176,10 @@ function NetworkView({
       <text
         className="network-line-label network-line-label-sound"
         data-line="sound"
+        dominantBaseline="middle"
         textAnchor="end"
         x={hiraganaX - 24}
-        y={SOUND_Y - 16}
+        y={SOUND_Y}
       >
         SOUND
       </text>

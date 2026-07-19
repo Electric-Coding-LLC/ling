@@ -9,12 +9,11 @@ export default function Loading() {
           <span>Ling</span>
         </div>
         <svg aria-hidden="true" className="loading-network" viewBox="0 0 180 72">
-          <path className="loading-network-sound" d="M8 24h164" />
-          <path className="loading-network-script" d="M90 24v40" />
+          <path className="loading-network-sound" d="M90 24h70" />
           <circle className="loading-network-terminal" cx="160" cy="24" r="6" />
           <g className="loading-network-pulse">
-            <circle className="loading-network-interchange-outer" cx="90" cy="24" r="11" />
-            <circle className="loading-network-interchange-inner" cx="90" cy="24" r="5" />
+            <circle className="loading-network-station-outer" cx="90" cy="24" r="6" />
+            <circle className="loading-network-station-inner" cx="90" cy="24" r="3" />
           </g>
         </svg>
         <p>Opening your network…</p>

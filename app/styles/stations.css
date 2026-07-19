@@ -39,17 +39,12 @@
   opacity: 0.78;
 }
 
-.station-map-sound,
-.station-map-script {
+.station-map-sound {
   stroke-width: 3;
 }
 
 .station-map-sound {
   stroke: var(--sound);
-}
-
-.station-map-script {
-  stroke: var(--script);
 }
 
 .station-map-current {
@@ -98,10 +93,6 @@
 
 .station-membership-sound {
   color: var(--sound);
-}
-
-.station-membership-script {
-  color: var(--script);
 }
 
 .station-heading h1 {

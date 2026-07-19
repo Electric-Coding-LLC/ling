@@ -40,8 +40,7 @@
   stroke-linejoin: round;
 }
 
-.loading-network-sound,
-.loading-network-script {
+.loading-network-sound {
   stroke-width: 4;
 }
 
@@ -49,13 +48,9 @@
   stroke: var(--sound);
 }
 
-.loading-network-script {
-  stroke: var(--script);
-}
-
 .loading-network-terminal,
-.loading-network-interchange-outer,
-.loading-network-interchange-inner {
+.loading-network-station-outer,
+.loading-network-station-inner {
   fill: var(--surface);
   vector-effect: non-scaling-stroke;
 }
@@ -65,16 +60,16 @@
   stroke-width: 3;
 }
 
-.loading-network-interchange-outer,
-.loading-network-interchange-inner {
+.loading-network-station-outer,
+.loading-network-station-inner {
   stroke: var(--foreground);
 }
 
-.loading-network-interchange-outer {
+.loading-network-station-outer {
   stroke-width: 3;
 }
 
-.loading-network-interchange-inner {
+.loading-network-station-inner {
   stroke-width: 4;
 }
 

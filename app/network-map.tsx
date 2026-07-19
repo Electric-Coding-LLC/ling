@@ -18,8 +18,6 @@ const MOBILE_MORA_X = MOBILE_HIRAGANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_VIEW_WIDTH = MOBILE_MORA_X;
 const NETWORK_VIEW_HEIGHT = 360;
 const SOUND_Y = 180;
-const SCRIPT_START_Y = 0;
-const SCRIPT_LABEL_Y = SOUND_Y / 2 + 6;
 const MOBILE_SWIPE_THRESHOLD = 40;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
@@ -82,11 +80,8 @@ function storeStationFocus(focus: StationFocus) {
 function LinkedStation({
   available = true,
   backlightId,
-  interchange = false,
   label,
-  labelPosition = "above",
   href,
-  line,
   onFocus,
   onPointerLeave,
   onTooltipPointerMove,
@@ -98,11 +93,8 @@ function LinkedStation({
 }: {
   available?: boolean;
   backlightId: string;
-  interchange?: boolean;
   label: string;
-  labelPosition?: "above" | "side";
   href: string;
-  line: "sound" | "script";
   onFocus: () => void;
   onPointerLeave: () => void;
   onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
@@ -112,39 +104,24 @@ function LinkedStation({
   x: number;
   y?: number;
 }) {
-  const labelY = labelPosition === "side" ? 6 : interchange ? -48 : -36;
   const station = (
     <g
       className={`network-station${available ? "" : " network-station-unavailable"}`}
       data-available={available}
       data-station={slug}
-      data-station-kind={interchange ? "interchange" : "single-line"}
+      data-station-kind="single-line"
       transform={`translate(${x} ${y})`}
     >
       <circle
         className="network-station-backlight"
-        fill={`url(#${backlightId}-${interchange ? "junction" : line})`}
-        mask={interchange ? `url(#${backlightId}-mask)` : undefined}
-        r={interchange ? 76 : 58}
+        fill={`url(#${backlightId}-sound)`}
+        r="58"
       />
-      <text
-        className={`network-station-label${labelPosition === "side" ? " network-station-label-side" : ""}`}
-        x={labelPosition === "side" ? 38 : 0}
-        y={labelY}
-      >
+      <text className="network-station-label" y="-36">
         {label}
       </text>
-      {interchange ? (
-        <>
-          <circle className="network-interchange-outer" r="28" />
-          <circle className="network-interchange-inner" r="16" />
-        </>
-      ) : (
-        <>
-          <circle className={`network-single-station-outer network-single-station-outer-${line}`} r="15" />
-          <circle className="network-single-station-inner" r="7" />
-        </>
-      )}
+      <circle className="network-single-station-outer network-single-station-outer-sound" r="15" />
+      <circle className="network-single-station-inner" r="7" />
       <circle className="network-station-hit" r="48" />
     </g>
   );
@@ -196,35 +173,9 @@ function NetworkView({
 
   const network = (
     <>
-      <text className="network-line-label network-line-label-sound" data-line="sound" x={mobile ? 24 : 32} y={SOUND_Y - 16}>
+      <text className="network-line-label network-line-label-sound" data-line="sound" x={hiraganaX + 24} y={SOUND_Y - 16}>
         SOUND
       </text>
-      <g className="network-line-target">
-        <line
-          aria-label="Sound line"
-          className="network-line-hit"
-          data-tooltip="Sound line"
-          onPointerEnter={(event) => onTooltipPointerMove(event, "Sound line")}
-          onPointerLeave={onLinePointerLeave}
-          onPointerMove={(event) => onTooltipPointerMove(event, "Sound line")}
-          pointerEvents="stroke"
-          stroke="transparent"
-          strokeWidth="24"
-          x1="0"
-          x2={hiraganaX}
-          y1={SOUND_Y}
-          y2={SOUND_Y}
-        />
-        <line
-          aria-hidden="true"
-          className="network-line network-line-sound"
-          pointerEvents="none"
-          x1="0"
-          x2={hiraganaX}
-          y1={SOUND_Y}
-          y2={SOUND_Y}
-        />
-      </g>
       <g className="network-line-target">
         <line
           aria-label={moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON}
@@ -261,42 +212,12 @@ function NetworkView({
           y2={SOUND_Y}
         />
       </g>
-      <g className="network-line-target">
-        <line
-          aria-label="Script line"
-          className="network-line-hit"
-          data-tooltip="Script line"
-          onPointerEnter={(event) => onTooltipPointerMove(event, "Script line")}
-          onPointerLeave={onLinePointerLeave}
-          onPointerMove={(event) => onTooltipPointerMove(event, "Script line")}
-          pointerEvents="stroke"
-          stroke="transparent"
-          strokeWidth="24"
-          x1={hiraganaX}
-          x2={hiraganaX}
-          y1={SCRIPT_START_Y}
-          y2={SOUND_Y}
-        />
-        <line
-          aria-hidden="true"
-          className="network-line network-line-script"
-          pointerEvents="none"
-          x1={hiraganaX}
-          x2={hiraganaX}
-          y1={SCRIPT_START_Y}
-          y2={SOUND_Y}
-        />
-      </g>
-      <text className="network-line-label network-line-label-script" data-line="script" x={hiraganaX - 24} y={SCRIPT_LABEL_Y}>
-        SCRIPT
-      </text>
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.hiragana} interchange label="Hiragana" line="sound" onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} onTooltipPointerMove={onTooltipPointerMove} slug="hiragana" x={hiraganaX} />
+      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.hiragana} label="Hiragana" onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} onTooltipPointerMove={onTooltipPointerMove} slug="hiragana" x={hiraganaX} />
       <LinkedStation
         available={moraTimingAvailable}
         backlightId={backlightId}
         href={ROUTABLE_STATION_HREFS.mora}
         label="Mora timing"
-        line="sound"
         onFocus={() => onStationFocus("mora")}
         onPointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
@@ -311,7 +232,7 @@ function NetworkView({
   return (
     <svg
       aria-describedby={`${view}-network-description`}
-      aria-label="Sound and Script network"
+      aria-label="Sound network"
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
@@ -323,35 +244,9 @@ function NetworkView({
           <stop offset="0.48" stopColor="#db4e3a" stopOpacity="0.2" />
           <stop offset="1" stopColor="#db4e3a" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id={`${backlightId}-script`}>
-          <stop offset="0" stopColor="#4c689c" stopOpacity="0.46" />
-          <stop offset="0.48" stopColor="#4c689c" stopOpacity="0.22" />
-          <stop offset="1" stopColor="#4c689c" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id={`${backlightId}-junction`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#db4e3a" stopOpacity="0.72" />
-          <stop offset="0.48" stopColor="#db4e3a" stopOpacity="0.64" />
-          <stop offset="0.52" stopColor="#4c689c" stopOpacity="0.68" />
-          <stop offset="1" stopColor="#4c689c" stopOpacity="0.76" />
-        </linearGradient>
-        <radialGradient id={`${backlightId}-falloff`}>
-          <stop offset="0" stopColor="white" stopOpacity="0.72" />
-          <stop offset="0.5" stopColor="white" stopOpacity="0.34" />
-          <stop offset="1" stopColor="white" stopOpacity="0" />
-        </radialGradient>
-        <mask
-          height="160"
-          id={`${backlightId}-mask`}
-          maskUnits="userSpaceOnUse"
-          width="160"
-          x="-80"
-          y="-80"
-        >
-          <circle fill={`url(#${backlightId}-falloff)`} r="80" />
-        </mask>
       </defs>
       <desc id={`${view}-network-description`}>
-        Hiragana connects the Sound line to the Script line. Sound continues to Mora timing.
+        Hiragana begins the Sound line, which continues to Mora timing.
       </desc>
       {mobile ? (
         <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>

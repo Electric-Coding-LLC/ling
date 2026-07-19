@@ -35,13 +35,12 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /MOBILE_MORA_X\s*=\s*MOBILE_HIRAGANA_X \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /MOBILE_VIEW_WIDTH\s*=\s*MOBILE_MORA_X/);
   assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*360/);
-  assert.match(source, /SCRIPT_START_Y\s*=\s*0/);
-  assert.match(source, /SCRIPT_LABEL_Y\s*=\s*SOUND_Y \/ 2 \+ 6/);
   assert.match(source, /viewBox=\{`0 0 \$\{width\} \$\{NETWORK_VIEW_HEIGHT\}`\}/);
   assert.equal((source.match(/x2=\{moraX\}/g) ?? []).length, 2);
+  assert.equal((source.match(/x1=\{hiraganaX\}/g) ?? []).length, 2);
+  assert.doesNotMatch(source, /x1="0"|network-line-script|data-line="script"/);
   assert.doesNotMatch(source, /x2=\{mobile \? 720 : 1000\}/);
   assert.match(source, /data-line="sound"/);
-  assert.match(source, /data-line="script"[^>]*x=\{hiraganaX - 24\}[^>]*y=\{SCRIPT_LABEL_Y\}/);
   assert.match(source, /mora:\s*"\/stations\/mora-timing"/);
   assert.match(source, /hiragana:\s*"\/stations\/hiragana"/);
   assert.doesNotMatch(source, /vowels:\s*"\/stations\/vowels"/);
@@ -99,11 +98,9 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.doesNotMatch(source, /network-station-focus-ring/);
   assert.match(source, /const backlightId = `\$\{view\}-station-backlight`/);
   assert.equal((source.match(/className="network-station-backlight"/g) ?? []).length, 1);
-  assert.match(source, /<linearGradient id=\{`\$\{backlightId\}-junction`\}/);
-  assert.match(source, /<mask[\s\S]*id=\{`\$\{backlightId\}-mask`\}/);
-  assert.match(source, /fill=\{`url\(#\$\{backlightId\}-\$\{interchange \? "junction" : line\}\)`\}/);
+  assert.match(source, /fill=\{`url\(#\$\{backlightId\}-sound\)`\}/);
   assert.match(source, /stopColor="#db4e3a"/);
-  assert.match(source, /stopColor="#4c689c"/);
+  assert.doesNotMatch(source, /stopColor="#4c689c"|interchange|junction/);
   assert.doesNotMatch(source, /stopColor="#f2f1eb" stopOpacity="0\.38"/);
   assert.match(source, /event\.target\s*!==\s*event\.currentTarget\s*&&\s*!focusedStationLink/);
   assert.match(source, /event\.key\s*===\s*"Enter"\s*\|\|\s*event\.key\s*===\s*" "/);
@@ -141,8 +138,9 @@ test("station map glyphs reflect each station's network position", async () => {
 
   assert.match(
     source,
-    /position === "hiragana"[\s\S]*station-map-sound[\s\S]*station-map-script[\s\S]*cy="8" r="4"/,
+    /position === "hiragana"[\s\S]*station-map-sound[\s\S]*cy="12" r="4"/,
   );
+  assert.doesNotMatch(source, /station-map-script/);
 });
 
 test("Mora timing depends on an account-scoped Hiragana introduction", async () => {

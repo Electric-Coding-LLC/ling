@@ -80,15 +80,13 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## First Seed Network
 
-Begin with two lines and two stations:
+Begin with one line and two stations:
 
 ```text
 Sound    Hiragana ── Mora timing
-             │
-Script       │
 ```
 
-`Hiragana` is the interchange. Its interior begins with the five Japanese vowels:
+`Hiragana` is the starting station. Its interior begins with the five Japanese vowels:
 
 ```text
 あ  い  う  え  お
@@ -96,7 +94,7 @@ Script       │
 
 Each study row shows a hiragana form, plays its isolated sound, provides one playable Japanese example word, and remains directly revisitable without staged gates.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. `Hiragana` is the starting interchange, connecting sound and writing. The Sound line continues to `Mora timing`; add adjacent stations only when real study creates the need.
+This seed is a valid piece of the eventual network, not a disposable prototype. The Sound line begins at `Hiragana` and continues to `Mora timing`. A Script line should appear only when another real station creates a path; add no line segments for speculative geography.
 
 ## Current Station Interiors
 

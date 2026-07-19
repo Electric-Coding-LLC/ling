@@ -13,9 +13,6 @@
   outline: none;
 }
 
-.network-desktop-viewport:focus-visible[data-desktop-focus="vowels"]
-  [data-station="vowels"]
-  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
   [data-station="mora-timing"]
   .network-station-backlight,
@@ -88,6 +85,15 @@
   stroke: var(--sound);
 }
 
+.network-line-unavailable {
+  stroke: var(--muted);
+  opacity: 0.46;
+}
+
+.network-line-hit-unavailable {
+  cursor: help;
+}
+
 .network-line-script {
   stroke: var(--script);
 }
@@ -154,17 +160,30 @@
   outline: none;
 }
 
-.network-station-focus:focus-visible {
-  outline: none;
-}
-
 .network-station-link:hover .network-station-backlight {
   opacity: 0.55;
 }
 
-.network-station-link:focus-visible .network-station-backlight,
-.network-station-focus:focus-visible .network-station-backlight {
+.network-station-link:focus-visible .network-station-backlight {
   opacity: 1;
+}
+
+.network-station-link[aria-disabled="true"] {
+  cursor: help;
+}
+
+.network-station-unavailable .network-station-backlight {
+  display: none;
+}
+
+.network-station-unavailable .network-station-label {
+  fill: var(--muted);
+}
+
+.network-station-unavailable .network-single-station-outer,
+.network-station-unavailable .network-single-station-inner {
+  stroke: var(--muted);
+  stroke-opacity: 0.68;
 }
 
 @media (max-width: 600px) {
@@ -182,9 +201,6 @@
     outline: none;
   }
 
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="vowels"]
-    [data-station="vowels"]
-    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
     [data-station="mora-timing"]
     .network-station-backlight,

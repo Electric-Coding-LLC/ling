@@ -24,3 +24,15 @@ export const userIdentities = sqliteTable(
     index("user_identities_user_id_idx").on(table.userId),
   ],
 );
+
+export const stationIntroductions = sqliteTable(
+  "station_introductions",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    stationId: text("station_id").notNull(),
+    introducedAt: integer("introduced_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.stationId] })],
+);

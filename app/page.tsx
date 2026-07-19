@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { LingWordmark } from "./brand";
-import { NetworkMap, type MobileFocus } from "./network-map";
+import { NetworkMap, type StationFocus } from "./network-map";
+import { isStationAvailableToCurrentUser } from "./station-availability";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home({
   searchParams,
@@ -8,8 +11,13 @@ export default async function Home({
   searchParams: Promise<{ focus?: string | string[] }>;
 }) {
   const { focus } = await searchParams;
-  const initialMobileFocus: MobileFocus | undefined =
-    focus === "mora-timing" ? "mora" : focus === "vowels" ? "vowels" : undefined;
+  const initialStationFocus: StationFocus | undefined =
+    focus === "mora-timing"
+      ? "mora"
+      : focus === "hiragana" || focus === "vowels"
+        ? "hiragana"
+        : undefined;
+  const moraTimingAvailable = await isStationAvailableToCurrentUser("mora-timing");
 
   return (
     <main className="shell">
@@ -22,7 +30,10 @@ export default async function Home({
         <h1 className="sr-only" id="network-title">
           Japanese mastery network
         </h1>
-        <NetworkMap initialMobileFocus={initialMobileFocus} />
+        <NetworkMap
+          initialStationFocus={initialStationFocus}
+          moraTimingAvailable={moraTimingAvailable}
+        />
       </section>
     </main>
   );

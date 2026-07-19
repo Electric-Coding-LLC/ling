@@ -1,21 +1,32 @@
 import Link from "next/link";
 import { LingWordmark } from "../brand";
 
-type NetworkPosition = "vowels" | "mora-timing";
+type NetworkPosition = "hiragana" | "mora-timing";
 
 function NetworkGlyph({ position }: { position: NetworkPosition }) {
-  const isVowels = position === "vowels";
+  if (position === "hiragana") {
+    return (
+      <svg
+        aria-hidden="true"
+        data-position={position}
+        viewBox="0 0 40 24"
+      >
+        <path className="station-map-sound" d="M2 8h36" />
+        <path className="station-map-script" d="M20 8v14" />
+        <circle className="station-map-current" cx="20" cy="8" r="4" />
+      </svg>
+    );
+  }
 
   return (
     <svg
       aria-hidden="true"
       data-position={position}
-      data-terminal={isVowels ? undefined : "true"}
+      data-terminal="true"
       viewBox="0 0 40 24"
     >
-      <path className="station-map-sound" d={isVowels ? "M2 8h36" : "M2 12h30"} />
-      {isVowels ? <path className="station-map-script" d="M20 8v14" /> : null}
-      <circle className="station-map-current" cx={isVowels ? 20 : 32} cy={isVowels ? 8 : 12} r="4" />
+      <path className="station-map-sound" d="M2 12h30" />
+      <circle className="station-map-current" cx="32" cy="12" r="4" />
     </svg>
   );
 }

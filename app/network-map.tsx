@@ -5,64 +5,64 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
 
-export type MobileFocus = "vowels" | "mora";
-
-type StationFocus = MobileFocus | "hiragana";
+type MobileFocus = "hiragana" | "mora";
+export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 
 // A station-to-station edge uses one visual unit unless its meaning requires otherwise.
 const NETWORK_SEGMENT_LENGTH = 180;
-const DESKTOP_VOWELS_X = 250;
-const DESKTOP_MORA_X = DESKTOP_VOWELS_X + NETWORK_SEGMENT_LENGTH;
-const MOBILE_VOWELS_X = NETWORK_SEGMENT_LENGTH;
-const MOBILE_MORA_X = MOBILE_VOWELS_X + NETWORK_SEGMENT_LENGTH;
+const DESKTOP_HIRAGANA_X = 250;
+const DESKTOP_MORA_X = DESKTOP_HIRAGANA_X + NETWORK_SEGMENT_LENGTH;
+const MOBILE_HIRAGANA_X = NETWORK_SEGMENT_LENGTH;
+const MOBILE_MORA_X = MOBILE_HIRAGANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_VIEW_WIDTH = MOBILE_MORA_X;
+const NETWORK_VIEW_HEIGHT = 360;
 const SOUND_Y = 180;
-const HIRAGANA_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
-const SCRIPT_END_Y = HIRAGANA_Y;
-const SCRIPT_LABEL_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH / 2 + 6;
+const SCRIPT_START_Y = 0;
+const SCRIPT_LABEL_Y = SOUND_Y / 2 + 6;
 const MOBILE_SWIPE_THRESHOLD = 40;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
+const MORA_UNAVAILABLE_REASON = "Learn Hiragana to activate Mora timing";
 const ROUTABLE_STATION_HREFS = {
+  hiragana: "/stations/hiragana",
   mora: "/stations/mora-timing",
-  vowels: "/stations/vowels",
 } as const;
 const STATION_LABELS: Record<StationFocus, string> = {
   hiragana: "Hiragana",
   mora: "Mora timing",
-  vowels: "Vowels",
 };
 const STATION_NEIGHBORS: Record<
   StationFocus,
   Partial<Record<StationDirection, StationFocus>>
 > = {
-  hiragana: { ArrowUp: "vowels" },
-  mora: { ArrowLeft: "vowels" },
-  vowels: { ArrowDown: "hiragana", ArrowRight: "mora" },
+  hiragana: { ArrowRight: "mora" },
+  mora: { ArrowLeft: "hiragana" },
 };
 
 type NetworkViewProps = {
   mobile?: boolean;
   mobileFocus?: MobileFocus;
+  moraTimingAvailable: boolean;
   onLinePointerLeave: () => void;
-  onLinePointerMove: (event: PointerEvent<SVGLineElement>, label: string) => void;
-  onStationFocus: (focus: MobileFocus) => void;
+  onStationFocus: (focus: StationFocus) => void;
+  onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
+  onUnavailableStation: () => void;
 };
 
 function readStoredStationFocus(): StationFocus | null {
   const storedFocus = localStorage.getItem(STATION_FOCUS_STORAGE_KEY);
-  return storedFocus === "vowels" || storedFocus === "mora" || storedFocus === "hiragana"
+  return storedFocus === "mora" || storedFocus === "hiragana"
     ? storedFocus
     : null;
 }
 
 function getStoredStationFocus(): StationFocus {
-  return readStoredStationFocus() ?? "vowels";
+  return readStoredStationFocus() ?? "hiragana";
 }
 
 function getServerStationFocus(): StationFocus {
-  return "vowels";
+  return "hiragana";
 }
 
 function subscribeToStoredStationFocus(onStoreChange: () => void) {
@@ -80,30 +80,46 @@ function storeStationFocus(focus: StationFocus) {
 }
 
 function LinkedStation({
+  available = true,
   backlightId,
   interchange = false,
   label,
+  labelPosition = "above",
   href,
   line,
   onFocus,
+  onPointerLeave,
+  onTooltipPointerMove,
+  onUnavailable,
   slug,
+  unavailableReason,
   x,
+  y = SOUND_Y,
 }: {
+  available?: boolean;
   backlightId: string;
   interchange?: boolean;
   label: string;
+  labelPosition?: "above" | "side";
   href: string;
   line: "sound" | "script";
   onFocus: () => void;
+  onPointerLeave: () => void;
+  onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
+  onUnavailable?: () => void;
   slug: string;
+  unavailableReason?: string;
   x: number;
+  y?: number;
 }) {
+  const labelY = labelPosition === "side" ? 6 : interchange ? -48 : -36;
   const station = (
     <g
-      className="network-station"
+      className={`network-station${available ? "" : " network-station-unavailable"}`}
+      data-available={available}
       data-station={slug}
       data-station-kind={interchange ? "interchange" : "single-line"}
-      transform={`translate(${x} ${SOUND_Y})`}
+      transform={`translate(${x} ${y})`}
     >
       <circle
         className="network-station-backlight"
@@ -111,7 +127,11 @@ function LinkedStation({
         mask={interchange ? `url(#${backlightId}-mask)` : undefined}
         r={interchange ? 76 : 58}
       />
-      <text className="network-station-label" x="0" y={interchange ? -48 : -36}>
+      <text
+        className={`network-station-label${labelPosition === "side" ? " network-station-label-side" : ""}`}
+        x={labelPosition === "side" ? 38 : 0}
+        y={labelY}
+      >
         {label}
       </text>
       {interchange ? (
@@ -130,7 +150,30 @@ function LinkedStation({
   );
 
   return (
-    <Link aria-label={`Open ${label}`} className="network-station-link" href={href} onFocus={onFocus} prefetch>
+    <Link
+      aria-disabled={available ? undefined : true}
+      aria-label={available ? `Open ${label}` : `${label}, unavailable. ${unavailableReason}`}
+      className="network-station-link"
+      href={href}
+      onClick={(event) => {
+        if (available) return;
+        event.preventDefault();
+        onUnavailable?.();
+      }}
+      onFocus={onFocus}
+      onPointerEnter={(event) => {
+        if (!available && unavailableReason) {
+          onTooltipPointerMove(event, unavailableReason);
+        }
+      }}
+      onPointerLeave={onPointerLeave}
+      onPointerMove={(event) => {
+        if (!available && unavailableReason) {
+          onTooltipPointerMove(event, unavailableReason);
+        }
+      }}
+      prefetch={available}
+    >
       {station}
     </Link>
   );
@@ -138,13 +181,15 @@ function LinkedStation({
 
 function NetworkView({
   mobile = false,
-  mobileFocus = "vowels",
+  mobileFocus = "hiragana",
+  moraTimingAvailable,
   onLinePointerLeave,
-  onLinePointerMove,
   onStationFocus,
+  onTooltipPointerMove,
+  onUnavailableStation,
 }: NetworkViewProps) {
   const width = mobile ? MOBILE_VIEW_WIDTH : 1000;
-  const vowelsX = mobile ? MOBILE_VOWELS_X : DESKTOP_VOWELS_X;
+  const hiraganaX = mobile ? MOBILE_HIRAGANA_X : DESKTOP_HIRAGANA_X;
   const moraX = mobile ? MOBILE_MORA_X : DESKTOP_MORA_X;
   const view = mobile ? "mobile" : "desktop";
   const backlightId = `${view}-station-backlight`;
@@ -159,14 +204,14 @@ function NetworkView({
           aria-label="Sound line"
           className="network-line-hit"
           data-tooltip="Sound line"
-          onPointerEnter={(event) => onLinePointerMove(event, "Sound line")}
+          onPointerEnter={(event) => onTooltipPointerMove(event, "Sound line")}
           onPointerLeave={onLinePointerLeave}
-          onPointerMove={(event) => onLinePointerMove(event, "Sound line")}
+          onPointerMove={(event) => onTooltipPointerMove(event, "Sound line")}
           pointerEvents="stroke"
           stroke="transparent"
           strokeWidth="24"
           x1="0"
-          x2={moraX}
+          x2={hiraganaX}
           y1={SOUND_Y}
           y2={SOUND_Y}
         />
@@ -175,6 +220,42 @@ function NetworkView({
           className="network-line network-line-sound"
           pointerEvents="none"
           x1="0"
+          x2={hiraganaX}
+          y1={SOUND_Y}
+          y2={SOUND_Y}
+        />
+      </g>
+      <g className="network-line-target">
+        <line
+          aria-label={moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON}
+          className={`network-line-hit${moraTimingAvailable ? "" : " network-line-hit-unavailable"}`}
+          data-tooltip={moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON}
+          onPointerEnter={(event) =>
+            onTooltipPointerMove(
+              event,
+              moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON,
+            )
+          }
+          onPointerLeave={onLinePointerLeave}
+          onPointerMove={(event) =>
+            onTooltipPointerMove(
+              event,
+              moraTimingAvailable ? "Sound line" : MORA_UNAVAILABLE_REASON,
+            )
+          }
+          pointerEvents="stroke"
+          stroke="transparent"
+          strokeWidth="24"
+          x1={hiraganaX}
+          x2={moraX}
+          y1={SOUND_Y}
+          y2={SOUND_Y}
+        />
+        <line
+          aria-hidden="true"
+          className={`network-line network-line-sound${moraTimingAvailable ? "" : " network-line-unavailable"}`}
+          pointerEvents="none"
+          x1={hiraganaX}
           x2={moraX}
           y1={SOUND_Y}
           y2={SOUND_Y}
@@ -185,48 +266,45 @@ function NetworkView({
           aria-label="Script line"
           className="network-line-hit"
           data-tooltip="Script line"
-          onPointerEnter={(event) => onLinePointerMove(event, "Script line")}
+          onPointerEnter={(event) => onTooltipPointerMove(event, "Script line")}
           onPointerLeave={onLinePointerLeave}
-          onPointerMove={(event) => onLinePointerMove(event, "Script line")}
+          onPointerMove={(event) => onTooltipPointerMove(event, "Script line")}
           pointerEvents="stroke"
           stroke="transparent"
           strokeWidth="24"
-          x1={vowelsX}
-          x2={vowelsX}
-          y1={SOUND_Y}
-          y2={SCRIPT_END_Y}
+          x1={hiraganaX}
+          x2={hiraganaX}
+          y1={SCRIPT_START_Y}
+          y2={SOUND_Y}
         />
         <line
           aria-hidden="true"
           className="network-line network-line-script"
           pointerEvents="none"
-          x1={vowelsX}
-          x2={vowelsX}
-          y1={SOUND_Y}
-          y2={SCRIPT_END_Y}
+          x1={hiraganaX}
+          x2={hiraganaX}
+          y1={SCRIPT_START_Y}
+          y2={SOUND_Y}
         />
       </g>
-      <text className="network-line-label network-line-label-script" data-line="script" x={vowelsX - 24} y={SCRIPT_LABEL_Y}>
+      <text className="network-line-label network-line-label-script" data-line="script" x={hiraganaX - 24} y={SCRIPT_LABEL_Y}>
         SCRIPT
       </text>
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.vowels} interchange label="Vowels" line="sound" onFocus={() => onStationFocus("vowels")} slug="vowels" x={vowelsX} />
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.mora} label="Mora timing" line="sound" onFocus={() => onStationFocus("mora")} slug="mora-timing" x={moraX} />
-      <g
-        aria-label="Hiragana station"
-        className="network-station network-station-focus"
-        data-station="hiragana"
-        data-station-kind="single-line"
-        role="img"
-        tabIndex={-1}
-        transform={`translate(${vowelsX} ${HIRAGANA_Y})`}
-      >
-        <circle className="network-station-backlight" fill={`url(#${backlightId}-script)`} r="58" />
-        <text className="network-station-label network-station-label-side" x="38" y="6">
-          Hiragana
-        </text>
-        <circle className="network-single-station-outer network-single-station-outer-script" r="15" />
-        <circle className="network-single-station-inner" r="7" />
-      </g>
+      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.hiragana} interchange label="Hiragana" line="sound" onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} onTooltipPointerMove={onTooltipPointerMove} slug="hiragana" x={hiraganaX} />
+      <LinkedStation
+        available={moraTimingAvailable}
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.mora}
+        label="Mora timing"
+        line="sound"
+        onFocus={() => onStationFocus("mora")}
+        onPointerLeave={onLinePointerLeave}
+        onTooltipPointerMove={onTooltipPointerMove}
+        onUnavailable={onUnavailableStation}
+        slug="mora-timing"
+        unavailableReason={MORA_UNAVAILABLE_REASON}
+        x={moraX}
+      />
     </>
   );
 
@@ -237,7 +315,7 @@ function NetworkView({
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
-      viewBox={`0 0 ${width} 500`}
+      viewBox={`0 0 ${width} ${NETWORK_VIEW_HEIGHT}`}
     >
       <defs>
         <radialGradient id={`${backlightId}-sound`}>
@@ -273,7 +351,7 @@ function NetworkView({
         </mask>
       </defs>
       <desc id={`${view}-network-description`}>
-        Vowels connects the Sound line to the Script line. Sound continues to Mora timing, and Script stops at Hiragana.
+        Hiragana connects the Sound line to the Script line. Sound continues to Mora timing.
       </desc>
       {mobile ? (
         <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>
@@ -284,7 +362,13 @@ function NetworkView({
   );
 }
 
-export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: MobileFocus }) {
+export function NetworkMap({
+  initialStationFocus,
+  moraTimingAvailable,
+}: {
+  initialStationFocus?: StationFocus;
+  moraTimingAvailable: boolean;
+}) {
   const router = useRouter();
   const storedStationFocus = useSyncExternalStore(
     subscribeToStoredStationFocus,
@@ -292,10 +376,10 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
     getServerStationFocus,
   );
   const [selectedStationFocus, setSelectedStationFocus] = useState<StationFocus | null>(
-    initialMobileFocus ?? null,
+    initialStationFocus ?? null,
   );
   const stationFocus = selectedStationFocus ?? storedStationFocus;
-  const mobileFocus: MobileFocus = stationFocus === "mora" ? "mora" : "vowels";
+  const mobileFocus: MobileFocus = stationFocus;
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
   const desktopViewport = useRef<HTMLDivElement>(null);
   const mobileViewport = useRef<HTMLDivElement>(null);
@@ -303,8 +387,8 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
   const dragged = useRef(false);
 
   useEffect(() => {
-    if (initialMobileFocus) storeStationFocus(initialMobileFocus);
-  }, [initialMobileFocus]);
+    if (initialStationFocus) storeStationFocus(initialStationFocus);
+  }, [initialStationFocus]);
 
   useEffect(() => {
     if (document.activeElement !== document.body) return;
@@ -319,6 +403,16 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
     setSelectedStationFocus(focus);
     storeStationFocus(focus);
   }
+
+  function openStation(focus: StationFocus) {
+    if (focus === "mora" && !moraTimingAvailable) return;
+    router.push(ROUTABLE_STATION_HREFS[focus]);
+  }
+
+  const stationAnnouncement =
+    stationFocus === "mora" && !moraTimingAvailable
+      ? `Mora timing selected. ${MORA_UNAVAILABLE_REASON}.`
+      : `${STATION_LABELS[stationFocus]} selected`;
 
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -345,7 +439,7 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
         selectStation("mora");
       }
       if (distance >= MOBILE_SWIPE_THRESHOLD) {
-        selectStation("vowels");
+        selectStation("hiragana");
       }
     }
 
@@ -363,7 +457,7 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
     }
   }
 
-  function onLinePointerMove(event: PointerEvent<SVGLineElement>, label: string) {
+  function onTooltipPointerMove(event: PointerEvent<Element>, label: string) {
     if (event.pointerType !== "mouse") return;
     const maxX = document.documentElement.clientWidth - 112;
     const maxY = document.documentElement.clientHeight - 44;
@@ -379,9 +473,7 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
     focus: StationFocus,
   ) {
     const target = container.querySelector<SVGElement>(
-      focus === "hiragana"
-        ? '[data-station="hiragana"]'
-        : `a[href="${ROUTABLE_STATION_HREFS[focus]}"]`,
+      `a[href="${ROUTABLE_STATION_HREFS[focus]}"]`,
     );
     if (!target) throw new Error(`Missing keyboard target for station: ${focus}`);
     return target;
@@ -406,9 +498,7 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
     if (event.key !== "Enter" && event.key !== " ") return;
 
     event.preventDefault();
-    if (stationFocus !== "hiragana") {
-      router.push(ROUTABLE_STATION_HREFS[stationFocus]);
-    }
+    openStation(stationFocus);
   }
 
   function onDesktopPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -441,8 +531,9 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
 
       event.preventDefault();
       const stationLink =
-        focusedStationLink ?? getStationTarget(event.currentTarget, mobileFocus);
+        focusedStationLink ?? getStationTarget(event.currentTarget, stationFocus);
       if (!(stationLink instanceof SVGAElement)) return;
+      if (stationLink.getAttribute("aria-disabled") === "true") return;
       router.push(stationLink.href.baseVal);
     }
   }
@@ -460,12 +551,14 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
         tabIndex={0}
       >
         <NetworkView
+          moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
-          onLinePointerMove={onLinePointerMove}
           onStationFocus={selectStation}
+          onTooltipPointerMove={onTooltipPointerMove}
+          onUnavailableStation={() => selectStation("mora")}
         />
         <span aria-live="polite" className="sr-only">
-          {STATION_LABELS[stationFocus]} selected
+          {stationAnnouncement}
         </span>
       </div>
       <div
@@ -491,12 +584,14 @@ export function NetworkMap({ initialMobileFocus }: { initialMobileFocus?: Mobile
         <NetworkView
           mobile
           mobileFocus={mobileFocus}
+          moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
-          onLinePointerMove={onLinePointerMove}
           onStationFocus={selectStation}
+          onTooltipPointerMove={onTooltipPointerMove}
+          onUnavailableStation={() => selectStation("mora")}
         />
         <span aria-live="polite" className="sr-only">
-          {STATION_LABELS[stationFocus]} selected
+          {stationAnnouncement}
         </span>
       </div>
       {tooltip ? (

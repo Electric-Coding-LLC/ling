@@ -1,10 +1,19 @@
+import { redirect } from "next/navigation";
+import { isStationAvailableToCurrentUser } from "../../station-availability";
 import { StationTopbar } from "../station-topbar";
+import { MoraTimingGuide } from "./mora-timing-guide";
 
-export default function MoraTimingPage() {
+export const dynamic = "force-dynamic";
+
+export default async function MoraTimingPage() {
+  if (!(await isStationAvailableToCurrentUser("mora-timing"))) {
+    redirect("/?focus=mora-timing");
+  }
+
   return (
     <main className="shell station-shell">
       <StationTopbar current="Mora timing" mapPosition="mora-timing" />
-      <div className="station-page">
+      <div className="station-page station-page-mora">
         <header className="station-heading">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-sound" data-line="sound">
@@ -13,10 +22,7 @@ export default function MoraTimingPage() {
           </div>
           <h1>Mora timing</h1>
         </header>
-        <section aria-labelledby="mora-preview-title" className="station-preview">
-          <h2 id="mora-preview-title">Mapped for later</h2>
-          <p>This station is mapped, but its lesson has not been built yet.</p>
-        </section>
+        <MoraTimingGuide />
       </div>
     </main>
   );

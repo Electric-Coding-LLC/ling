@@ -80,32 +80,31 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## First Seed Network
 
-Begin with two lines and three stations:
+Begin with two lines and two stations:
 
 ```text
-Sound    Vowels ── Mora timing
-           │
-Script   Hiragana
+Sound    Hiragana ── Mora timing
+             │
+Script       │
 ```
 
-`Vowels` is the current place. Its interior exposes the five Japanese vowels directly:
+`Hiragana` is the interchange. Its interior begins with the five Japanese vowels:
 
 ```text
 あ  い  う  え  お
 ```
 
-Each vowel row:
+Each study row shows a hiragana form, plays its isolated sound, provides one playable Japanese example word, and remains directly revisitable without staged gates.
 
-- Shows the hiragana form.
-- Plays the isolated Japanese vowel.
-- Provides one playable Japanese example word.
-- Remains directly revisitable without staged gates.
+This seed is a valid piece of the eventual network, not a disposable prototype. `Hiragana` is the starting interchange, connecting sound and writing. The Sound line continues to `Mora timing`; add adjacent stations only when real study creates the need.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. `Vowels` is the first interchange, connecting sound and writing. The Script line currently stops at `Hiragana`; add adjacent stations only when real study creates the need.
+## Current Station Interiors
 
-## First Proof
+`Hiragana` presents the complete 46-character basic chart without romaji. Every kana plays bundled synthetic pronunciation directly. Beneath that overview, compact study groups pair each clickable kana with a nearby English sound cue, one playable Japanese example word, and that word's translation. The first group absorbs the former Vowels station and establishes that Japanese vowels stay comparatively steady and vowel length can change meaning; the second applies the same pattern to `か き く け こ`.
 
-The first product slice presents `あ い う え お` as one compact reference table on the `Vowels` page. Its four columns pair each clickable kana with its English vowel, one playable Japanese example word, and that word's translation. The kana plays the bundled synthetic pronunciation at its authored speed. Two concise notes establish the useful system-level ideas: Japanese vowels stay comparatively steady, and vowel length can change meaning. The station records no score or visible progress.
+`Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. Every visible timing unit is independently playable. Its examples make small combined kana, long vowels, and `ん` perceptible without introducing a score, timer, or staged exercise.
+
+All pronunciation is bundled synthetic speech played at its authored speed. These stations record no score or visible progress.
 
 ## Not Yet
 

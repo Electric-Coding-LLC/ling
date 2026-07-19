@@ -300,8 +300,8 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /Hiragana is the everyday Kana system/);
   assert.match(source, /five vowel sounds you already know/);
   assert.match(source, /Learning them lets you sound out written Japanese/);
-  assert.match(source, /HIRAGANA_VOWEL_COLUMNS = \["あ", "い", "う", "え", "お"\]/);
-  assert.match(source, /aria-label=\{`Column of sounds ending in \$\{vowel\}`\}/);
+  assert.match(source, /HIRAGANA_VOWEL_SOUNDS = \["ah", "ee", "oo", "eh", "oh"\]/);
+  assert.match(source, /aria-label=\{`Column of sounds ending in \$\{sound\}`\}/);
   assert.doesNotMatch(source, /[あいうえお]段/);
   assert.match(source, /title: "The vowel row"/);
   assert.match(source, /title: "The K row"/);

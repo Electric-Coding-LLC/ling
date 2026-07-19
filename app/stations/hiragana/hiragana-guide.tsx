@@ -76,7 +76,7 @@ const HIRAGANA_ROWS = [
 ] as const;
 
 const FINAL_HIRAGANA = { audio: "/audio/ja-n.wav", character: "ん" } as const;
-const HIRAGANA_VOWEL_COLUMNS = ["あ", "い", "う", "え", "お"] as const;
+const HIRAGANA_VOWEL_SOUNDS = ["ah", "ee", "oo", "eh", "oh"] as const;
 const HIRAGANA_STUDY_GROUPS = [
   {
     description: "These five clear, steady vowel sounds anchor every row that follows.",
@@ -246,9 +246,9 @@ export function HiraganaGuide() {
       <table aria-label="The 46 basic hiragana" className="hiragana-table">
         <thead>
           <tr>
-            {HIRAGANA_VOWEL_COLUMNS.map((vowel) => (
-              <th aria-label={`Column of sounds ending in ${vowel}`} key={vowel} scope="col">
-                <span aria-hidden="true" lang="ja">{vowel}</span>
+            {HIRAGANA_VOWEL_SOUNDS.map((sound) => (
+              <th aria-label={`Column of sounds ending in ${sound}`} key={sound} scope="col">
+                {sound}
               </th>
             ))}
           </tr>

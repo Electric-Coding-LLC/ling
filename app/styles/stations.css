@@ -143,6 +143,54 @@
   gap: 0.65rem;
 }
 
+.kana-intro {
+  display: grid;
+  gap: 1rem;
+}
+
+.kana-intro p {
+  margin: 0;
+}
+
+.kana-systems {
+  margin: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.kana-systems > div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.75rem 0;
+}
+
+.kana-systems > div + div {
+  border-top: 1px solid var(--line);
+}
+
+.kana-systems dt {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.kana-systems dd {
+  margin: 0;
+}
+
+.kana-table-intro {
+  max-width: 32rem;
+  margin: 0 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.kana-table-intro strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
 .hiragana-intro p {
   margin: 0;
 }
@@ -578,6 +626,16 @@
 
   .kana-study-table {
     width: 100%;
+  }
+
+  .kana-systems > div {
+    grid-template-columns: 5.75rem minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .kana-table-intro {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
   }
 
   .kana-study-table th {

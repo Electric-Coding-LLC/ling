@@ -173,7 +173,13 @@ function NetworkView({
 
   const network = (
     <>
-      <text className="network-line-label network-line-label-sound" data-line="sound" x={hiraganaX + 24} y={SOUND_Y - 16}>
+      <text
+        className="network-line-label network-line-label-sound"
+        data-line="sound"
+        textAnchor="end"
+        x={hiraganaX - 24}
+        y={SOUND_Y - 16}
+      >
         SOUND
       </text>
       <g className="network-line-target">

@@ -80,33 +80,37 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-Begin with two lines and three stations:
+Begin with two lines and three visible stations:
 
 ```text
-Sound            Hiragana ── Mora timing
+Sound                Kana
                          │
-Script                   │
+Writing                  │
+                         │
+                     Hiragana
                          │
                      Katakana
 ```
 
-`Hiragana` is the starting station. Its interior begins with the five Japanese vowels:
+`Kana` is the starting station. It introduces Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
 
 ```text
-あ  い  う  え  お
+あ / ア  い / イ  う / ウ  え / エ  お / オ
 ```
 
-Each study row shows a hiragana form, plays its isolated sound, provides one playable Japanese example word, and remains directly revisitable without staged gates.
+Each study row plays the shared vowel sound, shows its paired Hiragana and Katakana forms, provides one playable Japanese example word, and remains directly revisitable without staged gates.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Hiragana` alone, then reveals the Sound segment to `Mora timing` and the Script segment to `Katakana` after the learner explores Hiragana. Future stations and connecting segments stay hidden until their preceding station has been explored. Do not use faint or inactive geography, and add no line segments for speculative stations.
+This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Kana` alone, reveals the Writing segment to `Hiragana` after the learner explores Kana, and then extends to `Katakana` after Hiragana. Future stations and connecting segments stay hidden until their preceding station has been explored. Do not use faint or inactive geography, and add no line segments for speculative stations.
 
 ## Current Station Interiors
+
+`Kana` provides the orientation needed before either character system is studied in full. It defines Kana, distinguishes Hiragana from Katakana and both from Kanji, then teaches the five vowel sounds through paired forms, bundled pronunciation, playable examples, and translations.
 
 `Hiragana` presents the complete 46-character basic chart without Japanese romanization. Every kana plays bundled synthetic pronunciation directly. Beneath that overview, compact study groups cover the vowel row and every consonant row, pairing each clickable kana with an approximate English pronunciation spelling, one playable Japanese example, and its translation. The row structure makes the repeating vowel pattern explicit while calling out irregular sounds such as `し`, `ち`, `つ`, and `ふ`.
 
 `Katakana` presents the same 46 basic sounds as a second, more angular character set. Each playable Katakana is paired directly with its familiar Hiragana form and approximate sound spelling so the learner can concentrate on connecting new shapes to known sounds.
 
-`Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. Every visible timing unit is independently playable. Its examples make small combined kana, long vowels, and `ん` perceptible without introducing a score, timer, or staged exercise.
+`Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. Every visible timing unit is independently playable. It remains hidden until the shared Kana extensions that precede it have been introduced.
 
 All pronunciation is bundled synthetic speech played at its authored speed. These stations record no score or visible progress.
 

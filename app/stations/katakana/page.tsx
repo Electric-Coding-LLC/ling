@@ -16,8 +16,8 @@ export default async function KatakanaPage() {
       <div className="station-page station-page-katakana">
         <header className="station-heading">
           <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-script" data-line="script">
-              Script
+            <span className="station-membership station-membership-writing" data-line="writing">
+              Writing
             </span>
           </div>
           <h1>Katakana</h1>

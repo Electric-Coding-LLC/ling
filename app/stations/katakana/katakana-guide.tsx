@@ -139,7 +139,7 @@ export function KatakanaGuide() {
     <section className="katakana-guide">
       <audio onError={() => setAudioError(true)} preload="none" ref={audioRef} />
       <div className="station-intro katakana-intro">
-        <p><strong>Katakana is the second basic sound-writing system of Japanese.</strong> It represents the same sounds as Hiragana, so <span lang="ja">あ</span> and <span lang="ja">ア</span> are different shapes for the same sound.</p>
+        <p><strong>Katakana is the second Kana system.</strong> It represents the same sounds as Hiragana, so <span lang="ja">あ</span> and <span lang="ja">ア</span> are different shapes for the same sound.</p>
         <p>Katakana commonly appears in borrowed words, foreign names, emphasis, and sound effects. Because the sounds are familiar, focus on connecting each new shape to the Hiragana you already know.</p>
         <p>Tap any Katakana to hear its sound. Its Hiragana match and approximate sound spelling appear underneath.</p>
       </div>

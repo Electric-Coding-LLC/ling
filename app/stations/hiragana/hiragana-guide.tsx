@@ -239,8 +239,8 @@ export function HiraganaGuide() {
     <section className="hiragana-guide">
       <audio onError={() => setAudioError(true)} preload="none" ref={audioRef} />
       <div className="station-intro hiragana-intro">
-        <p><strong>Hiragana is the basic sound-writing system of Japanese.</strong> Each character represents a spoken sound rather than a meaning. Japanese uses hiragana throughout sentences, for complete words as well as the grammatical parts around them.</p>
-        <p>There are 46 basic hiragana, arranged here under the five vowel sounds あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any kana to hear it.</p>
+        <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
+        <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
       </div>
 
       <table aria-label="The 46 basic hiragana" className="hiragana-table">

@@ -12,14 +12,17 @@ export default async function Home({
 }) {
   const { focus } = await searchParams;
   const initialStationFocus: StationFocus | undefined =
-    focus === "katakana"
+    focus === "kana" || focus === "vowels"
+      ? "kana"
+      : focus === "katakana"
       ? "katakana"
       : focus === "mora-timing"
       ? "mora"
-      : focus === "hiragana" || focus === "vowels"
+      : focus === "hiragana"
         ? "hiragana"
         : undefined;
-  const [katakanaAvailable, moraTimingAvailable] = await Promise.all([
+  const [hiraganaAvailable, katakanaAvailable, moraTimingAvailable] = await Promise.all([
+    isStationAvailableToCurrentUser("hiragana"),
     isStationAvailableToCurrentUser("katakana"),
     isStationAvailableToCurrentUser("mora-timing"),
   ]);
@@ -36,6 +39,7 @@ export default async function Home({
           Japanese mastery network
         </h1>
         <NetworkMap
+          hiraganaAvailable={hiraganaAvailable}
           initialStationFocus={initialStationFocus}
           katakanaAvailable={katakanaAvailable}
           moraTimingAvailable={moraTimingAvailable}

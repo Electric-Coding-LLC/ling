@@ -14,10 +14,10 @@ export async function POST() {
   }
 
   const user = await getOrCreateUser(identity);
-  await recordStationIntroduction(user.id, "hiragana");
+  await recordStationIntroduction(user.id, "kana");
 
   return Response.json(
-    { available: ["katakana"] },
+    { available: ["hiragana"] },
     { headers: privateNoStoreHeaders() },
   );
 }

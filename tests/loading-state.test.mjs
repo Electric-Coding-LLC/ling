@@ -16,7 +16,7 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(source, /Opening your network…/);
   assert.match(source, /loading-network-sound/);
   assert.match(source, /d="M90 24h70"/);
-  assert.doesNotMatch(source, /loading-network-script|loading-network-interchange/);
+  assert.doesNotMatch(source, /loading-network-writing|loading-network-interchange/);
   assert.doesNotMatch(source, /percent|progress|spinner/i);
 
   assert.match(loadingStyles, /\.loading-shell\s*\{[^}]*min-height:\s*100dvh/s);

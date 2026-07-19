@@ -21,6 +21,9 @@
   .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="hiragana"]
   [data-station="hiragana"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="kana"]
+  [data-station="kana"]
   .network-station-backlight {
   opacity: 1;
 }
@@ -52,8 +55,8 @@
   fill: var(--sound);
 }
 
-.network-line-label-script {
-  fill: var(--script);
+.network-line-label-writing {
+  fill: var(--writing);
 }
 
 .network-line {
@@ -87,8 +90,8 @@
   stroke: var(--sound);
 }
 
-.network-line-script {
-  stroke: var(--script);
+.network-line-writing {
+  stroke: var(--writing);
 }
 
 .network-station-label {
@@ -121,8 +124,8 @@
   stroke: var(--sound);
 }
 
-.network-single-station-outer-script {
-  stroke: var(--script);
+.network-single-station-outer-writing {
+  stroke: var(--writing);
 }
 
 .network-single-station-inner {
@@ -179,6 +182,9 @@
     .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="hiragana"]
     [data-station="hiragana"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="kana"]
+    [data-station="kana"]
     .network-station-backlight {
     opacity: 1;
   }

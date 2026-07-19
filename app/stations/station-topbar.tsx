@@ -1,9 +1,23 @@
 import Link from "next/link";
 import { LingWordmark } from "../brand";
 
-type NetworkPosition = "hiragana" | "katakana" | "mora-timing";
+type NetworkPosition = "kana" | "hiragana" | "katakana" | "mora-timing";
 
 function NetworkGlyph({ position }: { position: NetworkPosition }) {
+  if (position === "kana") {
+    return (
+      <svg
+        aria-hidden="true"
+        data-position={position}
+        viewBox="0 0 40 24"
+      >
+        <path className="station-map-writing" d="M20 8v14" />
+        <path className="station-map-sound" d="M20 8h18" />
+        <circle className="station-map-current station-map-interchange" cx="20" cy="8" r="5" />
+      </svg>
+    );
+  }
+
   if (position === "hiragana") {
     return (
       <svg
@@ -11,9 +25,8 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
         data-position={position}
         viewBox="0 0 40 24"
       >
-        <path className="station-map-script" d="M20 8v14" />
-        <path className="station-map-sound" d="M20 8h18" />
-        <circle className="station-map-current station-map-interchange" cx="20" cy="8" r="5" />
+        <path className="station-map-writing" d="M20 2v20" />
+        <circle className="station-map-current" cx="20" cy="12" r="4" />
       </svg>
     );
   }
@@ -26,7 +39,7 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
         data-terminal="true"
         viewBox="0 0 40 24"
       >
-        <path className="station-map-script" d="M20 2v17" />
+        <path className="station-map-writing" d="M20 2v17" />
         <circle className="station-map-current" cx="20" cy="19" r="4" />
       </svg>
     );

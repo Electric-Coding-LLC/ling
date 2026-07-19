@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function VowelsPage() {
-  redirect("/stations/hiragana");
+  redirect("/stations/kana");
 }

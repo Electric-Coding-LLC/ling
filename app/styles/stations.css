@@ -47,8 +47,8 @@
   stroke: var(--sound);
 }
 
-.station-map-script {
-  stroke: var(--script);
+.station-map-writing {
+  stroke: var(--writing);
   stroke-width: 3;
 }
 
@@ -73,6 +73,7 @@
 }
 
 .station-page-mora .station-heading,
+.station-page-kana .station-heading,
 .station-page-hiragana .station-heading,
 .station-page-katakana .station-heading {
   margin-bottom: 1.25rem;
@@ -105,8 +106,8 @@
   color: var(--sound);
 }
 
-.station-membership-script {
-  color: var(--script);
+.station-membership-writing {
+  color: var(--writing);
 }
 
 .station-heading h1 {
@@ -117,6 +118,7 @@
 }
 
 .mora-guide audio,
+.kana-guide audio,
 .hiragana-guide audio,
 .katakana-guide audio {
   display: none;
@@ -211,6 +213,11 @@
   font-size: 2rem;
   font-weight: 400;
   line-height: 1;
+}
+
+.kana-vowels-table .kana-pair {
+  font-size: 1.65rem;
+  white-space: nowrap;
 }
 
 .kana-study-cue,
@@ -553,6 +560,7 @@
   }
 
   .station-page-mora .station-heading,
+  .station-page-kana .station-heading,
   .station-page-hiragana .station-heading,
   .station-page-katakana .station-heading {
     margin-bottom: 1rem;
@@ -584,6 +592,10 @@
 
   .kana-study-kana-button span {
     font-size: 1.9rem;
+  }
+
+  .kana-vowels-table .kana-pair {
+    font-size: 1.45rem;
   }
 
   .kana-study-button {

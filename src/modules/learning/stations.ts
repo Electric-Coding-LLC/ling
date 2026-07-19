@@ -1,12 +1,20 @@
-export const STATION_IDS = ["hiragana", "katakana", "mora-timing"] as const;
+export const STATION_IDS = [
+  "kana",
+  "hiragana",
+  "katakana",
+  "kana-extensions",
+  "mora-timing",
+] as const;
 
 export type StationId = (typeof STATION_IDS)[number];
 
 export const STATION_PREREQUISITES: Partial<
   Record<StationId, readonly StationId[]>
 > = {
+  hiragana: ["kana"],
   katakana: ["hiragana"],
-  "mora-timing": ["hiragana"],
+  "kana-extensions": ["katakana"],
+  "mora-timing": ["kana-extensions"],
 };
 
 export function isStationId(value: string): value is StationId {

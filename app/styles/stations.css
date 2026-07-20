@@ -462,11 +462,20 @@
   table-layout: fixed;
 }
 
-.hiragana-chart-test {
+.hiragana-chart-heading {
   display: flex;
   width: min(100%, 32rem);
-  justify-content: flex-end;
-  margin-bottom: 0.3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.45rem;
+}
+
+.hiragana-chart-heading h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .hiragana-table th {
@@ -527,7 +536,6 @@
 
 .hiragana-test-trigger {
   display: inline-flex;
-  min-width: 2.75rem;
   min-height: 2.75rem;
   flex: none;
   align-items: center;
@@ -538,6 +546,9 @@
   color: var(--muted);
   background: transparent;
   cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .hiragana-test-trigger:hover {
@@ -550,45 +561,7 @@
 }
 
 .hiragana-test-trigger-all {
-  min-width: 3.25rem;
-  flex-direction: column;
-  gap: 0.25rem;
   margin-right: -0.75rem;
-}
-
-.hiragana-test-icon {
-  position: relative;
-  display: block;
-  width: 1.05rem;
-  height: 1rem;
-}
-
-.hiragana-test-icon::before,
-.hiragana-test-icon::after {
-  position: absolute;
-  width: 0.75rem;
-  height: 0.9rem;
-  border: 1.5px solid currentColor;
-  border-radius: 0.15rem;
-  content: "";
-}
-
-.hiragana-test-icon::before {
-  top: 0;
-  left: 0.25rem;
-}
-
-.hiragana-test-icon::after {
-  top: 0.16rem;
-  left: 0;
-  background: var(--surface);
-}
-
-.hiragana-test-count {
-  font-size: 0.65rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  white-space: nowrap;
 }
 
 .hiragana-test-dialog {

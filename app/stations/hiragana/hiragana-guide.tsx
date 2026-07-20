@@ -349,12 +349,9 @@ export function HiraganaGuide() {
         title={`Test ${title}`}
         type="button"
       >
-        <span aria-hidden="true" className="hiragana-test-icon" />
-        {showCount ? (
-          <span className="hiragana-test-count">
-            {knownHiragana.size} / {ALL_HIRAGANA_TEST_ENTRIES.length}
-          </span>
-        ) : null}
+        {showCount
+          ? `Test all · ${knownHiragana.size}/${ALL_HIRAGANA_TEST_ENTRIES.length}`
+          : "Test row"}
       </button>
     );
   }
@@ -367,7 +364,8 @@ export function HiraganaGuide() {
         <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
       </div>
 
-      <div className="hiragana-chart-test">
+      <div className="hiragana-chart-heading">
+        <h2>Basic Hiragana</h2>
         {renderTestButton("all Hiragana", ALL_HIRAGANA_TEST_ENTRIES, true)}
       </div>
 

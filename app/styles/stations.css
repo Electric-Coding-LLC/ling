@@ -499,7 +499,9 @@
 }
 
 .hiragana-button-known,
-.hiragana-button-known:hover {
+.hiragana-button-known:hover,
+.kana-study-button-known,
+.kana-study-button-known:hover {
   color: var(--known);
 }
 

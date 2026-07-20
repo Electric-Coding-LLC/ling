@@ -370,8 +370,10 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, />\s*Yes\s*</);
   assert.match(source, /Say the sound, then tap the Kana to hear it/);
   assert.match(source, /data-known=\{isKnown \? "true" : undefined\}/);
+  assert.match(source, /kana-study-button-known/);
+  assert.match(source, /renderStudyKana\(entry\)/);
   assert.match(source, /fetch\("\/api\/stations\/hiragana\/knowledge"/);
-  assert.match(styles, /\.hiragana-button-known[\s\S]*color:\s*var\(--known\)/);
+  assert.match(styles, /\.hiragana-button-known[\s\S]*\.kana-study-button-known[\s\S]*color:\s*var\(--known\)/);
   assert.doesNotMatch(styles, /\.hiragana-button-known::after|content:\s*"✓"/);
   assert.match(styles, /\.hiragana-test-dialog::backdrop/);
   assert.match(schema, /hiraganaKnowledge = sqliteTable\(\s*"hiragana_knowledge"/s);

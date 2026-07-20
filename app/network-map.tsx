@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
+import { LoadingScreen } from "./loading-screen";
 
 type MobileFocus = "kana" | "hiragana" | "katakana" | "mora";
 export type StationFocus = MobileFocus;
@@ -56,6 +57,7 @@ type NetworkViewProps = {
   moraTimingAvailable: boolean;
   onLinePointerLeave: () => void;
   onStationFocus: (focus: StationFocus) => void;
+  onStationOpen: (focus: StationFocus) => void;
   onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
 };
 
@@ -107,6 +109,7 @@ function LinkedStation({
   labelPlacement = "above",
   href,
   onFocus,
+  onOpen,
   onPointerLeave,
   slug,
   x,
@@ -118,6 +121,7 @@ function LinkedStation({
   labelPlacement?: "above" | "right";
   href: string;
   onFocus: () => void;
+  onOpen: () => void;
   onPointerLeave: () => void;
   slug: string;
   x: number;
@@ -166,6 +170,7 @@ function LinkedStation({
       aria-label={`Open ${label}`}
       className="network-station-link"
       href={href}
+      onClick={onOpen}
       onFocus={onFocus}
       onPointerLeave={onPointerLeave}
       prefetch
@@ -183,6 +188,7 @@ function NetworkView({
   moraTimingAvailable,
   onLinePointerLeave,
   onStationFocus,
+  onStationOpen,
   onTooltipPointerMove,
 }: NetworkViewProps) {
   const width = mobile ? MOBILE_VIEW_WIDTH : 1000;
@@ -302,7 +308,7 @@ function NetworkView({
           ) : null}
         </>
       ) : null}
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Kana" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
+      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Kana" onFocus={() => onStationFocus("kana")} onOpen={() => onStationOpen("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
       {hiraganaAvailable ? (
         <LinkedStation
           backlightId={backlightId}
@@ -311,6 +317,7 @@ function NetworkView({
           label="Hiragana"
           labelPlacement="right"
           onFocus={() => onStationFocus("hiragana")}
+          onOpen={() => onStationOpen("hiragana")}
           onPointerLeave={onLinePointerLeave}
           slug="hiragana"
           x={kanaX}
@@ -325,6 +332,7 @@ function NetworkView({
           label="Katakana"
           labelPlacement="right"
           onFocus={() => onStationFocus("katakana")}
+          onOpen={() => onStationOpen("katakana")}
           onPointerLeave={onLinePointerLeave}
           slug="katakana"
           x={kanaX}
@@ -338,6 +346,7 @@ function NetworkView({
           kind="sound"
           label="Mora timing"
           onFocus={() => onStationFocus("mora")}
+          onOpen={() => onStationOpen("mora")}
           onPointerLeave={onLinePointerLeave}
           slug="mora-timing"
           x={moraX}
@@ -426,6 +435,7 @@ export function NetworkMap({
     : "kana";
   const mobileFocus: MobileFocus = stationFocus;
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
+  const [openingStation, setOpeningStation] = useState<StationFocus | null>(null);
   const desktopViewport = useRef<HTMLDivElement>(null);
   const mobileViewport = useRef<HTMLDivElement>(null);
   const pointerStart = useRef<{ id: number; x: number } | null>(null);
@@ -457,6 +467,7 @@ export function NetworkMap({
   }
 
   function openStation(focus: StationFocus) {
+    setOpeningStation(focus);
     router.push(ROUTABLE_STATION_HREFS[focus]);
   }
 
@@ -593,12 +604,17 @@ export function NetworkMap({
       const stationLink =
         focusedStationLink ?? getStationTarget(event.currentTarget, stationFocus);
       if (!(stationLink instanceof SVGAElement)) return;
+      setOpeningStation(stationFocus);
       router.push(stationLink.href.baseVal);
     }
   }
 
   return (
-    <div className="network-views">
+    <>
+      {openingStation ? (
+        <LoadingScreen overlay station={STATION_LABELS[openingStation]} />
+      ) : null}
+      <div className="network-views">
       <div
         aria-label="Explore the network with the arrow keys"
         className="network-desktop-viewport"
@@ -615,6 +631,7 @@ export function NetworkMap({
           moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
+          onStationOpen={setOpeningStation}
           onTooltipPointerMove={onTooltipPointerMove}
         />
         <span aria-live="polite" className="sr-only">
@@ -649,6 +666,7 @@ export function NetworkMap({
           moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
+          onStationOpen={setOpeningStation}
           onTooltipPointerMove={onTooltipPointerMove}
         />
         <span aria-live="polite" className="sr-only">
@@ -660,6 +678,7 @@ export function NetworkMap({
           {tooltip.label}
         </span>
       ) : null}
-    </div>
+      </div>
+    </>
   );
 }

@@ -6,8 +6,10 @@
 @import "./styles/stations.css";
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-network-pulse {
+  .loading-track::after {
     animation: none;
+    opacity: 0.7;
+    transform: none;
   }
 
   *,

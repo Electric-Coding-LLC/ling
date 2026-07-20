@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LingWordmark } from "./brand";
 import { NetworkMap, type StationFocus } from "./network-map";
-import { isStationAvailableToCurrentUser } from "./station-availability";
+import { getStationAvailabilityForCurrentUser } from "./station-availability";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +21,11 @@ export default async function Home({
       : focus === "hiragana"
         ? "hiragana"
         : undefined;
-  const [hiraganaAvailable, katakanaAvailable, moraTimingAvailable] = await Promise.all([
-    isStationAvailableToCurrentUser("hiragana"),
-    isStationAvailableToCurrentUser("katakana"),
-    isStationAvailableToCurrentUser("mora-timing"),
-  ]);
+  const {
+    hiragana: hiraganaAvailable,
+    katakana: katakanaAvailable,
+    "mora-timing": moraTimingAvailable,
+  } = await getStationAvailabilityForCurrentUser();
 
   return (
     <main className="shell">

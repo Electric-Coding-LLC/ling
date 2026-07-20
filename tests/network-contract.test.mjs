@@ -64,7 +64,9 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /label="Katakana"\s*labelPlacement="right"/);
   assert.match(source, /import Link from "next\/link"/);
   assert.match(source, /import \{ useRouter \} from "next\/navigation"/);
+  assert.match(source, /import \{ LoadingScreen \} from "\.\/loading-screen"/);
   assert.match(source, /<Link[\s\S]*className="network-station-link"[\s\S]*prefetch/);
+  assert.match(source, /onClick=\{onOpen\}/);
   assert.doesNotMatch(source, /<a[^>]*className="network-station-link"/);
   assert.match(source, /MOBILE_SWIPE_THRESHOLD\s*=\s*40/);
   assert.match(source, /STATION_FOCUS_STORAGE_KEY\s*=\s*"ling:network-station-focus"/);
@@ -110,6 +112,8 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.equal((source.match(/STATION_NEIGHBORS\[stationFocus\]\[direction\]/g) ?? []).length, 2);
   assert.match(source, /function openStation\(focus: StationFocus\)/);
   assert.match(source, /router\.push\(ROUTABLE_STATION_HREFS\[focus\]\)/);
+  assert.equal((source.match(/setOpeningStation\((?:focus|stationFocus)\)/g) ?? []).length, 2);
+  assert.match(source, /<LoadingScreen overlay station=\{STATION_LABELS\[openingStation\]\} \/>/);
   assert.doesNotMatch(source, /onKeyDown=\{mobile \? undefined : onDesktopKeyDown\}/);
   assert.equal((source.match(/"\.network-station-link:focus"/g) ?? []).length, 1);
   assert.match(source, /getStationTarget\(event\.currentTarget, nextFocus\)\.focus\(\)/);
@@ -190,8 +194,8 @@ test("the Writing stations reveal in order from an account-scoped Kana introduct
   assert.match(kanaApi, /\{ available: \["hiragana"\] \}/);
   assert.match(api, /recordStationIntroduction\(user\.id, "hiragana"\)/);
   assert.match(api, /\{ available: \["katakana"\] \}/);
-  assert.match(page, /isStationAvailableToCurrentUser\("hiragana"\)/);
-  assert.match(page, /isStationAvailableToCurrentUser\("mora-timing"\)/);
+  assert.match(page, /getStationAvailabilityForCurrentUser\(\)/);
+  assert.doesNotMatch(page, /Promise\.all|isStationAvailableToCurrentUser/);
   assert.match(moraPage, /redirect\("\/\?focus=mora-timing"\)/);
   assert.match(katakanaPage, /redirect\("\/\?focus=katakana"\)/);
   assert.match(hiragana, /fetch\("\/api\/stations\/hiragana\/introduction"/);

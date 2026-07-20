@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
 const HIRAGANA_ROWS = [
@@ -340,26 +341,46 @@ export function HiraganaGuide() {
     title: string,
     entries: readonly HiraganaTestEntry[],
   ) {
+    const knownCount = entries.filter((entry) => knownHiragana.has(entry.kana)).length;
+    const total = entries.length;
+    const testLabel = `Test ${title}. ${knownCount} of ${total} known.`;
+
     return (
       <button
-        aria-label={`Test ${title}`}
+        aria-label={testLabel}
         className="hiragana-test-trigger"
         onClick={() => openTest(title, entries)}
-        title={`Test ${title}`}
+        style={{ "--hiragana-test-progress": `${knownCount / total}turn` } as CSSProperties}
+        title={testLabel}
         type="button"
       >
-        Test row
+        <span className="hiragana-test-progress-text">
+          {knownCount}/{total}
+        </span>
       </button>
     );
   }
 
   return (
-    <section className="hiragana-guide">
-      <audio onError={() => setAudioError(true)} preload="none" ref={audioRef} />
-      <div className="station-intro hiragana-intro">
-        <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
-        <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
-      </div>
+    <>
+      <header className="station-heading">
+        <div className="station-heading-row">
+          <div aria-label="Lines" className="station-memberships">
+            <span className="station-membership station-membership-writing" data-line="writing">
+              Writing
+            </span>
+          </div>
+          {renderTestButton("All Hiragana", ALL_HIRAGANA_TEST_ENTRIES)}
+        </div>
+        <h1>Hiragana</h1>
+      </header>
+
+      <section className="hiragana-guide">
+        <audio onError={() => setAudioError(true)} preload="none" ref={audioRef} />
+        <div className="station-intro hiragana-intro">
+          <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
+          <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
+        </div>
 
       <table aria-label="The 46 basic hiragana" className="hiragana-table">
         <thead>
@@ -462,8 +483,8 @@ export function HiraganaGuide() {
         ))}
       </section>
 
-      {activeTest && activeCard ? (
-        <dialog
+        {activeTest && activeCard ? (
+          <dialog
           aria-labelledby="hiragana-test-title"
           className="hiragana-test-dialog"
           onCancel={(event) => {
@@ -516,9 +537,10 @@ export function HiraganaGuide() {
               </button>
             </div>
           </div>
-        </dialog>
-      ) : null}
-    </section>
+          </dialog>
+        ) : null}
+      </section>
+    </>
   );
 }
 

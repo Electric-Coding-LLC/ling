@@ -85,6 +85,18 @@
   margin-bottom: 0.75rem;
 }
 
+.station-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.station-heading-row .station-memberships {
+  margin-bottom: 0;
+}
+
 .station-membership {
   display: inline-flex;
   align-items: center;
@@ -507,24 +519,47 @@
 }
 
 .hiragana-test-trigger {
-  display: inline-flex;
-  min-height: 2.75rem;
+  --hiragana-test-progress: 0turn;
+
+  position: relative;
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
   flex: none;
-  align-items: center;
-  justify-content: center;
-  margin: -0.75rem -0.75rem -0.75rem 0;
-  padding: 0.75rem;
+  place-items: center;
+  margin: 0;
+  padding: 0;
   border: 0;
+  border-radius: 50%;
   color: var(--muted);
-  background: transparent;
+  background: conic-gradient(
+    from -90deg,
+    var(--known) 0 var(--hiragana-test-progress),
+    rgb(242 241 235 / 0.24) var(--hiragana-test-progress) 1turn
+  );
   cursor: pointer;
-  font-size: 0.75rem;
+}
+
+.hiragana-test-trigger::before {
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background: var(--surface);
+  content: "";
+}
+
+.hiragana-test-progress-text {
+  position: relative;
+  z-index: 1;
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
-  white-space: nowrap;
+  line-height: 1;
 }
 
 .hiragana-test-trigger:hover {
   color: var(--foreground);
+  filter: brightness(1.12);
 }
 
 .hiragana-test-trigger:focus-visible {

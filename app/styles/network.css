@@ -13,14 +13,17 @@
   outline: none;
 }
 
-.network-desktop-viewport:focus-visible[data-desktop-focus="vowels"]
-  [data-station="vowels"]
-  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
   [data-station="mora-timing"]
   .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="katakana"]
+  [data-station="katakana"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="hiragana"]
   [data-station="hiragana"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="kana"]
+  [data-station="kana"]
   .network-station-backlight {
   opacity: 1;
 }
@@ -52,9 +55,8 @@
   fill: var(--sound);
 }
 
-.network-line-label-script {
-  fill: var(--script);
-  text-anchor: end;
+.network-line-label-writing {
+  fill: var(--writing);
 }
 
 .network-line {
@@ -88,17 +90,12 @@
   stroke: var(--sound);
 }
 
-.network-line-script {
-  stroke: var(--script);
+.network-line-writing {
+  stroke: var(--writing);
 }
 
 .network-station-label {
   fill: var(--foreground);
-  text-anchor: middle;
-}
-
-.network-station-label-side {
-  text-anchor: start;
 }
 
 .network-interchange-outer,
@@ -127,8 +124,8 @@
   stroke: var(--sound);
 }
 
-.network-single-station-outer-script {
-  stroke: var(--script);
+.network-single-station-outer-writing {
+  stroke: var(--writing);
 }
 
 .network-single-station-inner {
@@ -154,16 +151,11 @@
   outline: none;
 }
 
-.network-station-focus:focus-visible {
-  outline: none;
-}
-
 .network-station-link:hover .network-station-backlight {
   opacity: 0.55;
 }
 
-.network-station-link:focus-visible .network-station-backlight,
-.network-station-focus:focus-visible .network-station-backlight {
+.network-station-link:focus-visible .network-station-backlight {
   opacity: 1;
 }
 
@@ -182,14 +174,17 @@
     outline: none;
   }
 
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="vowels"]
-    [data-station="vowels"]
-    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
     [data-station="mora-timing"]
     .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="katakana"]
+    [data-station="katakana"]
+    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="hiragana"]
     [data-station="hiragana"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="kana"]
+    [data-station="kana"]
     .network-station-backlight {
     opacity: 1;
   }

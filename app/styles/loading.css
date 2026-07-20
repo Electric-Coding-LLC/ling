@@ -1,4 +1,6 @@
 .loading-shell {
+  --loading-accent: var(--foreground);
+
   display: grid;
   min-height: 100dvh;
   place-items: center;
@@ -10,96 +12,74 @@
   background: var(--surface);
 }
 
-.loading-lockup {
-  display: grid;
-  place-items: center;
+.loading-shell-overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
 }
 
-.loading-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 1.5rem;
-  font-weight: 500;
-  letter-spacing: -0.04em;
+.loading-shell[data-station="kana"] {
+  --loading-accent: linear-gradient(90deg, var(--sound), var(--writing));
+}
+
+.loading-shell[data-station="hiragana"],
+.loading-shell[data-station="katakana"] {
+  --loading-accent: var(--writing);
+}
+
+.loading-shell[data-station="mora-timing"] {
+  --loading-accent: var(--sound);
+}
+
+.loading-lockup {
+  display: grid;
+  width: min(100%, 28rem);
+  justify-items: start;
 }
 
 .loading-brand-mark {
-  width: 1em;
-  height: 1em;
+  width: 2.75rem;
+  height: 2.75rem;
   fill: currentColor;
 }
 
-.loading-network {
-  width: 11.25rem;
-  height: 4.5rem;
-  margin-top: 1.4rem;
-  overflow: visible;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.loading-network-sound,
-.loading-network-script {
-  stroke-width: 4;
-}
-
-.loading-network-sound {
-  stroke: var(--sound);
-}
-
-.loading-network-script {
-  stroke: var(--script);
-}
-
-.loading-network-terminal,
-.loading-network-interchange-outer,
-.loading-network-interchange-inner {
-  fill: var(--surface);
-  vector-effect: non-scaling-stroke;
-}
-
-.loading-network-terminal {
-  stroke: var(--sound);
-  stroke-width: 3;
-}
-
-.loading-network-interchange-outer,
-.loading-network-interchange-inner {
-  stroke: var(--foreground);
-}
-
-.loading-network-interchange-outer {
-  stroke-width: 3;
-}
-
-.loading-network-interchange-inner {
-  stroke-width: 4;
-}
-
-.loading-network-pulse {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: loading-network-pulse 1.5s ease-in-out infinite;
-}
-
-.loading-lockup p {
-  margin: 0.35rem 0 0;
+.loading-kicker {
+  margin: 2rem 0 0.35rem;
   color: var(--muted);
-  font-size: 0.875rem;
-  letter-spacing: 0.01em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-@keyframes loading-network-pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: scale(0.9);
-  }
+.loading-title {
+  margin: 0;
+  font-size: clamp(3.5rem, 14vw, 6rem);
+  font-weight: 500;
+  letter-spacing: -0.065em;
+  line-height: 0.95;
+}
 
-  50% {
-    opacity: 1;
-    transform: scale(1);
+.loading-track {
+  width: 100%;
+  height: 0.3rem;
+  margin-top: 2rem;
+  overflow: hidden;
+  background: var(--line);
+}
+
+.loading-track::after {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: var(--loading-accent);
+  content: "";
+  transform: translateX(-110%);
+  animation: loading-track-sweep 1s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes loading-track-sweep {
+  to {
+    transform: translateX(350%);
   }
 }

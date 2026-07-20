@@ -1,16 +1,10 @@
 import Link from "next/link";
 import { LingWordmark } from "./brand";
-import { NetworkMap, type MobileFocus } from "./network-map";
+import { NetworkMap } from "./network-map";
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ focus?: string | string[] }>;
-}) {
-  const { focus } = await searchParams;
-  const initialMobileFocus: MobileFocus | undefined =
-    focus === "mora-timing" ? "mora" : focus === "vowels" ? "vowels" : undefined;
+export const dynamic = "force-static";
 
+export default function Home() {
   return (
     <main className="shell">
       <header className="topbar">
@@ -22,7 +16,7 @@ export default async function Home({
         <h1 className="sr-only" id="network-title">
           Japanese mastery network
         </h1>
-        <NetworkMap initialMobileFocus={initialMobileFocus} />
+        <NetworkMap />
       </section>
     </main>
   );

@@ -39,8 +39,7 @@
   opacity: 0.78;
 }
 
-.station-map-sound,
-.station-map-script {
+.station-map-sound {
   stroke-width: 3;
 }
 
@@ -48,14 +47,19 @@
   stroke: var(--sound);
 }
 
-.station-map-script {
-  stroke: var(--script);
+.station-map-writing {
+  stroke: var(--writing);
+  stroke-width: 3;
 }
 
 .station-map-current {
   fill: var(--surface);
   stroke: var(--foreground);
   stroke-width: 2;
+}
+
+.station-map-interchange {
+  stroke-width: 2.5;
 }
 
 .station-page {
@@ -68,7 +72,10 @@
   margin-bottom: clamp(1.75rem, 5vw, 2.75rem);
 }
 
-.station-page-vowels .station-heading {
+.station-page-mora .station-heading,
+.station-page-kana .station-heading,
+.station-page-hiragana .station-heading,
+.station-page-katakana .station-heading {
   margin-bottom: 1.25rem;
 }
 
@@ -76,6 +83,18 @@
   display: flex;
   gap: 1rem;
   margin-bottom: 0.75rem;
+}
+
+.station-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.station-heading-row .station-memberships {
+  margin-bottom: 0;
 }
 
 .station-membership {
@@ -99,8 +118,8 @@
   color: var(--sound);
 }
 
-.station-membership-script {
-  color: var(--script);
+.station-membership-writing {
+  color: var(--writing);
 }
 
 .station-heading h1 {
@@ -110,26 +129,14 @@
   letter-spacing: -0.055em;
 }
 
-.station-preview h2 {
-  margin: 0 0 1rem;
-  font-size: clamp(1.65rem, 5vw, 2.5rem);
-  font-weight: 500;
-  letter-spacing: -0.035em;
-}
-
-.station-preview p {
-  max-width: 32rem;
-  margin: 0;
-  color: var(--muted);
-  font-size: 1.0625rem;
-  line-height: 1.65;
-}
-
-.vowels-reference audio {
+.mora-guide audio,
+.kana-guide audio,
+.hiragana-guide audio,
+.katakana-guide audio {
   display: none;
 }
 
-.vowels-intro {
+.station-intro {
   max-width: 38rem;
   margin: 0 0 2rem;
   color: var(--muted);
@@ -137,13 +144,44 @@
   line-height: 1.6;
 }
 
-.vowels-table {
+.kana-study-table {
   width: min(100%, 32rem);
   border-collapse: collapse;
   table-layout: fixed;
 }
 
-.vowels-table th {
+.hiragana-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.kana-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.kana-intro p {
+  margin: 0;
+}
+
+.kana-table-intro {
+  max-width: 32rem;
+  margin: 0 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.kana-table-intro strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.hiragana-intro p {
+  margin: 0;
+}
+
+.kana-study-table th {
   padding: 0 0.75rem 0.75rem;
   border-bottom: 1px solid var(--line);
   color: var(--muted);
@@ -152,17 +190,17 @@
   text-align: center;
 }
 
-.vowels-col-kana,
-.vowels-col-english,
-.vowels-col-example {
+.kana-study-col-kana,
+.kana-study-col-cue,
+.kana-study-col-example {
   width: 25%;
 }
 
-.vowels-col-translation {
+.kana-study-col-translation {
   width: 25%;
 }
 
-.vowel-row-wrap td {
+.kana-study-table td {
   height: 4rem;
   padding: 0 0.75rem 0;
   border-bottom: 1px solid transparent;
@@ -170,11 +208,11 @@
   vertical-align: middle;
 }
 
-.vowel-row-wrap:not(:last-child) td {
+.kana-study-table tr:not(:last-child) td {
   border-bottom: 1px solid var(--line);
 }
 
-.vowel-audio-button {
+.kana-study-button {
   display: flex;
   width: 100%;
   height: 4rem;
@@ -190,16 +228,20 @@
   text-align: center;
 }
 
-.vowel-audio-button:hover {
+.kana-study-button:hover {
   color: var(--muted);
 }
 
-.vowel-audio-button:focus-visible {
+.kana-study-button:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
 }
 
-.vowel-kana {
+.kana-study-kana-button {
+  width: 100%;
+}
+
+.kana-study-kana-button span {
   margin: 0;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   font-size: 2rem;
@@ -207,28 +249,64 @@
   line-height: 1;
 }
 
-.vowel-english-cue,
-.vowel-translation {
+.kana-vowels-table .kana-pair {
+  font-size: 1.65rem;
+  white-space: nowrap;
+}
+
+.kana-study-cue,
+.kana-study-translation {
   color: var(--muted);
   font-size: 0.95rem;
 }
 
-.vowel-kana-button {
-  width: 100%;
-}
-
-.vowel-example-word {
+.kana-study-example-button span {
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   font-size: 1.25rem;
 }
 
-.vowel-error {
-  width: 12rem;
-  margin: 0.5rem 0;
-  color: var(--sound);
+.hiragana-groups {
+  width: min(100%, 38rem);
+  margin-top: 3.5rem;
 }
 
-.vowels-notes {
+.hiragana-groups-heading {
+  max-width: 34rem;
+  margin-bottom: 2rem;
+}
+
+.hiragana-groups-heading h2,
+.hiragana-study-group h3 {
+  margin: 0;
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.hiragana-groups-heading h2 {
+  font-size: 1.35rem;
+}
+
+.hiragana-groups-heading p,
+.hiragana-study-group > p {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.hiragana-study-group + .hiragana-study-group {
+  margin-top: 3rem;
+}
+
+.hiragana-study-group h3 {
+  font-size: 1rem;
+}
+
+.hiragana-study-group > p {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.kana-study-notes {
   display: grid;
   max-width: 38rem;
   gap: 0.6rem;
@@ -238,13 +316,476 @@
   line-height: 1.55;
 }
 
-.vowels-notes p {
+.kana-study-notes p {
   margin: 0;
 }
 
-.vowels-notes strong {
+.kana-study-notes strong {
   color: var(--foreground);
   font-weight: 600;
+}
+
+.mora-explanation {
+  width: min(100%, 34rem);
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.mora-explanation p {
+  margin: 0;
+}
+
+.mora-explanation p + p {
+  margin-top: 0.65rem;
+}
+
+.mora-explanation strong,
+.mora-explanation h2 {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.mora-rows {
+  width: min(100%, 34rem);
+  margin-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.mora-row {
+  padding: 1.1rem 0.25rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.mora-row-heading,
+.mora-row-timing {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mora-word-button,
+.mora-part-button,
+.hiragana-button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+}
+
+.mora-word-button {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.65rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mora-word-button:hover,
+.mora-part-button:hover,
+.hiragana-button:hover {
+  color: var(--muted);
+}
+
+.mora-word-button:focus-visible,
+.mora-part-button:focus-visible,
+.hiragana-button:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.mora-meaning {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.mora-breakdown {
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+
+.mora-part-button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.mora-divider {
+  margin-inline: 0.18rem;
+  color: var(--muted);
+}
+
+.mora-count {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mora-row-timing {
+  margin-top: 0.7rem;
+}
+
+.mora-explanation-after {
+  margin-top: 2rem;
+}
+
+.mora-explanation h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+}
+
+.station-audio-error,
+.station-knowledge-error {
+  margin: 0.75rem 0;
+  color: var(--sound);
+  font-size: 0.9rem;
+}
+
+.station-notes {
+  display: grid;
+  max-width: 38rem;
+  gap: 0.6rem;
+  margin-top: 2rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.station-notes p {
+  margin: 0;
+}
+
+.station-notes strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.hiragana-table {
+  width: min(100%, 32rem);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.hiragana-table th {
+  padding: 0 0 0.65rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.hiragana-table td {
+  height: 3.5rem;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.hiragana-button {
+  width: calc(100% - 0.35rem);
+  height: 3.15rem;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.65rem;
+}
+
+.hiragana-button-known,
+.hiragana-button-known:hover {
+  color: var(--known);
+}
+
+.hiragana-empty {
+  background: rgb(242 241 235 / 0.015);
+}
+
+.hiragana-final .hiragana-button {
+  width: 20%;
+}
+
+.hiragana-study-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hiragana-test-trigger {
+  --hiragana-test-progress: 0turn;
+
+  position: relative;
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.hiragana-test-trigger::before {
+  position: absolute;
+  inset: 0.25rem;
+  border-radius: inherit;
+  background: conic-gradient(
+    from -90deg,
+    var(--known) 0 var(--hiragana-test-progress),
+    rgb(242 241 235 / 0.24) var(--hiragana-test-progress) 1turn
+  );
+  content: "";
+}
+
+.hiragana-test-trigger::after {
+  position: absolute;
+  inset: calc(0.25rem + 2px);
+  border-radius: inherit;
+  background: var(--surface);
+  content: "";
+}
+
+.hiragana-test-progress-text {
+  position: relative;
+  z-index: 1;
+  font-size: 0.5625rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.hiragana-test-trigger:hover {
+  color: var(--foreground);
+  filter: brightness(1.12);
+}
+
+.hiragana-test-trigger:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.hiragana-test-dialog {
+  width: min(calc(100% - 2rem), 26rem);
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  color: var(--foreground);
+  background: var(--surface);
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 0.5);
+}
+
+.hiragana-test-dialog::backdrop {
+  background: rgb(0 0 0 / 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.hiragana-test-modal {
+  padding: 1.5rem;
+}
+
+.hiragana-test-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hiragana-test-modal-heading p,
+.hiragana-test-modal-heading h2 {
+  margin: 0;
+}
+
+.hiragana-test-modal-heading p {
+  color: var(--writing);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hiragana-test-modal-heading h2 {
+  margin-top: 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.hiragana-test-close {
+  min-height: 2.75rem;
+  margin: -0.75rem -0.75rem 0 0;
+  padding: 0.75rem;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.hiragana-test-close:hover {
+  color: var(--foreground);
+}
+
+.hiragana-test-card {
+  display: flex;
+  width: 100%;
+  min-height: 12rem;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  color: var(--foreground);
+  background: var(--background);
+  cursor: pointer;
+}
+
+.hiragana-test-card span {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: clamp(5rem, 24vw, 7rem);
+  line-height: 1;
+}
+
+.hiragana-test-card:hover {
+  border-color: rgb(242 241 235 / 0.22);
+}
+
+.hiragana-test-card:focus-visible,
+.hiragana-test-close:focus-visible,
+.hiragana-test-answer:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.hiragana-test-instruction {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.hiragana-test-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.hiragana-test-answer {
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.hiragana-test-answer-not-yet {
+  color: var(--foreground);
+  background: transparent;
+}
+
+.hiragana-test-answer-yes {
+  border-color: var(--known);
+  color: var(--background);
+  background: var(--known);
+}
+
+.hiragana-test-answer:hover {
+  filter: brightness(1.08);
+}
+
+.katakana-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.katakana-intro p {
+  margin: 0;
+}
+
+.katakana-table {
+  width: min(100%, 38rem);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.katakana-table th {
+  padding: 0 0 0.65rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.katakana-table td {
+  height: 5rem;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.katakana-button {
+  display: flex;
+  width: calc(100% - 0.35rem);
+  height: 4.65rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+}
+
+.katakana-button:hover {
+  color: var(--muted);
+}
+
+.katakana-button:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.katakana-character {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.katakana-match {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.katakana-empty {
+  background: rgb(242 241 235 / 0.015);
+}
+
+.katakana-final .katakana-button {
+  width: 20%;
+  margin-inline: auto;
 }
 
 @media (max-width: 600px) {
@@ -256,7 +797,10 @@
     margin-bottom: 1.25rem;
   }
 
-  .station-page-vowels .station-heading {
+  .station-page-mora .station-heading,
+  .station-page-kana .station-heading,
+  .station-page-hiragana .station-heading,
+  .station-page-katakana .station-heading {
     margin-bottom: 1rem;
   }
 
@@ -264,54 +808,139 @@
     font-size: 2.5rem;
   }
 
-  .vowels-intro {
+  .station-intro {
     margin-bottom: 1.5rem;
     font-size: 0.95rem;
     line-height: 1.5;
   }
 
-  .vowels-table {
+  .kana-study-table {
     width: 100%;
   }
 
-  .vowels-table th {
+  .kana-table-intro {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .kana-study-table th {
     padding-right: 0.5rem;
     font-size: 0.6875rem;
   }
 
-  .vowel-row-wrap td {
+  .kana-study-table td {
     height: 3.5rem;
     padding-right: 0.5rem;
   }
 
-  .vowel-kana {
+  .kana-study-kana-button span {
     font-size: 1.9rem;
   }
 
-  .vowel-audio-button {
+  .kana-vowels-table .kana-pair {
+    font-size: 1.45rem;
+  }
+
+  .kana-study-button {
     height: 3.5rem;
   }
 
-  .vowel-example-word {
+  .kana-study-example-button span {
     font-size: 1.125rem;
     line-height: 1.2;
   }
 
-  .vowel-english-cue,
-  .vowel-translation {
+  .kana-study-cue,
+  .kana-study-translation {
     font-size: 0.875rem;
     line-height: 1.25;
   }
 
-  .vowel-error {
-    width: auto;
-    margin: 0.25rem 0 0.5rem;
-    font-size: 0.875rem;
-  }
-
-  .vowels-notes {
+  .kana-study-notes {
     gap: 0.5rem;
     margin-top: 1.25rem;
     font-size: 0.875rem;
+  }
+
+  .mora-explanation {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .mora-rows {
+    margin-top: 1.5rem;
+  }
+
+  .mora-row {
+    padding: 1rem 0.15rem 1.1rem;
+  }
+
+  .mora-row-heading,
+  .mora-row-timing {
+    gap: 0.75rem;
+  }
+
+  .mora-word-button {
+    font-size: 1.5rem;
+  }
+
+  .mora-breakdown {
+    font-size: 1.05rem;
+  }
+
+  .mora-meaning {
+    font-size: 0.8rem;
+  }
+
+  .station-notes {
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .hiragana-table th {
+    font-size: 0.8rem;
+  }
+
+  .hiragana-table td {
+    height: 3.15rem;
+  }
+
+  .hiragana-button {
+    height: 2.8rem;
+    font-size: 1.45rem;
+  }
+
+  .hiragana-test-dialog {
+    width: calc(100% - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .hiragana-test-modal {
+    padding: 1.25rem;
+  }
+
+  .hiragana-test-card {
+    min-height: min(45dvh, 18rem);
+  }
+
+  .katakana-table th {
+    font-size: 0.8rem;
+  }
+
+  .katakana-table td {
+    height: 4.5rem;
+  }
+
+  .katakana-button {
+    height: 4.15rem;
+  }
+
+  .katakana-character {
+    font-size: 1.45rem;
+  }
+
+  .katakana-match {
+    font-size: 0.625rem;
   }
 }

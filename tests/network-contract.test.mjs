@@ -74,15 +74,13 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /localStorage\.setItem\(STATION_FOCUS_STORAGE_KEY, focus\)/);
   assert.match(source, /window\.dispatchEvent\(new Event\(STATION_FOCUS_EVENT\)\)/);
   assert.match(source, /window\.addEventListener\("storage", onStoreChange\)/);
-  assert.match(source, /if \(initialStationFocus && isStationVisible\([\s\S]*?storeStationFocus\(initialStationFocus\)/);
+  assert.match(source, /new URLSearchParams\(window\.location\.search\)\.get\("focus"\)/);
+  assert.match(source, /storeStationFocus\(focus\)/);
   assert.match(source, /const requestedStationFocus = selectedStationFocus \?\? storedStationFocus/);
   assert.match(source, /const mobileFocus: MobileFocus = stationFocus/);
   assert.doesNotMatch(source, /const \[(?:desktopFocus|mobileStationFocus),/);
-  assert.match(page, /focus === "kana" \|\| focus === "vowels"/);
-  assert.match(page, /focus === "katakana"/);
-  assert.match(page, /hiraganaAvailable=\{hiraganaAvailable\}/);
-  assert.match(page, /katakanaAvailable=\{katakanaAvailable\}/);
-  assert.match(page, /moraTimingAvailable=\{moraTimingAvailable\}/);
+  assert.match(page, /dynamic = "force-static"/);
+  assert.match(page, /<NetworkMap \/>/);
   assert.match(source, /onPointerDown/);
   assert.match(source, /onPointerMove/);
   assert.match(source, /onPointerUp/);
@@ -176,6 +174,10 @@ test("the Writing stations reveal in order from an account-scoped Kana introduct
   const kana = await readFile(new URL("app/stations/kana/kana-guide.tsx", root), "utf8");
   const hiragana = await readFile(new URL("app/stations/hiragana/hiragana-guide.tsx", root), "utf8");
   const kanaApi = await readFile(new URL("app/api/stations/kana/introduction/route.ts", root), "utf8");
+  const availabilityApi = await readFile(
+    new URL("app/api/stations/availability/route.ts", root),
+    "utf8",
+  );
   const api = await readFile(new URL("app/api/stations/hiragana/introduction/route.ts", root), "utf8");
   const stations = await readFile(new URL("src/modules/learning/stations.ts", root), "utf8");
   const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
@@ -194,8 +196,14 @@ test("the Writing stations reveal in order from an account-scoped Kana introduct
   assert.match(kanaApi, /\{ available: \["hiragana"\] \}/);
   assert.match(api, /recordStationIntroduction\(user\.id, "hiragana"\)/);
   assert.match(api, /\{ available: \["katakana"\] \}/);
-  assert.match(page, /getStationAvailabilityForCurrentUser\(\)/);
-  assert.doesNotMatch(page, /Promise\.all|isStationAvailableToCurrentUser/);
+  assert.match(page, /dynamic = "force-static"/);
+  assert.match(page, /<NetworkMap \/>/);
+  assert.doesNotMatch(page, /Promise\.all|isStationAvailableToCurrentUser|getStationAvailabilityForCurrentUser/);
+  assert.match(source, /fetch\("\/api\/stations\/availability"/);
+  assert.match(source, /new URLSearchParams\(window\.location\.search\)/);
+  assert.match(availabilityApi, /getStationAvailabilityForCurrentUser\(\)/);
+  assert.match(availabilityApi, /STATION_IDS\.filter/);
+  assert.match(availabilityApi, /private, no-store/);
   assert.match(moraPage, /redirect\("\/\?focus=mora-timing"\)/);
   assert.match(katakanaPage, /redirect\("\/\?focus=katakana"\)/);
   assert.match(hiragana, /fetch\("\/api\/stations\/hiragana\/introduction"/);

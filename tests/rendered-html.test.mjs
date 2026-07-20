@@ -65,7 +65,7 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /Your site is taking shape|Codex is working|react-loading-skeleton/i);
 });
 
-test("server-renders only station locations the learner has revealed", async () => {
+test("server-renders the base network before private availability loads", async () => {
   const response = await request("/?focus=mora-timing");
   assert.equal(response.status, 200);
 
@@ -202,4 +202,9 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(knowledgeUpdate.status, 401);
   assert.equal(knowledgeUpdate.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await knowledgeUpdate.json(), { error: "unauthorized" });
+
+  const availability = await request("/api/stations/availability");
+  assert.equal(availability.status, 401);
+  assert.equal(availability.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await availability.json(), { error: "unauthorized" });
 });

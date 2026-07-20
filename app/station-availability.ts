@@ -8,12 +8,14 @@ import {
 import { getCurrentIdentity } from "@/src/platform/current-identity";
 
 export async function getStationAvailabilityForCurrentUser(): Promise<
-  Record<StationId, boolean>
+  Record<StationId, boolean> | null
 > {
   const identity = await getCurrentIdentity();
-  const introductions = identity
-    ? await listStationIntroductions((await getOrCreateUser(identity)).id)
-    : [];
+  if (!identity) return null;
+
+  const introductions = await listStationIntroductions(
+    (await getOrCreateUser(identity)).id,
+  );
 
   return Object.fromEntries(
     STATION_IDS.map((stationId) => [
@@ -28,10 +30,6 @@ export async function isStationAvailableToCurrentUser(
 ): Promise<boolean> {
   if (isStationAvailable(stationId, [])) return true;
 
-  const identity = await getCurrentIdentity();
-  if (!identity) return false;
-
-  const user = await getOrCreateUser(identity);
-  const introductions = await listStationIntroductions(user.id);
-  return isStationAvailable(stationId, introductions);
+  const availability = await getStationAvailabilityForCurrentUser();
+  return availability?.[stationId] ?? false;
 }

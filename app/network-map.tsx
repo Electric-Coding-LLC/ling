@@ -27,6 +27,11 @@ const WRITING_LABEL_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH / 2;
 const MOBILE_SWIPE_THRESHOLD = 40;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
+const INITIAL_AVAILABILITY = {
+  hiragana: false,
+  katakana: false,
+  mora: false,
+} as const;
 const ROUTABLE_STATION_HREFS = {
   kana: "/stations/kana",
   hiragana: "/stations/hiragana",
@@ -406,14 +411,14 @@ function NetworkView({
 
 export function NetworkMap({
   initialStationFocus,
-  hiraganaAvailable,
-  katakanaAvailable,
-  moraTimingAvailable,
+  hiraganaAvailable: initialHiraganaAvailable = false,
+  katakanaAvailable: initialKatakanaAvailable = false,
+  moraTimingAvailable: initialMoraTimingAvailable = false,
 }: {
   initialStationFocus?: StationFocus;
-  hiraganaAvailable: boolean;
-  katakanaAvailable: boolean;
-  moraTimingAvailable: boolean;
+  hiraganaAvailable?: boolean;
+  katakanaAvailable?: boolean;
+  moraTimingAvailable?: boolean;
 }) {
   const router = useRouter();
   const storedStationFocus = useSyncExternalStore(
@@ -424,6 +429,15 @@ export function NetworkMap({
   const [selectedStationFocus, setSelectedStationFocus] = useState<StationFocus | null>(
     initialStationFocus ?? null,
   );
+  const [availability, setAvailability] = useState(() => ({
+    ...INITIAL_AVAILABILITY,
+    hiragana: initialHiraganaAvailable,
+    katakana: initialKatakanaAvailable,
+    mora: initialMoraTimingAvailable,
+  }));
+  const hiraganaAvailable = availability.hiragana;
+  const katakanaAvailable = availability.katakana;
+  const moraTimingAvailable = availability.mora;
   const requestedStationFocus = selectedStationFocus ?? storedStationFocus;
   const stationFocus = isStationVisible(
     requestedStationFocus,
@@ -442,15 +456,46 @@ export function NetworkMap({
   const dragged = useRef(false);
 
   useEffect(() => {
-    if (initialStationFocus && isStationVisible(
-      initialStationFocus,
-      hiraganaAvailable,
-      katakanaAvailable,
-      moraTimingAvailable,
-    )) {
-      storeStationFocus(initialStationFocus);
+    const requestedFocus = new URLSearchParams(window.location.search).get("focus");
+    const focus = requestedFocus === "mora-timing"
+      ? "mora"
+      : requestedFocus === "vowels"
+        ? "kana"
+        : requestedFocus;
+    if (
+      focus === "kana"
+      || focus === "hiragana"
+      || focus === "katakana"
+      || focus === "mora"
+    ) {
+      storeStationFocus(focus);
     }
-  }, [initialStationFocus, hiraganaAvailable, katakanaAvailable, moraTimingAvailable]);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/stations/availability", {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Station availability could not load");
+        return response.json() as Promise<{ available?: unknown }>;
+      })
+      .then((payload) => {
+        if (!Array.isArray(payload.available)) {
+          throw new Error("Station availability is invalid");
+        }
+        setAvailability({
+          hiragana: payload.available.includes("hiragana"),
+          katakana: payload.available.includes("katakana"),
+          mora: payload.available.includes("mora-timing"),
+        });
+      })
+      .catch(() => undefined);
+
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     if (document.activeElement !== document.body) return;

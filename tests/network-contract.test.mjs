@@ -335,12 +335,10 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.hiragana-button\s*\{[^}]*font-size:\s*1\.65rem/s);
   assert.match(styles, /\.kana-study-table\s*\{[^}]*table-layout:\s*fixed/s);
   assert.match(styles, /\.kana-study-button\s*\{[^}]*justify-content:\s*center/s);
-  assert.match(source, /renderTestButton\("all Hiragana", ALL_HIRAGANA_TEST_ENTRIES, true\)/);
   assert.match(source, /renderTestButton\(group\.title, group\.entries\)/);
   assert.match(source, /aria-label=\{`Test \$\{title\}`\}/);
-  assert.match(source, /<h2>Basic Hiragana<\/h2>/);
-  assert.match(source, /`Test all · \$\{knownHiragana\.size\}\/\$\{ALL_HIRAGANA_TEST_ENTRIES\.length\}`/);
-  assert.match(source, /"Test row"/);
+  assert.match(source, />\s*Test row\s*</);
+  assert.doesNotMatch(source, /Test all|Basic Hiragana/);
   assert.doesNotMatch(source, /hiragana-test-icon/);
   assert.match(source, /<dialog[\s\S]*aria-labelledby="hiragana-test-title"/);
   assert.match(source, />\s*Not yet\s*</);
@@ -349,6 +347,7 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /data-known=\{isKnown \? "true" : undefined\}/);
   assert.match(source, /fetch\("\/api\/stations\/hiragana\/knowledge"/);
   assert.match(styles, /\.hiragana-button-known[\s\S]*color:\s*var\(--known\)/);
+  assert.doesNotMatch(styles, /\.hiragana-button-known::after|content:\s*"✓"/);
   assert.match(styles, /\.hiragana-test-dialog::backdrop/);
   assert.match(schema, /hiraganaKnowledge = sqliteTable\(\s*"hiragana_knowledge"/s);
   assert.match(schema, /primaryKey\(\{ columns: \[table\.userId, table\.kana\] \}\)/);

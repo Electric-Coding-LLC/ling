@@ -462,22 +462,6 @@
   table-layout: fixed;
 }
 
-.hiragana-chart-heading {
-  display: flex;
-  width: min(100%, 32rem);
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.45rem;
-}
-
-.hiragana-chart-heading h2 {
-  margin: 0;
-  color: var(--foreground);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
 .hiragana-table th {
   padding: 0 0 0.65rem;
   border-bottom: 1px solid var(--line);
@@ -496,7 +480,6 @@
 }
 
 .hiragana-button {
-  position: relative;
   width: calc(100% - 0.35rem);
   height: 3.15rem;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -506,17 +489,6 @@
 .hiragana-button-known,
 .hiragana-button-known:hover {
   color: var(--known);
-}
-
-.hiragana-button-known::after {
-  position: absolute;
-  top: 0.2rem;
-  right: 0.25rem;
-  content: "✓";
-  font-family: var(--font-geist-sans), Arial, sans-serif;
-  font-size: 0.55rem;
-  font-weight: 700;
-  line-height: 1;
 }
 
 .hiragana-empty {
@@ -558,10 +530,6 @@
 .hiragana-test-trigger:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 2px;
-}
-
-.hiragana-test-trigger-all {
-  margin-right: -0.75rem;
 }
 
 .hiragana-test-dialog {

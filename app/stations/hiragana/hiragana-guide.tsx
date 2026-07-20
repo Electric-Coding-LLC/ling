@@ -339,19 +339,16 @@ export function HiraganaGuide() {
   function renderTestButton(
     title: string,
     entries: readonly HiraganaTestEntry[],
-    showCount = false,
   ) {
     return (
       <button
         aria-label={`Test ${title}`}
-        className={`hiragana-test-trigger${showCount ? " hiragana-test-trigger-all" : ""}`}
+        className="hiragana-test-trigger"
         onClick={() => openTest(title, entries)}
         title={`Test ${title}`}
         type="button"
       >
-        {showCount
-          ? `Test all · ${knownHiragana.size}/${ALL_HIRAGANA_TEST_ENTRIES.length}`
-          : "Test row"}
+        Test row
       </button>
     );
   }
@@ -362,11 +359,6 @@ export function HiraganaGuide() {
       <div className="station-intro hiragana-intro">
         <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
         <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
-      </div>
-
-      <div className="hiragana-chart-heading">
-        <h2>Basic Hiragana</h2>
-        {renderTestButton("all Hiragana", ALL_HIRAGANA_TEST_ENTRIES, true)}
       </div>
 
       <table aria-label="The 46 basic hiragana" className="hiragana-table">

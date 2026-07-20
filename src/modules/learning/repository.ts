@@ -1,6 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { stationIntroductions } from "@/db/schema";
+import { hiraganaKnowledge, stationIntroductions } from "@/db/schema";
+import { isBasicHiragana, type BasicHiragana } from "./hiragana";
 import { isStationId, type StationId } from "./stations";
 
 export async function listStationIntroductions(
@@ -26,4 +27,44 @@ export async function recordStationIntroduction(
     .insert(stationIntroductions)
     .values({ userId, stationId, introducedAt: new Date() })
     .onConflictDoNothing();
+}
+
+export async function listKnownHiragana(
+  userId: string,
+): Promise<BasicHiragana[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ kana: hiraganaKnowledge.kana })
+    .from(hiraganaKnowledge)
+    .where(eq(hiraganaKnowledge.userId, userId));
+
+  return rows.map((row) => row.kana).filter(isBasicHiragana);
+}
+
+export async function setHiraganaKnown(
+  userId: string,
+  kana: BasicHiragana,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(hiraganaKnowledge)
+      .where(
+        and(
+          eq(hiraganaKnowledge.userId, userId),
+          eq(hiraganaKnowledge.kana, kana),
+        ),
+      );
+    return;
+  }
+
+  await db
+    .insert(hiraganaKnowledge)
+    .values({ userId, kana, knownAt: new Date() })
+    .onConflictDoUpdate({
+      target: [hiraganaKnowledge.userId, hiraganaKnowledge.kana],
+      set: { knownAt: new Date() },
+    });
 }

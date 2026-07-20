@@ -15,6 +15,13 @@
       "when": 1784418885376,
       "tag": "0001_stale_mimic",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784548323919,
+      "tag": "0002_young_marvel_boy",
+      "breakpoints": true
     }
   ]
 }

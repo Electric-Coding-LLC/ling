@@ -430,7 +430,8 @@
   font-size: 1rem;
 }
 
-.station-audio-error {
+.station-audio-error,
+.station-knowledge-error {
   margin: 0.75rem 0;
   color: var(--sound);
   font-size: 0.9rem;
@@ -461,6 +462,13 @@
   table-layout: fixed;
 }
 
+.hiragana-chart-test {
+  display: flex;
+  width: min(100%, 32rem);
+  justify-content: flex-end;
+  margin-bottom: 0.3rem;
+}
+
 .hiragana-table th {
   padding: 0 0 0.65rem;
   border-bottom: 1px solid var(--line);
@@ -479,10 +487,27 @@
 }
 
 .hiragana-button {
+  position: relative;
   width: calc(100% - 0.35rem);
   height: 3.15rem;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   font-size: 1.65rem;
+}
+
+.hiragana-button-known,
+.hiragana-button-known:hover {
+  color: var(--known);
+}
+
+.hiragana-button-known::after {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.25rem;
+  content: "✓";
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .hiragana-empty {
@@ -491,6 +516,213 @@
 
 .hiragana-final .hiragana-button {
   width: 20%;
+}
+
+.hiragana-study-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hiragana-test-trigger {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  margin: -0.75rem -0.75rem -0.75rem 0;
+  padding: 0.75rem;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.hiragana-test-trigger:hover {
+  color: var(--foreground);
+}
+
+.hiragana-test-trigger:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.hiragana-test-trigger-all {
+  min-width: 3.25rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-right: -0.75rem;
+}
+
+.hiragana-test-icon {
+  position: relative;
+  display: block;
+  width: 1.05rem;
+  height: 1rem;
+}
+
+.hiragana-test-icon::before,
+.hiragana-test-icon::after {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.9rem;
+  border: 1.5px solid currentColor;
+  border-radius: 0.15rem;
+  content: "";
+}
+
+.hiragana-test-icon::before {
+  top: 0;
+  left: 0.25rem;
+}
+
+.hiragana-test-icon::after {
+  top: 0.16rem;
+  left: 0;
+  background: var(--surface);
+}
+
+.hiragana-test-count {
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hiragana-test-dialog {
+  width: min(calc(100% - 2rem), 26rem);
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  color: var(--foreground);
+  background: var(--surface);
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 0.5);
+}
+
+.hiragana-test-dialog::backdrop {
+  background: rgb(0 0 0 / 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.hiragana-test-modal {
+  padding: 1.5rem;
+}
+
+.hiragana-test-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hiragana-test-modal-heading p,
+.hiragana-test-modal-heading h2 {
+  margin: 0;
+}
+
+.hiragana-test-modal-heading p {
+  color: var(--writing);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hiragana-test-modal-heading h2 {
+  margin-top: 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.hiragana-test-close {
+  min-height: 2.75rem;
+  margin: -0.75rem -0.75rem 0 0;
+  padding: 0.75rem;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.hiragana-test-close:hover {
+  color: var(--foreground);
+}
+
+.hiragana-test-card {
+  display: flex;
+  width: 100%;
+  min-height: 12rem;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  color: var(--foreground);
+  background: var(--background);
+  cursor: pointer;
+}
+
+.hiragana-test-card span {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: clamp(5rem, 24vw, 7rem);
+  line-height: 1;
+}
+
+.hiragana-test-card:hover {
+  border-color: rgb(242 241 235 / 0.22);
+}
+
+.hiragana-test-card:focus-visible,
+.hiragana-test-close:focus-visible,
+.hiragana-test-answer:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.hiragana-test-instruction {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.hiragana-test-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.hiragana-test-answer {
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.hiragana-test-answer-not-yet {
+  color: var(--foreground);
+  background: transparent;
+}
+
+.hiragana-test-answer-yes {
+  border-color: var(--known);
+  color: var(--background);
+  background: var(--known);
+}
+
+.hiragana-test-answer:hover {
+  filter: brightness(1.08);
 }
 
 .katakana-intro {
@@ -693,6 +925,19 @@
   .hiragana-button {
     height: 2.8rem;
     font-size: 1.45rem;
+  }
+
+  .hiragana-test-dialog {
+    width: calc(100% - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .hiragana-test-modal {
+    padding: 1.25rem;
+  }
+
+  .hiragana-test-card {
+    min-height: min(45dvh, 18rem);
   }
 
   .katakana-table th {

@@ -36,3 +36,15 @@ export const stationIntroductions = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.stationId] })],
 );
+
+export const hiraganaKnowledge = sqliteTable(
+  "hiragana_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kana: text("kana").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.kana] })],
+);

@@ -6,6 +6,7 @@
   --line: rgb(242 241 235 / 0.1);
   --sound: #db4e3a;
   --writing: #4c689c;
+  --known: #72b884;
 }
 
 @theme inline {

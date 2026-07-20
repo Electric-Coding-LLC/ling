@@ -288,6 +288,16 @@ test("the Kana station introduces both writing systems through the five vowels",
 
 test("the Hiragana station provides the complete basic chart with bundled audio", async () => {
   const source = await readFile(new URL("app/stations/hiragana/hiragana-guide.tsx", root), "utf8");
+  const knowledgeApi = await readFile(
+    new URL("app/api/stations/hiragana/knowledge/route.ts", root),
+    "utf8",
+  );
+  const hiraganaDomain = await readFile(
+    new URL("src/modules/learning/hiragana.ts", root),
+    "utf8",
+  );
+  const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
+  const schema = await readFile(new URL("db/schema.ts", root), "utf8");
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
   const characters = [...source.matchAll(/character: "([^"]+)"/g)].map((match) => match[1]);
   const audioPaths = [...source.matchAll(/audio: "(\/audio\/ja-[^"]+\.wav)"/g)].map((match) => match[1]);
@@ -325,6 +335,29 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.hiragana-button\s*\{[^}]*font-size:\s*1\.65rem/s);
   assert.match(styles, /\.kana-study-table\s*\{[^}]*table-layout:\s*fixed/s);
   assert.match(styles, /\.kana-study-button\s*\{[^}]*justify-content:\s*center/s);
+  assert.match(source, /renderTestButton\("all Hiragana", ALL_HIRAGANA_TEST_ENTRIES, true\)/);
+  assert.match(source, /renderTestButton\(group\.title, group\.entries\)/);
+  assert.match(source, /aria-label=\{`Test \$\{title\}`\}/);
+  assert.match(source, /<dialog[\s\S]*aria-labelledby="hiragana-test-title"/);
+  assert.match(source, />\s*Not yet\s*</);
+  assert.match(source, />\s*Yes\s*</);
+  assert.match(source, /Say the sound, then tap the Kana to hear it/);
+  assert.match(source, /data-known=\{isKnown \? "true" : undefined\}/);
+  assert.match(source, /fetch\("\/api\/stations\/hiragana\/knowledge"/);
+  assert.match(styles, /\.hiragana-button-known[\s\S]*color:\s*var\(--known\)/);
+  assert.match(styles, /\.hiragana-test-dialog::backdrop/);
+  assert.match(schema, /hiraganaKnowledge = sqliteTable\(\s*"hiragana_knowledge"/s);
+  assert.match(schema, /primaryKey\(\{ columns: \[table\.userId, table\.kana\] \}\)/);
+  assert.match(repository, /listKnownHiragana/);
+  assert.match(repository, /setHiraganaKnown/);
+  assert.match(repository, /onConflictDoUpdate/);
+  assert.match(repository, /delete\(hiraganaKnowledge\)/);
+  assert.match(knowledgeApi, /export async function GET/);
+  assert.match(knowledgeApi, /export async function PUT/);
+  assert.match(knowledgeApi, /isBasicHiragana\(candidate\.kana\)/);
+  assert.match(knowledgeApi, /private, no-store/);
+  assert.match(hiraganaDomain, /BASIC_HIRAGANA = \[/);
+  assert.equal((hiraganaDomain.match(/"[ぁ-ん]"/g) ?? []).length, 46);
   assert.doesNotMatch(source, /romaji|score|streak|timer|progress/i);
 
   assert.equal(exampleAudioPaths.length, 46);

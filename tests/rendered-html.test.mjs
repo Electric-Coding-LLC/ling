@@ -185,4 +185,21 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(katakanaIntroduction.status, 401);
   assert.equal(katakanaIntroduction.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await katakanaIntroduction.json(), { error: "unauthorized" });
+
+  const knowledge = await request("/api/stations/hiragana/knowledge");
+  assert.equal(knowledge.status, 401);
+  assert.equal(knowledge.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await knowledge.json(), { error: "unauthorized" });
+
+  const knowledgeUpdate = await request(
+    "/api/stations/hiragana/knowledge",
+    {
+      body: JSON.stringify({ kana: "あ", known: true }),
+      headers: { "content-type": "application/json" },
+      method: "PUT",
+    },
+  );
+  assert.equal(knowledgeUpdate.status, 401);
+  assert.equal(knowledgeUpdate.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await knowledgeUpdate.json(), { error: "unauthorized" });
 });

@@ -196,13 +196,65 @@ const HIRAGANA_STUDY_GROUPS = [
   },
 ] as const;
 
+type HiraganaTestEntry = {
+  readonly kana: string;
+  readonly kanaAudio: string;
+};
+
+type HiraganaTest = {
+  cards: HiraganaTestEntry[];
+  title: string;
+};
+
+const ALL_HIRAGANA_TEST_ENTRIES = HIRAGANA_STUDY_GROUPS.reduce<HiraganaTestEntry[]>(
+  (entries, group) => [...entries, ...group.entries],
+  [],
+);
+const BASIC_HIRAGANA_SET = new Set(
+  ALL_HIRAGANA_TEST_ENTRIES.map((entry) => entry.kana),
+);
+
 export function HiraganaGuide() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const [audioError, setAudioError] = useState(false);
+  const [knowledgeError, setKnowledgeError] = useState(false);
+  const [knownHiragana, setKnownHiragana] = useState<Set<string>>(() => new Set());
+  const [activeTest, setActiveTest] = useState<HiraganaTest | null>(null);
+  const [testIndex, setTestIndex] = useState(0);
+  const activeCard = activeTest?.cards[testIndex] ?? null;
 
   useEffect(() => {
+    const controller = new AbortController();
     void fetch("/api/stations/hiragana/introduction", { method: "POST" });
+
+    void fetch("/api/stations/hiragana/knowledge", {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Knowledge could not load");
+        return response.json() as Promise<{ known?: unknown }>;
+      })
+      .then((payload) => {
+        if (!Array.isArray(payload.known)) throw new Error("Knowledge is invalid");
+        setKnownHiragana(new Set(
+          payload.known.filter(
+            (kana): kana is string => typeof kana === "string" && BASIC_HIRAGANA_SET.has(kana),
+          ),
+        ));
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setKnowledgeError(true);
+      });
+
+    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (activeTest && dialog && !dialog.open) dialog.showModal();
+  }, [activeTest]);
 
   async function playAudio(src: string) {
     setAudioError(false);
@@ -223,14 +275,86 @@ export function HiraganaGuide() {
   }
 
   function renderKana(kana: { readonly audio: string; readonly character: string }) {
+    const isKnown = knownHiragana.has(kana.character);
     return (
       <button
-        aria-label={`Play ${kana.character}`}
-        className="hiragana-button"
+        aria-label={`Play ${kana.character}${isKnown ? ", marked known" : ""}`}
+        className={`hiragana-button${isKnown ? " hiragana-button-known" : ""}`}
+        data-known={isKnown ? "true" : undefined}
         onClick={() => playAudio(kana.audio)}
         type="button"
       >
         <span lang="ja">{kana.character}</span>
+      </button>
+    );
+  }
+
+  function openTest(title: string, entries: readonly HiraganaTestEntry[]) {
+    setKnowledgeError(false);
+    setTestIndex(0);
+    setActiveTest({ cards: shuffle(entries), title });
+  }
+
+  function closeTest() {
+    dialogRef.current?.close();
+    setActiveTest(null);
+    setTestIndex(0);
+  }
+
+  function answerCard(known: boolean) {
+    if (!activeCard || !activeTest) return;
+
+    const kana = activeCard.kana;
+    const wasKnown = knownHiragana.has(kana);
+    updateKnownState(kana, known);
+    setKnowledgeError(false);
+
+    void fetch("/api/stations/hiragana/knowledge", {
+      body: JSON.stringify({ kana, known }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    }).then((response) => {
+      if (!response.ok) throw new Error("Knowledge could not save");
+    }).catch(() => {
+      updateKnownState(kana, wasKnown);
+      setKnowledgeError(true);
+    });
+
+    if (testIndex + 1 >= activeTest.cards.length) {
+      closeTest();
+    } else {
+      setTestIndex((current) => current + 1);
+    }
+  }
+
+  function updateKnownState(kana: string, known: boolean) {
+    setKnownHiragana((current) => {
+      const next = new Set(current);
+      if (known) next.add(kana);
+      else next.delete(kana);
+      return next;
+    });
+  }
+
+  function renderTestButton(
+    title: string,
+    entries: readonly HiraganaTestEntry[],
+    showCount = false,
+  ) {
+    return (
+      <button
+        aria-label={`Test ${title}`}
+        className={`hiragana-test-trigger${showCount ? " hiragana-test-trigger-all" : ""}`}
+        onClick={() => openTest(title, entries)}
+        title={`Test ${title}`}
+        type="button"
+      >
+        <span aria-hidden="true" className="hiragana-test-icon" />
+        {showCount ? (
+          <span className="hiragana-test-count">
+            {knownHiragana.size} / {ALL_HIRAGANA_TEST_ENTRIES.length}
+          </span>
+        ) : null}
       </button>
     );
   }
@@ -241,6 +365,10 @@ export function HiraganaGuide() {
       <div className="station-intro hiragana-intro">
         <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
         <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
+      </div>
+
+      <div className="hiragana-chart-test">
+        {renderTestButton("all Hiragana", ALL_HIRAGANA_TEST_ENTRIES, true)}
       </div>
 
       <table aria-label="The 46 basic hiragana" className="hiragana-table">
@@ -270,6 +398,7 @@ export function HiraganaGuide() {
       </table>
 
       {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
+      {knowledgeError ? <p className="station-knowledge-error" role="alert">Your test results could not sync. Try that card again.</p> : null}
 
       <div className="station-notes">
         <p><strong>Read each row across.</strong> The vowel pattern stays in the same five-column order.</p>
@@ -284,7 +413,10 @@ export function HiraganaGuide() {
 
         {HIRAGANA_STUDY_GROUPS.map((group) => (
           <section aria-labelledby={`${group.id}-title`} className="hiragana-study-group" key={group.id}>
-            <h3 id={`${group.id}-title`}>{group.title}</h3>
+            <div className="hiragana-study-group-heading">
+              <h3 id={`${group.id}-title`}>{group.title}</h3>
+              {renderTestButton(group.title, group.entries)}
+            </div>
             <p>{group.description}</p>
             <table aria-label={group.title} className="kana-study-table">
               <colgroup>
@@ -339,6 +471,72 @@ export function HiraganaGuide() {
           </section>
         ))}
       </section>
+
+      {activeTest && activeCard ? (
+        <dialog
+          aria-labelledby="hiragana-test-title"
+          className="hiragana-test-dialog"
+          onCancel={(event) => {
+            event.preventDefault();
+            closeTest();
+          }}
+          onClose={() => setActiveTest(null)}
+          ref={dialogRef}
+        >
+          <div className="hiragana-test-modal">
+            <header className="hiragana-test-modal-heading">
+              <div>
+                <p>Test</p>
+                <h2 id="hiragana-test-title">{activeTest.title}</h2>
+              </div>
+              <button
+                aria-label="Close test"
+                className="hiragana-test-close"
+                onClick={closeTest}
+                type="button"
+              >
+                Close
+              </button>
+            </header>
+
+            <button
+              aria-label={`Play the answer for ${activeCard.kana}`}
+              className="hiragana-test-card"
+              onClick={() => playAudio(activeCard.kanaAudio)}
+              type="button"
+            >
+              <span lang="ja">{activeCard.kana}</span>
+            </button>
+            <p className="hiragana-test-instruction">Say the sound, then tap the Kana to hear it.</p>
+
+            <div className="hiragana-test-actions">
+              <button
+                className="hiragana-test-answer hiragana-test-answer-not-yet"
+                onClick={() => answerCard(false)}
+                type="button"
+              >
+                Not yet
+              </button>
+              <button
+                className="hiragana-test-answer hiragana-test-answer-yes"
+                onClick={() => answerCard(true)}
+                type="button"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </dialog>
+      ) : null}
     </section>
   );
+}
+
+function shuffle<T>(entries: readonly T[]): T[] {
+  const shuffled = [...entries];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const replacement = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[replacement]] = [shuffled[replacement], shuffled[index]];
+  }
+  return shuffled;
 }

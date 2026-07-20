@@ -274,6 +274,7 @@ test("the Kana station introduces both writing systems through the five vowels",
   assert.deepEqual(katakana, ["ア", "イ", "ウ", "エ", "オ"]);
   assert.equal(audioPaths.length, 10);
   assert.equal(new Set(audioPaths).size, 10);
+  assert.match(page, /dynamic = "force-static"/);
   assert.match(page, /data-line="sound"/);
   assert.match(page, /data-line="writing"/);
   assert.match(source, /Kana is the collective name for Hiragana and Katakana/);

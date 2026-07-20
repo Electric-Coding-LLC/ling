@@ -1,6 +1,8 @@
 import { StationTopbar } from "../station-topbar";
 import { KanaGuide } from "./kana-guide";
 
+export const dynamic = "force-static";
+
 export default function KanaPage() {
   return (
     <main className="shell station-shell">

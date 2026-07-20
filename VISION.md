@@ -112,7 +112,7 @@ This seed is a valid piece of the eventual network, not a disposable prototype. 
 
 `Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. Every visible timing unit is independently playable. It remains hidden until the shared Kana extensions that precede it have been introduced.
 
-All pronunciation is bundled synthetic speech played at its authored speed. These stations record no score or visible progress.
+All pronunciation is bundled synthetic speech played at its authored speed. Stations record no score. Hiragana tests record only the learner's self-reported character knowledge and show it through restrained progress rings on the chart and study rows.
 
 ## Not Yet
 

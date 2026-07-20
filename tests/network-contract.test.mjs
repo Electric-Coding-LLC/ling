@@ -191,10 +191,13 @@ test("the Writing stations reveal in order from an account-scoped Kana introduct
   assert.match(schema, /stationIntroductions = sqliteTable\(\s*"station_introductions"/s);
   assert.match(schema, /primaryKey\(\{ columns: \[table\.userId, table\.stationId\] \}\)/);
   assert.match(repository, /where\(eq\(stationIntroductions\.userId, userId\)\)/);
+  assert.match(repository, /if \(!isStationAvailable\(stationId, introductions\)\) return false/);
   assert.match(repository, /onConflictDoNothing\(\)/);
   assert.match(kanaApi, /recordStationIntroduction\(user\.id, "kana"\)/);
   assert.match(kanaApi, /\{ available: \["hiragana"\] \}/);
   assert.match(api, /recordStationIntroduction\(user\.id, "hiragana"\)/);
+  assert.match(api, /error: "station_unavailable"/);
+  assert.match(api, /status: 403/);
   assert.match(api, /\{ available: \["katakana"\] \}/);
   assert.match(page, /dynamic = "force-static"/);
   assert.match(page, /<NetworkMap \/>/);
@@ -354,7 +357,7 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /renderTestButton\(group\.title, group\.entries\)/);
   assert.match(source, /\{knownCount\}\/\{total\}/);
   assert.match(source, /--hiragana-test-progress/);
-  assert.match(styles, /\.hiragana-test-trigger\s*\{[\s\S]*conic-gradient\([\s\S]*var\(--hiragana-test-progress\)/);
+  assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*background:\s*conic-gradient\([^}]*var\(--hiragana-test-progress\)/s);
   assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*inset:\s*0\.25rem/s);
   assert.match(styles, /\.hiragana-test-trigger::after\s*\{[^}]*inset:\s*calc\(0\.25rem \+ 2px\)/s);
   assert.doesNotMatch(source, /Test row|hiragana-test-icon/);
@@ -408,6 +411,8 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.match(page, /isStationAvailableToCurrentUser\("katakana"\)/);
   assert.match(page, /data-line="writing"/);
   assert.match(api, /recordStationIntroduction\(user\.id, "katakana"\)/);
+  assert.match(api, /error: "station_unavailable"/);
+  assert.match(api, /status: 403/);
   assert.match(source, /Katakana is the second Kana system/);
   assert.match(source, /different shapes for the same sound/);
   assert.match(source, /Hiragana developed from flowing, cursive forms of Chinese characters/);

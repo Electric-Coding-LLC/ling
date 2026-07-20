@@ -14,7 +14,12 @@ export async function POST() {
   }
 
   const user = await getOrCreateUser(identity);
-  await recordStationIntroduction(user.id, "hiragana");
+  if (!(await recordStationIntroduction(user.id, "hiragana"))) {
+    return Response.json(
+      { error: "station_unavailable" },
+      { status: 403, headers: privateNoStoreHeaders() },
+    );
+  }
 
   return Response.json(
     { available: ["katakana"] },

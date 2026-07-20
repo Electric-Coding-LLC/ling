@@ -2,7 +2,11 @@ import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { hiraganaKnowledge, stationIntroductions } from "@/db/schema";
 import { isBasicHiragana, type BasicHiragana } from "./hiragana";
-import { isStationId, type StationId } from "./stations";
+import {
+  isStationAvailable,
+  isStationId,
+  type StationId,
+} from "./stations";
 
 export async function listStationIntroductions(
   userId: string,
@@ -21,12 +25,17 @@ export async function listStationIntroductions(
 export async function recordStationIntroduction(
   userId: string,
   stationId: StationId,
-): Promise<void> {
+): Promise<boolean> {
+  const introductions = await listStationIntroductions(userId);
+  if (!isStationAvailable(stationId, introductions)) return false;
+
   const db = await getDb();
   await db
     .insert(stationIntroductions)
     .values({ userId, stationId, introducedAt: new Date() })
     .onConflictDoNothing();
+
+  return true;
 }
 
 export async function listKnownHiragana(

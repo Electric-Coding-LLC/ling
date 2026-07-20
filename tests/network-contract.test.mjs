@@ -355,7 +355,8 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /\{knownCount\}\/\{total\}/);
   assert.match(source, /--hiragana-test-progress/);
   assert.match(styles, /\.hiragana-test-trigger\s*\{[\s\S]*conic-gradient\([\s\S]*var\(--hiragana-test-progress\)/);
-  assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*inset:\s*2px/s);
+  assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*inset:\s*0\.25rem/s);
+  assert.match(styles, /\.hiragana-test-trigger::after\s*\{[^}]*inset:\s*calc\(0\.25rem \+ 2px\)/s);
   assert.doesNotMatch(source, /Test row|hiragana-test-icon/);
   assert.match(source, /<dialog[\s\S]*aria-labelledby="hiragana-test-title"/);
   assert.match(source, />\s*Not yet\s*</);

@@ -362,6 +362,10 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.hiragana-test-trigger::after\s*\{[^}]*inset:\s*calc\(0\.25rem \+ 2px\)/s);
   assert.doesNotMatch(source, /Test row|hiragana-test-icon/);
   assert.match(source, /<dialog[\s\S]*aria-labelledby="hiragana-test-title"/);
+  assert.doesNotMatch(source, /<p>Test<\/p>/);
+  assert.match(source, /aria-label="Close test"[\s\S]*?<span aria-hidden="true">×<\/span>/);
+  assert.match(styles, /\.hiragana-test-close\s*\{[^}]*border-radius:\s*50%[^}]*appearance:\s*none/s);
+  assert.match(styles, /\.hiragana-test-close:focus-visible\s*\{[^}]*outline:\s*none[^}]*box-shadow:/s);
   assert.match(source, />\s*Not yet\s*</);
   assert.match(source, />\s*Yes\s*</);
   assert.match(source, /Say the sound, then tap the Kana to hear it/);

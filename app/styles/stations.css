@@ -599,42 +599,43 @@
 
 .hiragana-test-modal-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.hiragana-test-modal-heading p,
 .hiragana-test-modal-heading h2 {
   margin: 0;
-}
-
-.hiragana-test-modal-heading p {
-  color: var(--writing);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.hiragana-test-modal-heading h2 {
-  margin-top: 0.25rem;
   font-size: 1.15rem;
   font-weight: 600;
 }
 
 .hiragana-test-close {
-  min-height: 2.75rem;
-  margin: -0.75rem -0.75rem 0 0;
-  padding: 0.75rem;
-  border: 0;
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
   color: var(--muted);
-  background: transparent;
+  appearance: none;
+  background: rgb(242 241 235 / 0.025);
   cursor: pointer;
-  font-size: 0.8rem;
+  -webkit-appearance: none;
+}
+
+.hiragana-test-close span {
+  font-size: 1.35rem;
+  font-weight: 300;
+  line-height: 1;
+  transform: translateY(-0.04em);
 }
 
 .hiragana-test-close:hover {
+  border-color: rgb(242 241 235 / 0.24);
   color: var(--foreground);
 }
 
@@ -664,10 +665,16 @@
 }
 
 .hiragana-test-card:focus-visible,
-.hiragana-test-close:focus-visible,
 .hiragana-test-answer:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
+}
+
+.hiragana-test-close:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--foreground);
 }
 
 .hiragana-test-instruction {

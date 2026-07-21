@@ -75,7 +75,8 @@
 .station-page-mora .station-heading,
 .station-page-kana .station-heading,
 .station-page-hiragana .station-heading,
-.station-page-katakana .station-heading {
+.station-page-katakana .station-heading,
+.station-page-kana-extensions .station-heading {
   margin-bottom: 1.25rem;
 }
 
@@ -273,7 +274,8 @@
 .mora-guide audio,
 .kana-guide audio,
 .hiragana-guide audio,
-.katakana-guide audio {
+.katakana-guide audio,
+.kana-extensions-guide audio {
   display: none;
 }
 
@@ -1225,6 +1227,129 @@
   font-size: 1.4rem;
 }
 
+.kana-extensions-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.kana-extensions-intro p {
+  margin: 0;
+}
+
+.kana-extensions-intro strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.kana-extension-reference {
+  display: grid;
+  margin: 1rem 0 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.kana-extension-reference-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 3rem;
+  border-bottom: 1px solid var(--line);
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.05rem;
+}
+
+.kana-extension-reference-label {
+  color: var(--muted);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.kana-extension-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.kana-extension-table th {
+  padding: 0 0.4rem 0.65rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.kana-extension-table th:first-child {
+  width: 28%;
+}
+
+.kana-extension-table td {
+  height: 4.25rem;
+  padding: 0 0.4rem;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.kana-extension-pair,
+.kana-extension-example {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+}
+
+.kana-extension-pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.25rem;
+  white-space: nowrap;
+}
+
+.kana-extension-pair-divider {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.kana-extension-pair:hover,
+.kana-extension-example:hover {
+  color: var(--muted);
+}
+
+.kana-extension-pair-known,
+.kana-extension-pair-known:hover {
+  color: var(--known);
+}
+
+.kana-extension-pair:focus-visible,
+.kana-extension-example:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.kana-extension-example {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.1rem;
+}
+
+.kana-extension-cue,
+.kana-extension-translation {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.kana-extension-test-card .kana-extension-test-pair {
+  font-size: clamp(3.25rem, 16vw, 5rem);
+  white-space: nowrap;
+}
+
 @media (max-width: 600px) {
   .station-page {
     padding: 1.5rem 1.25rem 2.5rem;
@@ -1237,7 +1362,8 @@
   .station-page-mora .station-heading,
   .station-page-kana .station-heading,
   .station-page-hiragana .station-heading,
-  .station-page-katakana .station-heading {
+  .station-page-katakana .station-heading,
+  .station-page-kana-extensions .station-heading {
     margin-bottom: 1rem;
   }
 
@@ -1379,5 +1505,34 @@
 
   .katakana-match {
     font-size: 0.625rem;
+  }
+
+  .kana-extension-reference-row {
+    grid-template-columns: 3.75rem 1fr 1fr;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  .kana-extension-table th {
+    padding-inline: 0.2rem;
+    font-size: 0.65rem;
+  }
+
+  .kana-extension-table td {
+    height: 4rem;
+    padding-inline: 0.2rem;
+  }
+
+  .kana-extension-pair {
+    font-size: 1rem;
+  }
+
+  .kana-extension-example {
+    font-size: 0.95rem;
+  }
+
+  .kana-extension-cue,
+  .kana-extension-translation {
+    font-size: 0.72rem;
   }
 }

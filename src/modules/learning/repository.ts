@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   hiraganaKnowledge,
+  kanaExtensionKnowledge,
   katakanaKnowledge,
   stationIntroductions,
 } from "@/db/schema";
@@ -15,6 +16,11 @@ import {
   isBasicKatakana,
   type BasicKatakana,
 } from "./katakana";
+import {
+  isKanaExtensionPatternId,
+  KANA_EXTENSION_PATTERN_IDS,
+  type KanaExtensionPatternId,
+} from "./kana-extensions";
 import {
   isStationAvailable,
   isStationId,
@@ -232,4 +238,73 @@ export async function setAllKatakanaKnown(
   if (!firstStatement) return;
 
   await db.batch([firstStatement, ...remainingStatements]);
+}
+
+export async function listKnownKanaExtensionPatterns(
+  userId: string,
+): Promise<KanaExtensionPatternId[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ patternId: kanaExtensionKnowledge.patternId })
+    .from(kanaExtensionKnowledge)
+    .where(eq(kanaExtensionKnowledge.userId, userId));
+
+  return rows.map((row) => row.patternId).filter(isKanaExtensionPatternId);
+}
+
+export async function setKanaExtensionPatternKnown(
+  userId: string,
+  patternId: KanaExtensionPatternId,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(kanaExtensionKnowledge)
+      .where(
+        and(
+          eq(kanaExtensionKnowledge.userId, userId),
+          eq(kanaExtensionKnowledge.patternId, patternId),
+        ),
+      );
+    return;
+  }
+
+  await db
+    .insert(kanaExtensionKnowledge)
+    .values({ userId, patternId, knownAt: new Date() })
+    .onConflictDoUpdate({
+      target: [kanaExtensionKnowledge.userId, kanaExtensionKnowledge.patternId],
+      set: { knownAt: new Date() },
+    });
+}
+
+export async function setAllKanaExtensionPatternsKnown(
+  userId: string,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(kanaExtensionKnowledge)
+      .where(eq(kanaExtensionKnowledge.userId, userId));
+    return;
+  }
+
+  const knownAt = new Date();
+  await db
+    .insert(kanaExtensionKnowledge)
+    .values(
+      KANA_EXTENSION_PATTERN_IDS.map((patternId) => ({
+        userId,
+        patternId,
+        knownAt,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [kanaExtensionKnowledge.userId, kanaExtensionKnowledge.patternId],
+      set: { knownAt },
+    });
 }

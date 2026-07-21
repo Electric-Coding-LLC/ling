@@ -35,7 +35,8 @@ html[data-ling-ready="true"] .loading-shell-boot {
 }
 
 .loading-shell[data-station="hiragana"],
-.loading-shell[data-station="katakana"] {
+.loading-shell[data-station="katakana"],
+.loading-shell[data-station="kana-extensions"] {
   --loading-accent: var(--writing);
 }
 

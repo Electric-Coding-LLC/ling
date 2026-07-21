@@ -80,16 +80,18 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-Begin with two lines and three visible stations:
+The current mapped network has two lines and five stations:
 
 ```text
-Sound                Kana
-                         │
-Writing                  │
-                         │
-                     Hiragana
-                         │
-                     Katakana
+Sound                Kana ───────── Mora timing
+                       │
+Writing                │
+                       │
+                   Hiragana
+                       │
+                   Katakana
+                       │
+                Kana extensions
 ```
 
 `Kana` is the starting station. It introduces Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
@@ -100,7 +102,7 @@ Writing                  │
 
 Each study row plays the shared vowel sound, shows its paired Hiragana and Katakana forms, provides one playable Japanese example word, and remains directly revisitable without staged gates.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Kana` alone, reveals the Writing segment to `Hiragana` after the learner explores Kana, and then extends to `Katakana` after Hiragana. Future stations and connecting segments stay hidden until their preceding station has been explored. Do not use faint or inactive geography, and add no line segments for speculative stations.
+This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Kana` alone, reveals the Writing segment to `Hiragana` after the learner explores Kana, extends to `Katakana` after Hiragana is known, and then reaches `Kana extensions` after Katakana is known. Exploring Kana extensions reveals `Mora timing` on the Sound line. Future stations and connecting segments stay hidden until their preceding station has been explored. Do not use faint or inactive geography, and add no line segments for speculative stations.
 
 ## Current Station Interiors
 
@@ -110,10 +112,12 @@ This seed is a valid piece of the eventual network, not a disposable prototype. 
 
 `Katakana` presents the same 46 basic sounds as a second, more angular character set. Each playable Katakana is paired directly with its familiar Hiragana form and approximate sound spelling so the learner can concentrate on connecting new shapes to known sounds.
 
+`Kana extensions` teaches the shared mechanisms that expand both basic Kana charts: dakuten and handakuten sound marks, small-kana combinations, small `っ` and `ッ`, and the Katakana long-vowel mark `ー`. Compact reference rows preserve the complete pattern while 12 representative paired forms provide playable examples, direct self-tests, and private progress controls.
+
 `Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. Every visible timing unit is independently playable. It remains hidden until the shared Kana extensions that precede it have been introduced.
 
-All pronunciation is bundled synthetic speech played at its authored speed. Stations record no score. Hiragana tests record only the learner's self-reported character knowledge and show it through restrained progress rings on the chart and study rows.
+All pronunciation is bundled synthetic speech played at its authored speed. Stations record no score. Kana chart and extension tests record only the learner's self-reported knowledge and show it through restrained progress rings on the chart and study rows.
 
 ## Not Yet
 
-The complete Japanese network, final line taxonomy, exact topology and colors, generic graph infrastructure, automated recommendations or routing, deck management, automated scheduling, persistence, speech evaluation, content-management tooling, metrics, and a generic multilingual model wait until direct use demonstrates the need.
+The complete Japanese network, final line taxonomy, exact topology and colors, generic graph infrastructure, automated recommendations or routing, deck management, automated scheduling, speech evaluation, content-management tooling, metrics, and a generic multilingual model wait until direct use demonstrates the need.

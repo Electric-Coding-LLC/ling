@@ -10,6 +10,10 @@ test("the root route has a branded, accessible loading state", async () => {
   const loadingStyles = await readFile(new URL("app/styles/loading.css", root), "utf8");
   const globalStyles = await readFile(new URL("app/globals.css", root), "utf8");
   const kanaLoading = await readFile(new URL("app/stations/kana/loading.tsx", root), "utf8");
+  const extensionsLoading = await readFile(
+    new URL("app/stations/kana-extensions/loading.tsx", root),
+    "utf8",
+  );
   const navigationFeedback = await readFile(
     new URL("app/navigation-feedback.tsx", root),
     "utf8",
@@ -26,6 +30,8 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(screen, /loading-track/);
   assert.doesNotMatch(screen, /<svg|loading-network|spinner/i);
   assert.match(kanaLoading, /<LoadingScreen station="Kana" \/>/);
+  assert.match(extensionsLoading, /<LoadingScreen station="Kana extensions" \/>/);
+  assert.match(loadingStyles, /data-station="kana-extensions"/);
   assert.match(navigationFeedback, /<NavigationFeedbackContext value=\{beginNavigation\}>/);
   assert.match(navigationFeedback, /<RouteReadyContext value=\{completeNavigation\}>/);
   assert.match(navigationFeedback, /<NavigationCompletion onComplete=\{completeNavigation\} \/>/);

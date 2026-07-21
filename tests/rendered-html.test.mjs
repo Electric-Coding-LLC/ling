@@ -53,6 +53,7 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /<title>(?:Sound|Writing) line<\/title>/i);
   assert.doesNotMatch(html, /data-station="mora-timing"/i);
   assert.doesNotMatch(html, /data-station="katakana"/i);
+  assert.doesNotMatch(html, /data-station="kana-extensions"/i);
   assert.doesNotMatch(html, /data-station="hiragana"/i);
   assert.match(html, /data-station="kana"/i);
   assert.doesNotMatch(html, /data-station="vowels"/i);
@@ -60,6 +61,7 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /data-station="mora-timing"[^>]*data-station-kind="single-line"/i);
   assert.doesNotMatch(html, /href="\/stations\/mora-timing"/i);
   assert.doesNotMatch(html, /href="\/stations\/hiragana"/i);
+  assert.doesNotMatch(html, /href="\/stations\/kana-extensions"/i);
   assert.match(html, /href="\/stations\/kana"/i);
   assert.doesNotMatch(html, /aria-disabled="true"|data-available=/i);
   assert.doesNotMatch(html, /Learn Hiragana to activate Mora timing/i);
@@ -89,6 +91,12 @@ test("server-renders the base network before private availability loads", async 
   const hiraganaHtml = await hiraganaResponse.text();
   assert.match(hiraganaHtml, /data-mobile-station-focus="kana"/i);
   assert.match(hiraganaHtml, /network-mobile-track-kana/i);
+
+  const extensionsResponse = await request("/?focus=kana-extensions");
+  assert.equal(extensionsResponse.status, 200);
+  const extensionsHtml = await extensionsResponse.text();
+  assert.match(extensionsHtml, /data-mobile-station-focus="kana"/i);
+  assert.doesNotMatch(extensionsHtml, /data-station="kana-extensions"/i);
 });
 
 test("the retired Vowels route leads to Kana", async () => {
@@ -113,6 +121,12 @@ test("redirects Katakana until Hiragana has been introduced", async () => {
   const response = await request("/stations/katakana");
   assert.ok([307, 308].includes(response.status));
   assert.match(response.headers.get("location") ?? "", /\/\?focus=katakana$/i);
+});
+
+test("redirects Kana extensions until Katakana is complete", async () => {
+  const response = await request("/stations/kana-extensions");
+  assert.ok([307, 308].includes(response.status));
+  assert.match(response.headers.get("location") ?? "", /\/\?focus=kana-extensions$/i);
 });
 
 test("server-renders the Kana orientation", async () => {
@@ -190,6 +204,19 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(katakanaIntroduction.status, 401);
   assert.equal(katakanaIntroduction.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await katakanaIntroduction.json(), { error: "unauthorized" });
+
+  const extensionsIntroduction = await request(
+    "/api/stations/kana-extensions/introduction",
+    { method: "POST" },
+  );
+  assert.equal(extensionsIntroduction.status, 401);
+  assert.equal(extensionsIntroduction.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await extensionsIntroduction.json(), { error: "unauthorized" });
+
+  const extensionsKnowledge = await request("/api/stations/kana-extensions/knowledge");
+  assert.equal(extensionsKnowledge.status, 401);
+  assert.equal(extensionsKnowledge.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await extensionsKnowledge.json(), { error: "unauthorized" });
 
   const knowledge = await request("/api/stations/hiragana/knowledge");
   assert.equal(knowledge.status, 401);

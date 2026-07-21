@@ -60,3 +60,15 @@ export const katakanaKnowledge = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.kana] })],
 );
+
+export const kanaExtensionKnowledge = sqliteTable(
+  "kana_extension_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    patternId: text("pattern_id").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.patternId] })],
+);

@@ -16,8 +16,11 @@
 .network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
   [data-station="mora-timing"]
   .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="extensions"]
-  [data-station="kana-extensions"]
+.network-desktop-viewport:focus-visible[data-desktop-focus="combined"]
+  [data-station="combined-sounds"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="marks"]
+  [data-station="sound-marks"]
   .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="katakana"]
   [data-station="katakana"]
@@ -180,8 +183,11 @@
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
     [data-station="mora-timing"]
     .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="extensions"]
-    [data-station="kana-extensions"]
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="combined"]
+    [data-station="combined-sounds"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="marks"]
+    [data-station="sound-marks"]
     .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="katakana"]
     [data-station="katakana"]

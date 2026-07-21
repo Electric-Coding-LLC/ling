@@ -1,7 +1,7 @@
 import { LingWordmark } from "../brand";
 import { NavigationLink } from "../navigation-feedback";
 
-type NetworkPosition = "kana" | "hiragana" | "katakana" | "kana-extensions" | "mora-timing";
+type NetworkPosition = "combined-sounds" | "hiragana" | "kana" | "katakana" | "mora-timing" | "sound-marks";
 
 function NetworkGlyph({ position }: { position: NetworkPosition }) {
   if (position === "kana") {
@@ -11,6 +11,7 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
         data-position={position}
         viewBox="0 0 40 24"
       >
+        <path className="station-map-sound" d="M20 8h14" />
         <path className="station-map-writing" d="M20 8v14" />
         <circle className="station-map-current station-map-interchange" cx="20" cy="8" r="5" />
       </svg>
@@ -30,7 +31,7 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
     );
   }
 
-  if (position === "katakana") {
+  if (position === "katakana" || position === "sound-marks") {
     return (
       <svg
         aria-hidden="true"
@@ -43,7 +44,7 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
     );
   }
 
-  if (position === "kana-extensions") {
+  if (position === "combined-sounds") {
     return (
       <svg
         aria-hidden="true"

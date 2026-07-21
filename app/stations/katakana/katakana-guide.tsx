@@ -5,124 +5,108 @@ import { useEffect, useRef, useState } from "react";
 
 type KanaEntry = {
   readonly audio: string;
+  readonly example: string;
+  readonly exampleAudio: string;
   readonly hiragana: string;
   readonly katakana: string;
   readonly sound: string;
+  readonly translation: string;
 };
 
 const KATAKANA_ROWS: readonly (readonly (KanaEntry | null)[])[] = [
   [
-    { audio: "/audio/ja-a.wav", hiragana: "あ", katakana: "ア", sound: "ah" },
-    { audio: "/audio/ja-i.wav", hiragana: "い", katakana: "イ", sound: "ee" },
-    { audio: "/audio/ja-u.wav", hiragana: "う", katakana: "ウ", sound: "oo" },
-    { audio: "/audio/ja-e.wav", hiragana: "え", katakana: "エ", sound: "eh" },
-    { audio: "/audio/ja-o.wav", hiragana: "お", katakana: "オ", sound: "oh" },
+    { audio: "/audio/ja-a.wav", example: "アニメ", exampleAudio: "/audio/ja-katakana-anime.wav", hiragana: "あ", katakana: "ア", sound: "ah", translation: "anime" },
+    { audio: "/audio/ja-i.wav", example: "イメージ", exampleAudio: "/audio/ja-katakana-imeeji.wav", hiragana: "い", katakana: "イ", sound: "ee", translation: "image" },
+    { audio: "/audio/ja-u.wav", example: "ウール", exampleAudio: "/audio/ja-katakana-uuru.wav", hiragana: "う", katakana: "ウ", sound: "oo", translation: "wool" },
+    { audio: "/audio/ja-e.wav", example: "エアコン", exampleAudio: "/audio/ja-katakana-eakon.wav", hiragana: "え", katakana: "エ", sound: "eh", translation: "air conditioner" },
+    { audio: "/audio/ja-o.wav", example: "オレンジ", exampleAudio: "/audio/ja-katakana-orenji.wav", hiragana: "お", katakana: "オ", sound: "oh", translation: "orange" },
   ],
   [
-    { audio: "/audio/ja-ka.wav", hiragana: "か", katakana: "カ", sound: "kah" },
-    { audio: "/audio/ja-ki.wav", hiragana: "き", katakana: "キ", sound: "kee" },
-    { audio: "/audio/ja-ku.wav", hiragana: "く", katakana: "ク", sound: "koo" },
-    { audio: "/audio/ja-ke.wav", hiragana: "け", katakana: "ケ", sound: "keh" },
-    { audio: "/audio/ja-ko.wav", hiragana: "こ", katakana: "コ", sound: "koh" },
+    { audio: "/audio/ja-ka.wav", example: "カメラ", exampleAudio: "/audio/ja-katakana-kamera.wav", hiragana: "か", katakana: "カ", sound: "kah", translation: "camera" },
+    { audio: "/audio/ja-ki.wav", example: "キロ", exampleAudio: "/audio/ja-katakana-kiro.wav", hiragana: "き", katakana: "キ", sound: "kee", translation: "kilogram" },
+    { audio: "/audio/ja-ku.wav", example: "クラス", exampleAudio: "/audio/ja-katakana-kurasu.wav", hiragana: "く", katakana: "ク", sound: "koo", translation: "class" },
+    { audio: "/audio/ja-ke.wav", example: "ケーキ", exampleAudio: "/audio/ja-katakana-keeki.wav", hiragana: "け", katakana: "ケ", sound: "keh", translation: "cake" },
+    { audio: "/audio/ja-ko.wav", example: "コート", exampleAudio: "/audio/ja-katakana-kooto.wav", hiragana: "こ", katakana: "コ", sound: "koh", translation: "coat" },
   ],
   [
-    { audio: "/audio/ja-sa.wav", hiragana: "さ", katakana: "サ", sound: "sah" },
-    { audio: "/audio/ja-shi.wav", hiragana: "し", katakana: "シ", sound: "shee" },
-    { audio: "/audio/ja-su.wav", hiragana: "す", katakana: "ス", sound: "soo" },
-    { audio: "/audio/ja-se.wav", hiragana: "せ", katakana: "セ", sound: "seh" },
-    { audio: "/audio/ja-so.wav", hiragana: "そ", katakana: "ソ", sound: "soh" },
+    { audio: "/audio/ja-sa.wav", example: "サラダ", exampleAudio: "/audio/ja-katakana-sarada.wav", hiragana: "さ", katakana: "サ", sound: "sah", translation: "salad" },
+    { audio: "/audio/ja-shi.wav", example: "シーツ", exampleAudio: "/audio/ja-katakana-shiitsu.wav", hiragana: "し", katakana: "シ", sound: "shee", translation: "bedsheet" },
+    { audio: "/audio/ja-su.wav", example: "スープ", exampleAudio: "/audio/ja-katakana-suupu.wav", hiragana: "す", katakana: "ス", sound: "soo", translation: "soup" },
+    { audio: "/audio/ja-se.wav", example: "セーター", exampleAudio: "/audio/ja-katakana-seetaa.wav", hiragana: "せ", katakana: "セ", sound: "seh", translation: "sweater" },
+    { audio: "/audio/ja-so.wav", example: "ソファ", exampleAudio: "/audio/ja-katakana-sofa.wav", hiragana: "そ", katakana: "ソ", sound: "soh", translation: "sofa" },
   ],
   [
-    { audio: "/audio/ja-ta.wav", hiragana: "た", katakana: "タ", sound: "tah" },
-    { audio: "/audio/ja-chi.wav", hiragana: "ち", katakana: "チ", sound: "chee" },
-    { audio: "/audio/ja-tsu.wav", hiragana: "つ", katakana: "ツ", sound: "tsoo" },
-    { audio: "/audio/ja-te.wav", hiragana: "て", katakana: "テ", sound: "teh" },
-    { audio: "/audio/ja-to.wav", hiragana: "と", katakana: "ト", sound: "toh" },
+    { audio: "/audio/ja-ta.wav", example: "タクシー", exampleAudio: "/audio/ja-katakana-takushii.wav", hiragana: "た", katakana: "タ", sound: "tah", translation: "taxi" },
+    { audio: "/audio/ja-chi.wav", example: "チーズ", exampleAudio: "/audio/ja-katakana-chiizu.wav", hiragana: "ち", katakana: "チ", sound: "chee", translation: "cheese" },
+    { audio: "/audio/ja-tsu.wav", example: "ツアー", exampleAudio: "/audio/ja-katakana-tsuaa.wav", hiragana: "つ", katakana: "ツ", sound: "tsoo", translation: "tour" },
+    { audio: "/audio/ja-te.wav", example: "テレビ", exampleAudio: "/audio/ja-katakana-terebi.wav", hiragana: "て", katakana: "テ", sound: "teh", translation: "television" },
+    { audio: "/audio/ja-to.wav", example: "トマト", exampleAudio: "/audio/ja-katakana-tomato.wav", hiragana: "と", katakana: "ト", sound: "toh", translation: "tomato" },
   ],
   [
-    { audio: "/audio/ja-na.wav", hiragana: "な", katakana: "ナ", sound: "nah" },
-    { audio: "/audio/ja-ni.wav", hiragana: "に", katakana: "ニ", sound: "nee" },
-    { audio: "/audio/ja-nu.wav", hiragana: "ぬ", katakana: "ヌ", sound: "noo" },
-    { audio: "/audio/ja-ne.wav", hiragana: "ね", katakana: "ネ", sound: "neh" },
-    { audio: "/audio/ja-no.wav", hiragana: "の", katakana: "ノ", sound: "noh" },
+    { audio: "/audio/ja-na.wav", example: "ナイフ", exampleAudio: "/audio/ja-katakana-naifu.wav", hiragana: "な", katakana: "ナ", sound: "nah", translation: "knife" },
+    { audio: "/audio/ja-ni.wav", example: "ニュース", exampleAudio: "/audio/ja-katakana-nyuusu.wav", hiragana: "に", katakana: "ニ", sound: "nee", translation: "news" },
+    { audio: "/audio/ja-nu.wav", example: "ヌードル", exampleAudio: "/audio/ja-katakana-nuudoru.wav", hiragana: "ぬ", katakana: "ヌ", sound: "noo", translation: "noodles" },
+    { audio: "/audio/ja-ne.wav", example: "ネクタイ", exampleAudio: "/audio/ja-katakana-nekutai.wav", hiragana: "ね", katakana: "ネ", sound: "neh", translation: "necktie" },
+    { audio: "/audio/ja-no.wav", example: "ノート", exampleAudio: "/audio/ja-katakana-nooto.wav", hiragana: "の", katakana: "ノ", sound: "noh", translation: "notebook" },
   ],
   [
-    { audio: "/audio/ja-ha.wav", hiragana: "は", katakana: "ハ", sound: "hah" },
-    { audio: "/audio/ja-hi.wav", hiragana: "ひ", katakana: "ヒ", sound: "hee" },
-    { audio: "/audio/ja-fu.wav", hiragana: "ふ", katakana: "フ", sound: "foo" },
-    { audio: "/audio/ja-he.wav", hiragana: "へ", katakana: "ヘ", sound: "heh" },
-    { audio: "/audio/ja-ho.wav", hiragana: "ほ", katakana: "ホ", sound: "hoh" },
+    { audio: "/audio/ja-ha.wav", example: "ハンバーガー", exampleAudio: "/audio/ja-katakana-hanbaagaa.wav", hiragana: "は", katakana: "ハ", sound: "hah", translation: "hamburger" },
+    { audio: "/audio/ja-hi.wav", example: "ヒーター", exampleAudio: "/audio/ja-katakana-hiitaa.wav", hiragana: "ひ", katakana: "ヒ", sound: "hee", translation: "heater" },
+    { audio: "/audio/ja-fu.wav", example: "フルーツ", exampleAudio: "/audio/ja-katakana-furuutsu.wav", hiragana: "ふ", katakana: "フ", sound: "foo", translation: "fruit" },
+    { audio: "/audio/ja-he.wav", example: "ヘルメット", exampleAudio: "/audio/ja-katakana-herumetto.wav", hiragana: "へ", katakana: "ヘ", sound: "heh", translation: "helmet" },
+    { audio: "/audio/ja-ho.wav", example: "ホテル", exampleAudio: "/audio/ja-katakana-hoteru.wav", hiragana: "ほ", katakana: "ホ", sound: "hoh", translation: "hotel" },
   ],
   [
-    { audio: "/audio/ja-ma.wav", hiragana: "ま", katakana: "マ", sound: "mah" },
-    { audio: "/audio/ja-mi.wav", hiragana: "み", katakana: "ミ", sound: "mee" },
-    { audio: "/audio/ja-mu.wav", hiragana: "む", katakana: "ム", sound: "moo" },
-    { audio: "/audio/ja-me.wav", hiragana: "め", katakana: "メ", sound: "meh" },
-    { audio: "/audio/ja-mo.wav", hiragana: "も", katakana: "モ", sound: "moh" },
+    { audio: "/audio/ja-ma.wav", example: "マスク", exampleAudio: "/audio/ja-katakana-masuku.wav", hiragana: "ま", katakana: "マ", sound: "mah", translation: "mask" },
+    { audio: "/audio/ja-mi.wav", example: "ミルク", exampleAudio: "/audio/ja-katakana-miruku.wav", hiragana: "み", katakana: "ミ", sound: "mee", translation: "milk" },
+    { audio: "/audio/ja-mu.wav", example: "ムード", exampleAudio: "/audio/ja-katakana-muudo.wav", hiragana: "む", katakana: "ム", sound: "moo", translation: "mood" },
+    { audio: "/audio/ja-me.wav", example: "メニュー", exampleAudio: "/audio/ja-katakana-menyuu.wav", hiragana: "め", katakana: "メ", sound: "meh", translation: "menu" },
+    { audio: "/audio/ja-mo.wav", example: "モデル", exampleAudio: "/audio/ja-katakana-moderu.wav", hiragana: "も", katakana: "モ", sound: "moh", translation: "model" },
   ],
   [
-    { audio: "/audio/ja-ya.wav", hiragana: "や", katakana: "ヤ", sound: "yah" },
+    { audio: "/audio/ja-ya.wav", example: "ヤード", exampleAudio: "/audio/ja-katakana-yaado.wav", hiragana: "や", katakana: "ヤ", sound: "yah", translation: "yard" },
     null,
-    { audio: "/audio/ja-yu.wav", hiragana: "ゆ", katakana: "ユ", sound: "yoo" },
+    { audio: "/audio/ja-yu.wav", example: "ユニフォーム", exampleAudio: "/audio/ja-katakana-yunifoomu.wav", hiragana: "ゆ", katakana: "ユ", sound: "yoo", translation: "uniform" },
     null,
-    { audio: "/audio/ja-yo.wav", hiragana: "よ", katakana: "ヨ", sound: "yoh" },
+    { audio: "/audio/ja-yo.wav", example: "ヨーグルト", exampleAudio: "/audio/ja-katakana-yooguruto.wav", hiragana: "よ", katakana: "ヨ", sound: "yoh", translation: "yogurt" },
   ],
   [
-    { audio: "/audio/ja-ra.wav", hiragana: "ら", katakana: "ラ", sound: "rah" },
-    { audio: "/audio/ja-ri.wav", hiragana: "り", katakana: "リ", sound: "ree" },
-    { audio: "/audio/ja-ru.wav", hiragana: "る", katakana: "ル", sound: "roo" },
-    { audio: "/audio/ja-re.wav", hiragana: "れ", katakana: "レ", sound: "reh" },
-    { audio: "/audio/ja-ro.wav", hiragana: "ろ", katakana: "ロ", sound: "roh" },
+    { audio: "/audio/ja-ra.wav", example: "ラジオ", exampleAudio: "/audio/ja-katakana-rajio.wav", hiragana: "ら", katakana: "ラ", sound: "rah", translation: "radio" },
+    { audio: "/audio/ja-ri.wav", example: "リモコン", exampleAudio: "/audio/ja-katakana-rimokon.wav", hiragana: "り", katakana: "リ", sound: "ree", translation: "remote control" },
+    { audio: "/audio/ja-ru.wav", example: "ルール", exampleAudio: "/audio/ja-katakana-ruuru.wav", hiragana: "る", katakana: "ル", sound: "roo", translation: "rule" },
+    { audio: "/audio/ja-re.wav", example: "レモン", exampleAudio: "/audio/ja-katakana-remon.wav", hiragana: "れ", katakana: "レ", sound: "reh", translation: "lemon" },
+    { audio: "/audio/ja-ro.wav", example: "ロボット", exampleAudio: "/audio/ja-katakana-robotto.wav", hiragana: "ろ", katakana: "ロ", sound: "roh", translation: "robot" },
   ],
   [
-    { audio: "/audio/ja-wa.wav", hiragana: "わ", katakana: "ワ", sound: "wah" },
+    { audio: "/audio/ja-wa.wav", example: "ワイン", exampleAudio: "/audio/ja-katakana-wain.wav", hiragana: "わ", katakana: "ワ", sound: "wah", translation: "wine" },
     null,
     null,
     null,
-    { audio: "/audio/ja-wo.wav", hiragana: "を", katakana: "ヲ", sound: "oh" },
+    { audio: "/audio/ja-wo.wav", example: "ヲタク", exampleAudio: "/audio/ja-katakana-wotaku.wav", hiragana: "を", katakana: "ヲ", sound: "oh", translation: "enthusiast" },
   ],
 ];
 
 const FINAL_KATAKANA: KanaEntry = {
   audio: "/audio/ja-n.wav",
+  example: "パン",
+  exampleAudio: "/audio/ja-katakana-pan.wav",
   hiragana: "ん",
   katakana: "ン",
   sound: "nn",
+  translation: "bread",
 };
 
-const KATAKANA_VOWEL_COLUMNS = ["ア", "イ", "ウ", "エ", "オ"] as const;
-const KATAKANA_GROUP_DEFINITIONS = [
-  { description: "The same five steady vowel sounds now use their Katakana shapes.", id: "katakana-vowels", title: "The vowel row" },
-  { description: "Match each K-row Katakana to the Hiragana sound you already know.", id: "katakana-k-row", title: "The K row" },
-  { description: "The S row keeps the familiar pattern, including シ for the shee sound.", id: "katakana-s-row", title: "The S row" },
-  { description: "The T row includes チ for chee and ツ for tsoo.", id: "katakana-t-row", title: "The T row" },
-  { description: "The N row pairs an n sound with each of the five vowels.", id: "katakana-n-row", title: "The N row" },
-  { description: "The H row includes フ for the soft foo sound.", id: "katakana-h-row", title: "The H row" },
-  { description: "The M row follows the regular five-vowel pattern.", id: "katakana-m-row", title: "The M row" },
-  { description: "The Y row has three modern basic forms: ヤ, ユ, and ヨ.", id: "katakana-y-row", title: "The Y row" },
-  { description: "The R row uses the same quick tongue tap as its Hiragana matches.", id: "katakana-r-row", title: "The R row" },
-  { description: "The W row keeps ワ and ヲ; ヲ is uncommon outside specific spelling contexts.", id: "katakana-w-row", title: "The W row" },
-] as const;
-
-const KATAKANA_STUDY_GROUPS = [
-  ...KATAKANA_GROUP_DEFINITIONS.map((group, index) => ({
-    ...group,
-    entries: KATAKANA_ROWS[index].filter(isKanaEntry),
-  })),
-  {
-    description: "ン is the only basic Katakana without a following vowel and takes its own beat.",
-    entries: [FINAL_KATAKANA],
-    id: "katakana-final-n",
-    title: "ン",
-  },
-];
+const KATAKANA_VOWEL_SOUNDS = ["ah", "ee", "oo", "eh", "oh"] as const;
 
 type KatakanaTest = {
   cards: KanaEntry[];
   title: string;
 };
 
-const ALL_KATAKANA_TEST_ENTRIES = KATAKANA_STUDY_GROUPS.flatMap((group) => group.entries);
+const ALL_KATAKANA_TEST_ENTRIES = [
+  ...KATAKANA_ROWS.flatMap((row) => row.filter(isKanaEntry)),
+  FINAL_KATAKANA,
+];
 const BASIC_KATAKANA_SET = new Set(
   ALL_KATAKANA_TEST_ENTRIES.map((entry) => entry.katakana),
 );
@@ -137,7 +121,6 @@ export function KatakanaGuide() {
   const [audioError, setAudioError] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [bulkKnowledgeAction, setBulkKnowledgeAction] = useState<"complete" | "reset" | null>(null);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
   const [knowledgeError, setKnowledgeError] = useState(false);
   const [knownKatakana, setKnownKatakana] = useState<Set<string>>(() => new Set());
   const [pronunciationRevealed, setPronunciationRevealed] = useState(false);
@@ -239,33 +222,13 @@ export function KatakanaGuide() {
     const isKnown = knownKatakana.has(kana.katakana);
     return (
       <button
-        aria-label={`Study ${kana.katakana}, matching Hiragana ${kana.hiragana}${isKnown ? ", marked known" : ""}`}
-        className={`katakana-button${isKnown ? " katakana-button-known" : ""}`}
+        aria-label={`Study ${kana.katakana}${isKnown ? ", marked known" : ""}`}
+        className={`hiragana-button katakana-button${isKnown ? " katakana-button-known" : ""}`}
         data-known={isKnown ? "true" : undefined}
         onClick={() => openTest("Katakana", [kana])}
         type="button"
       >
-        <span className="katakana-character" lang="ja">{kana.katakana}</span>
-        <span className="katakana-match">
-          <span lang="ja">{kana.hiragana}</span>
-          <span aria-hidden="true"> · </span>
-          <span>{kana.sound}</span>
-        </span>
-      </button>
-    );
-  }
-
-  function renderStudyKatakana(entry: KanaEntry) {
-    const isKnown = knownKatakana.has(entry.katakana);
-    return (
-      <button
-        aria-label={`Study ${entry.katakana}${isKnown ? ", marked known" : ""}`}
-        className={`kana-study-button kana-study-kana-button${isKnown ? " kana-study-button-known" : ""}`}
-        data-known={isKnown ? "true" : undefined}
-        onClick={() => openTest("Katakana", [entry])}
-        type="button"
-      >
-        <span lang="ja">{entry.katakana}</span>
+        <span lang="ja">{kana.katakana}</span>
       </button>
     );
   }
@@ -322,15 +285,6 @@ export function KatakanaGuide() {
       const next = new Set(current);
       if (known) next.add(kana);
       else next.delete(kana);
-      return next;
-    });
-  }
-
-  function toggleStudyGroup(groupId: string) {
-    setExpandedGroups((current) => {
-      const next = new Set(current);
-      if (next.has(groupId)) next.delete(groupId);
-      else next.add(groupId);
       return next;
     });
   }
@@ -405,7 +359,7 @@ export function KatakanaGuide() {
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Writing
+              Kana
             </span>
           </div>
           <div className="station-heading-actions">
@@ -482,17 +436,18 @@ export function KatakanaGuide() {
           ref={audioRef}
         />
         <div className="station-intro katakana-intro">
-          <p><strong>Katakana is the second Kana system.</strong> It represents the same sounds as Hiragana, so <span lang="ja">あ</span> and <span lang="ja">ア</span> are different shapes for the same sound.</p>
-          <p>Katakana commonly appears in borrowed words, foreign names, emphasis, and sound effects. Because the sounds are familiar, focus on connecting each new shape to the Hiragana you already know.</p>
-          <p>Tap any Katakana to hear its sound. Its Hiragana match and approximate sound spelling appear underneath.</p>
+          <p><strong>Katakana is another way to write the sounds you learned in Hiragana.</strong> Each Katakana has a Hiragana match: <span lang="ja">ア</span> sounds like <span lang="ja">あ</span>, <span lang="ja">カ</span> sounds like <span lang="ja">か</span>, and so on.</p>
+          <p>Japanese uses both because they do different jobs in writing. Hiragana is used for many Japanese words and for grammar. Katakana is mainly used for words borrowed from other languages, foreign names, and sound effects.</p>
+          <p>Since you already know the sounds, you only need to learn the Katakana shapes.</p>
+          <p>Tap any Katakana in the chart to practice its sound.</p>
         </div>
 
-        <table aria-label="The 46 basic Katakana paired with Hiragana" className="katakana-table">
+        <table aria-label="The 46 basic Katakana" className="hiragana-table katakana-table">
           <thead>
             <tr>
-              {KATAKANA_VOWEL_COLUMNS.map((vowel) => (
-                <th aria-label={`Column of sounds ending in ${vowel}`} key={vowel} scope="col">
-                  <span aria-hidden="true" lang="ja">{vowel}</span>
+              {KATAKANA_VOWEL_SOUNDS.map((sound) => (
+                <th aria-label={`Column of sounds ending in ${sound}`} key={sound} scope="col">
+                  {sound}
                 </th>
               ))}
             </tr>
@@ -516,70 +471,6 @@ export function KatakanaGuide() {
         {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
         {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Katakana progress could not sync. Try again.</p> : null}
 
-        <div className="station-notes">
-          <p><strong>Same sounds, different shapes.</strong> The rows follow the same five-vowel order as Hiragana.</p>
-          <p><strong>Why do they look different?</strong> Hiragana developed from flowing, cursive forms of Chinese characters. Katakana developed from selected pieces of those characters. That history is why Hiragana looks rounded while Katakana looks more angular.</p>
-          <p><strong>This is the base chart.</strong> Sound marks and small Katakana extend these forms later.</p>
-        </div>
-
-        <section aria-labelledby="katakana-groups-title" className="hiragana-groups">
-          <header className="hiragana-groups-heading">
-            <h2 id="katakana-groups-title">Connect the shapes</h2>
-            <p>Work through one row at a time. Tap a Katakana to hear it, then use its familiar Hiragana match to anchor the new shape.</p>
-          </header>
-
-          {KATAKANA_STUDY_GROUPS.map((group) => {
-            const expanded = expandedGroups.has(group.id);
-            return (
-              <section aria-labelledby={`${group.id}-title`} className="hiragana-study-group" key={group.id}>
-                <div className="hiragana-study-group-heading">
-                  <h3 id={`${group.id}-title`}>
-                    <button
-                      aria-controls={`${group.id}-content`}
-                      aria-expanded={expanded}
-                      className="hiragana-study-group-toggle"
-                      onClick={() => toggleStudyGroup(group.id)}
-                      type="button"
-                    >
-                      <span>{group.title}</span>
-                      <svg aria-hidden="true" className="hiragana-study-group-chevron" viewBox="0 0 16 16">
-                        <path d="m3 6 5 5 5-5" />
-                      </svg>
-                    </button>
-                  </h3>
-                  {renderTestButton(group.title, group.entries)}
-                </div>
-                <div className="hiragana-study-group-content" hidden={!expanded} id={`${group.id}-content`}>
-                  <p>{group.description}</p>
-                  <table aria-label={group.title} className="kana-study-table katakana-study-table">
-                    <colgroup>
-                      <col />
-                      <col />
-                      <col />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th scope="col">Katakana</th>
-                        <th scope="col">Hiragana</th>
-                        <th scope="col">Sound</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.entries.map((entry) => (
-                        <tr key={entry.katakana}>
-                          <td>{renderStudyKatakana(entry)}</td>
-                          <td className="katakana-study-match" lang="ja">{entry.hiragana}</td>
-                          <td className="kana-study-cue">{entry.sound}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            );
-          })}
-        </section>
-
         {activeTest && activeCard ? (
           <dialog
             aria-labelledby="katakana-test-title"
@@ -599,27 +490,52 @@ export function KatakanaGuide() {
                 </button>
               </header>
 
-              <button
-                aria-label={`Play ${activeCard.katakana} and reveal its pronunciation`}
-                className="hiragana-test-card"
+              <div
+                className="hiragana-test-card hiragana-test-card-with-example"
                 data-playing={audioPlaying ? "true" : undefined}
-                onClick={revealPronunciation}
-                type="button"
               >
                 <span aria-hidden="true" className="hiragana-test-playing-indicator">
                   <span />
                   <span />
                   <span />
                 </span>
-                <span className="hiragana-test-card-kana" lang="ja">{activeCard.katakana}</span>
-                <span aria-hidden="true" className="hiragana-test-pronunciation">
-                  {pronunciationRevealed ? activeCard.sound : "\u00a0"}
-                </span>
-              </button>
+                <button
+                  aria-label={`Play ${activeCard.katakana} and reveal its pronunciation`}
+                  className="hiragana-test-reveal"
+                  onClick={revealPronunciation}
+                  type="button"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="hiragana-test-pronunciation"
+                    data-revealed={pronunciationRevealed ? "true" : undefined}
+                  >
+                    {pronunciationRevealed ? activeCard.sound : "\u00a0"}
+                  </span>
+                  <span className="hiragana-test-card-kana" lang="ja">{activeCard.katakana}</span>
+                </button>
+                <button
+                  aria-label={`Play example word ${activeCard.example}`}
+                  className="hiragana-test-example"
+                  onClick={() => void playAudio(activeCard.exampleAudio)}
+                  type="button"
+                >
+                  <span className="hiragana-test-example-word" lang="ja">{activeCard.example}</span>
+                  <span
+                    aria-hidden={!pronunciationRevealed}
+                    className="hiragana-test-example-translation"
+                    data-revealed={pronunciationRevealed ? "true" : undefined}
+                  >
+                    {activeCard.translation}
+                  </span>
+                </button>
+              </div>
               <span aria-live="polite" className="sr-only">
-                {pronunciationRevealed ? activeCard.sound : ""}
+                {pronunciationRevealed
+                  ? `${activeCard.sound}. Example: ${activeCard.example}, ${activeCard.translation}`
+                  : ""}
               </span>
-              <p className="hiragana-test-instruction">Say the sound, then tap the Katakana to hear it and reveal the pronunciation.</p>
+              <p className="hiragana-test-instruction">Say the sound, then tap the Katakana to reveal the pronunciation and translation.</p>
 
               <div className="hiragana-test-actions">
                 <button className="hiragana-test-answer hiragana-test-answer-no" onClick={() => answerCard(false)} type="button">

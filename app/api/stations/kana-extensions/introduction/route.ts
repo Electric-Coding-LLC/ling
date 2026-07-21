@@ -14,7 +14,7 @@ export async function POST() {
   }
 
   const user = await getOrCreateUser(identity);
-  if (!(await recordStationIntroduction(user.id, "kana-extensions"))) {
+  if (!(await recordStationIntroduction(user.id, "sound-marks"))) {
     return Response.json(
       { error: "station_unavailable" },
       { status: 403, headers: privateNoStoreHeaders() },
@@ -22,7 +22,7 @@ export async function POST() {
   }
 
   return Response.json(
-    { available: ["mora-timing"] },
+    { available: [] },
     { headers: privateNoStoreHeaders() },
   );
 }

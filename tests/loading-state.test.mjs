@@ -14,6 +14,14 @@ test("the root route has a branded, accessible loading state", async () => {
     new URL("app/stations/kana-extensions/loading.tsx", root),
     "utf8",
   );
+  const soundMarksLoading = await readFile(
+    new URL("app/stations/sound-marks/loading.tsx", root),
+    "utf8",
+  );
+  const combinedSoundsLoading = await readFile(
+    new URL("app/stations/combined-sounds/loading.tsx", root),
+    "utf8",
+  );
   const navigationFeedback = await readFile(
     new URL("app/navigation-feedback.tsx", root),
     "utf8",
@@ -29,9 +37,14 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(screen, /loading-title/);
   assert.match(screen, /loading-track/);
   assert.doesNotMatch(screen, /<svg|loading-network|spinner/i);
-  assert.match(kanaLoading, /<LoadingScreen station="Kana" \/>/);
-  assert.match(extensionsLoading, /<LoadingScreen station="Kana extensions" \/>/);
+  assert.match(kanaLoading, /<LoadingScreen station="Vowels" \/>/);
+  assert.match(loadingStyles, /data-station="vowels"/);
+  assert.match(extensionsLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
+  assert.match(soundMarksLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
+  assert.match(combinedSoundsLoading, /<LoadingScreen station="Yōon" \/>/);
   assert.match(loadingStyles, /data-station="kana-extensions"/);
+  assert.match(loadingStyles, /data-station="sound-marks"/);
+  assert.match(loadingStyles, /data-station="combined-sounds"/);
   assert.match(navigationFeedback, /<NavigationFeedbackContext value=\{beginNavigation\}>/);
   assert.match(navigationFeedback, /<RouteReadyContext value=\{completeNavigation\}>/);
   assert.match(navigationFeedback, /<NavigationCompletion onComplete=\{completeNavigation\} \/>/);

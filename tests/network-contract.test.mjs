@@ -159,16 +159,18 @@ test("the network keeps the approved desktop and mobile geography", async () => 
 
 test("station map glyphs reflect each station's network position", async () => {
   const source = await readFile(new URL("app/stations/station-topbar.tsx", root), "utf8");
-
-  assert.match(
-    source,
-    /position === "kana"[\s\S]*station-map-writing[\s\S]*station-map-sound[\s\S]*station-map-interchange/,
+  const kanaGlyph = source.slice(
+    source.indexOf('if (position === "kana")'),
+    source.indexOf('if (position === "hiragana")'),
   );
+
+  assert.match(kanaGlyph, /station-map-writing[\s\S]*station-map-interchange/);
+  assert.doesNotMatch(kanaGlyph, /station-map-sound/);
   assert.match(source, /position === "hiragana"[\s\S]*station-map-writing/);
   assert.match(source, /position === "katakana"[\s\S]*data-terminal="true"[\s\S]*station-map-writing/);
 });
 
-test("the Writing stations reveal in order from an account-scoped Kana introduction", async () => {
+test("the Writing stations reveal in order from account-scoped completion", async () => {
   const source = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
   const moraPage = await readFile(new URL("app/stations/mora-timing/page.tsx", root), "utf8");
@@ -193,14 +195,17 @@ test("the Writing stations reveal in order from an account-scoped Kana introduct
   assert.match(schema, /stationIntroductions = sqliteTable\(\s*"station_introductions"/s);
   assert.match(schema, /primaryKey\(\{ columns: \[table\.userId, table\.stationId\] \}\)/);
   assert.match(repository, /where\(eq\(stationIntroductions\.userId, userId\)\)/);
-  assert.match(repository, /if \(!isStationAvailable\(stationId, introductions\)\) return false/);
+  assert.match(repository, /const completedStations = await listCompletedStations\(userId\)/);
+  assert.match(repository, /if \(!isStationAvailable\(stationId, completedStations\)\) return false/);
+  assert.match(repository, /knownHiragana\.length === BASIC_HIRAGANA\.length/);
+  assert.match(repository, /knownKatakana\.length === BASIC_KATAKANA\.length/);
   assert.match(repository, /onConflictDoNothing\(\)/);
   assert.match(kanaApi, /recordStationIntroduction\(user\.id, "kana"\)/);
   assert.match(kanaApi, /\{ available: \["hiragana"\] \}/);
   assert.match(api, /recordStationIntroduction\(user\.id, "hiragana"\)/);
   assert.match(api, /error: "station_unavailable"/);
   assert.match(api, /status: 403/);
-  assert.match(api, /\{ available: \["katakana"\] \}/);
+  assert.match(api, /\{ available: \[\] \}/);
   assert.match(page, /dynamic = "force-static"/);
   assert.match(page, /<NetworkMap \/>/);
   assert.doesNotMatch(page, /Promise\.all|isStationAvailableToCurrentUser|getStationAvailabilityForCurrentUser/);
@@ -362,23 +367,99 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /data-line="writing"/);
   assert.match(source, /renderTestButton\("All Hiragana", ALL_HIRAGANA_TEST_ENTRIES\)/);
   assert.match(source, /renderTestButton\(group\.title, group\.entries\)/);
-  assert.match(source, /\{knownCount\}\/\{total\}/);
+  assert.match(source, /const remainingCount = total - knownCount/);
+  assert.match(source, /remainingCount === 0 \? \([\s\S]*className="hiragana-test-complete-icon"/);
+  assert.match(source, /data-complete=\{remainingCount === 0 \? "true" : undefined\}/);
+  assert.match(source, /`Test \$\{title\}\. Complete\.`/);
+  assert.match(source, /`Test \$\{title\}\. \$\{remainingCount\} remaining\.`/);
+  assert.match(source, /className="network-tooltip hiragana-test-tooltip"/);
+  assert.doesNotMatch(source, /title=\{testLabel\}/);
+  assert.match(source, /const \[expandedGroups, setExpandedGroups\] = useState<Set<string>>\(\(\) => new Set\(\)\)/);
+  assert.match(source, /aria-controls=\{`\$\{group\.id\}-content`\}/);
+  assert.match(source, /aria-expanded=\{expanded\}/);
+  assert.match(source, /hidden=\{!expanded\}/);
+  assert.match(source, /toggleStudyGroup\(group\.id\)/);
+  assert.match(source, /aria-label="Station options"/);
+  assert.match(source, /<div className="station-heading-actions">[\s\S]*<details className="station-options"[\s\S]*renderTestButton\("All Hiragana"/);
+  assert.match(source, /<circle cx="4" cy="10" r="1\.5" \/>/);
+  assert.match(source, /document\.addEventListener\("pointerdown", dismissStationOptions\)/);
+  assert.match(source, /event\.key !== "Escape"/);
+  assert.match(source, /aria-label="Close station options"/);
+  assert.match(source, /onClick=\{closeStationOptions\}/);
+  assert.doesNotMatch(source, /station-options-menu-header/);
+  assert.doesNotMatch(source, /<span>Station options<\/span>/);
+  assert.match(source, />I know this<\/span>/);
+  assert.match(source, />Reset station<\/span>/);
+  assert.match(source, /method: "PATCH"/);
+  assert.match(source, /onClick=\{openCompleteDialog\}/);
+  assert.match(source, /setAllKnowledge\(true\)/);
+  assert.match(source, /setAllKnowledge\(false\)/);
+  assert.match(source, /aria-labelledby="hiragana-complete-title"/);
+  assert.match(source, /This marks all 46 Hiragana as complete and unlocks Katakana/);
+  assert.match(source, /aria-labelledby="hiragana-reset-title"/);
+  assert.match(source, /Later stations will stay hidden until Hiragana is complete again/);
+  assert.match(source, /bulkKnowledgeAction === "complete" \? "Completing…" : "Complete"/);
+  assert.match(source, /bulkKnowledgeAction === "reset" \? "Resetting…" : "Reset"/);
+  assert.equal((source.match(/className="hiragana-test-answer hiragana-test-answer-no"/g) ?? []).length, 3);
+  assert.equal((source.match(/className="hiragana-test-answer hiragana-test-answer-yes"/g) ?? []).length, 2);
+  assert.match(source, /className="hiragana-test-answer station-confirm-reset"/);
+  assert.equal((source.match(/className="hiragana-test-actions"/g) ?? []).length, 3);
   assert.match(source, /--hiragana-test-progress/);
+  assert.match(styles, /\.station-options-menu\s*\{[^}]*position:\s*absolute[^}]*top:\s*0[^}]*right:\s*0[^}]*background:\s*var\(--surface\)[^}]*transform-origin:\s*top right/s);
+  assert.match(styles, /\.station-options summary\s*\{[^}]*width:\s*2\.5rem[^}]*border:\s*0[^}]*background:\s*transparent/s);
+  assert.match(styles, /\.station-options summary svg\s*\{[^}]*width:\s*1\.25rem/s);
+  assert.match(styles, /\.station-options-close\s*\{[^}]*position:\s*absolute[^}]*top:\s*0\.35rem[^}]*right:\s*0\.35rem[^}]*width:\s*2rem[^}]*height:\s*2rem/s);
+  assert.match(styles, /\.station-options-close \+ \.station-options-action\s*\{[^}]*padding-right:\s*2\.75rem/s);
+  assert.match(styles, /\.station-options-action:hover\s*\{[^}]*opacity:\s*1[^}]*\}/s);
+  assert.doesNotMatch(styles, /\.station-options-action:hover\s*\{[^}]*background:/s);
+  assert.doesNotMatch(source, /station-options-reset/);
+  assert.doesNotMatch(styles, /\.station-options-reset/);
+  assert.doesNotMatch(styles, /\.station-options summary:hover,\s*\.station-options\[open\] summary\s*\{[^}]*border-color:/s);
+  assert.match(styles, /\.station-confirm-dialog::backdrop/);
+  assert.doesNotMatch(styles, /\.station-confirm-(?:actions|action-icon|cancel|complete)\b/);
+  assert.match(styles, /\.station-confirm-modal \.hiragana-test-actions\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*flex-end[^}]*gap:\s*0\.625rem/s);
+  assert.match(styles, /\.station-confirm-modal \.hiragana-test-answer\s*\{[^}]*min-height:\s*2\.75rem[^}]*padding:\s*0\.55rem 0\.85rem/s);
+  assert.match(styles, /\.hiragana-test-answer\.station-confirm-reset\s*\{[^}]*background:\s*var\(--sound\)/s);
+  assert.match(styles, /\.hiragana-study-group-toggle\[aria-expanded="true"\] \.hiragana-study-group-chevron/);
+  assert.match(styles, /\.hiragana-test-trigger-wrap:hover \.hiragana-test-tooltip/);
+  assert.match(styles, /\.hiragana-test-trigger:focus-visible \+ \.hiragana-test-tooltip/);
   assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*background:\s*conic-gradient\([^}]*var\(--hiragana-test-progress\)/s);
-  assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*inset:\s*0\.25rem/s);
-  assert.match(styles, /\.hiragana-test-trigger::after\s*\{[^}]*inset:\s*calc\(0\.25rem \+ 2px\)/s);
+  assert.match(styles, /\.hiragana-test-trigger\s*\{[^}]*width:\s*2\.5rem[^}]*height:\s*2\.5rem/s);
+  assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*inset:\s*0\.1875rem/s);
+  assert.match(styles, /\.hiragana-test-trigger::after\s*\{[^}]*inset:\s*calc\(0\.1875rem \+ 3px\)/s);
+  assert.match(styles, /\.hiragana-test-trigger\[data-complete="true"\]::before\s*\{[^}]*background:\s*var\(--known\)/s);
+  assert.match(styles, /\.hiragana-test-complete-icon\s*\{[^}]*width:\s*1\.125rem[^}]*color:\s*var\(--known\)[^}]*stroke-width:\s*2\.5/s);
   assert.doesNotMatch(source, /Test row|hiragana-test-icon/);
   assert.match(source, /<dialog[\s\S]*aria-labelledby="hiragana-test-title"/);
   assert.doesNotMatch(source, /<p>Test<\/p>/);
   assert.match(source, /aria-label="Close test"[\s\S]*?<span aria-hidden="true">×<\/span>/);
   assert.match(styles, /\.hiragana-test-close\s*\{[^}]*border-radius:\s*50%[^}]*appearance:\s*none/s);
   assert.match(styles, /\.hiragana-test-close:focus-visible\s*\{[^}]*outline:\s*none[^}]*box-shadow:/s);
-  assert.match(source, />\s*Not yet\s*</);
-  assert.match(source, />\s*Yes\s*</);
-  assert.match(source, /Say the sound, then tap the Kana to hear it/);
+  assert.doesNotMatch(source, />\s*Not yet\s*</);
+  assert.match(source, /<span>No<\/span>/);
+  assert.match(source, /<span>Yes<\/span>/);
+  assert.equal((source.match(/className="hiragana-test-answer-icon"/g) ?? []).length, 6);
+  assert.match(styles, /\.hiragana-test-answer-icon\s*\{[^}]*stroke:\s*currentcolor/s);
+  assert.match(styles, /\.hiragana-test-answer-no:hover\s*\{[^}]*border-color:\s*rgb\(242 241 235 \/ 0\.24\)[^}]*background:\s*rgb\(242 241 235 \/ 0\.06\)/s);
+  assert.match(source, /Say the sound, then tap the Kana to hear it and reveal the pronunciation/);
+  assert.match(source, /setPronunciationRevealed\(true\)/);
+  assert.match(source, /className="hiragana-test-pronunciation"[\s\S]*pronunciationRevealed \? activeCard\.english/);
+  assert.match(source, /english: "nn"[^\n]*kana: "ん"/);
+  assert.doesNotMatch(source, />English sound</);
+  assert.match(source, /data-playing=\{audioPlaying \? "true" : undefined\}/);
+  assert.match(source, /onPlaying=\{\(\) => setAudioPlaying\(true\)\}/);
+  assert.match(styles, /\.hiragana-test-card\[data-playing="true"\][^}]*border-color:\s*var\(--sound\)/s);
+  assert.match(styles, /@keyframes hiragana-test-sound-pulse/);
   assert.match(source, /data-known=\{isKnown \? "true" : undefined\}/);
   assert.match(source, /kana-study-button-known/);
   assert.match(source, /renderStudyKana\(entry\)/);
+  assert.match(source, /HIRAGANA_TEST_ENTRY_BY_KANA/);
+  assert.match(source, /onClick=\{\(\) => openTest\("Hiragana", \[testEntry\]\)\}/);
+  assert.match(source, /onClick=\{\(\) => openTest\("Hiragana", \[entry\]\)\}/);
+  assert.doesNotMatch(
+    source.slice(source.indexOf("function renderKana"), source.indexOf("function renderStudyKana")),
+    /playAudio/,
+  );
   assert.match(source, /fetch\("\/api\/stations\/hiragana\/knowledge"/);
   assert.match(styles, /\.hiragana-button-known[\s\S]*\.kana-study-button-known[\s\S]*color:\s*var\(--known\)/);
   assert.doesNotMatch(styles, /\.hiragana-button-known::after|content:\s*"✓"/);
@@ -391,7 +472,16 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(repository, /delete\(hiraganaKnowledge\)/);
   assert.match(knowledgeApi, /export async function GET/);
   assert.match(knowledgeApi, /export async function PUT/);
+  assert.match(knowledgeApi, /export async function PATCH/);
+  assert.match(knowledgeApi, /setAllHiraganaKnown\(user\.id, body\.known\)/);
+  assert.match(knowledgeApi, /body\.known \? BASIC_HIRAGANA : \[\]/);
   assert.match(knowledgeApi, /isBasicHiragana\(candidate\.kana\)/);
+  assert.match(repository, /setAllHiraganaKnown/);
+  assert.match(repository, /HIRAGANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30/);
+  assert.match(repository, /BASIC_HIRAGANA\.slice\([\s\S]*start \+ HIRAGANA_KNOWLEDGE_ROWS_PER_STATEMENT/);
+  assert.match(repository, /await db\.batch\(\[firstStatement, \.\.\.remainingStatements\]\)/);
+  assert.doesNotMatch(repository, /\.values\(BASIC_HIRAGANA\.map/);
+  assert.match(repository, /delete\(hiraganaKnowledge\)[\s\S]*eq\(hiraganaKnowledge\.userId, userId\)/);
   assert.match(knowledgeApi, /private, no-store/);
   assert.match(hiraganaDomain, /BASIC_HIRAGANA = \[/);
   assert.equal((hiraganaDomain.match(/"[ぁ-ん]"/g) ?? []).length, 46);
@@ -411,6 +501,10 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   const source = await readFile(new URL("app/stations/katakana/katakana-guide.tsx", root), "utf8");
   const page = await readFile(new URL("app/stations/katakana/page.tsx", root), "utf8");
   const api = await readFile(new URL("app/api/stations/katakana/introduction/route.ts", root), "utf8");
+  const knowledgeApi = await readFile(new URL("app/api/stations/katakana/knowledge/route.ts", root), "utf8");
+  const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
+  const schema = await readFile(new URL("db/schema.ts", root), "utf8");
+  const katakanaDomain = await readFile(new URL("src/modules/learning/katakana.ts", root), "utf8");
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
   const katakana = [...source.matchAll(/katakana: "([^"]+)"/g)].map((match) => match[1]);
   const hiragana = [...source.matchAll(/hiragana: "([^"]+)"/g)].map((match) => match[1]);
@@ -422,7 +516,7 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.equal(new Set(hiragana).size, 46);
   assert.equal(audioPaths.length, 46);
   assert.match(page, /isStationAvailableToCurrentUser\("katakana"\)/);
-  assert.match(page, /data-line="writing"/);
+  assert.match(source, /data-line="writing"/);
   assert.match(api, /recordStationIntroduction\(user\.id, "katakana"\)/);
   assert.match(api, /error: "station_unavailable"/);
   assert.match(api, /status: 403/);
@@ -442,7 +536,53 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.match(source, /className="katakana-match"/);
   assert.match(styles, /\.katakana-table\s*\{[^}]*table-layout:\s*fixed/s);
   assert.match(styles, /\.katakana-button\s*\{[^}]*flex-direction:\s*column/s);
-  assert.doesNotMatch(source, /score|streak|timer|progress|test/i);
+  assert.match(source, /renderTestButton\("All Katakana", ALL_KATAKANA_TEST_ENTRIES\)/);
+  assert.match(source, /title: "The vowel row"/);
+  assert.match(source, /title: "The W row"/);
+  assert.match(source, /title: "ン"/);
+  assert.doesNotMatch(source, /The W row and ン/);
+  assert.match(source, /aria-expanded=\{expanded\}/);
+  assert.match(source, /hidden=\{!expanded\}/);
+  assert.match(source, /className="kana-study-table katakana-study-table"/);
+  assert.match(source, /<th scope="col">Katakana<\/th>/);
+  assert.match(source, /<th scope="col">Hiragana<\/th>/);
+  assert.match(source, /<th scope="col">Sound<\/th>/);
+  assert.match(source, /aria-labelledby="katakana-test-title"/);
+  assert.match(source, /Say the sound, then tap the Katakana to hear it and reveal the pronunciation/);
+  assert.match(source, /pronunciationRevealed \? activeCard\.sound/);
+  assert.match(source, /data-playing=\{audioPlaying \? "true" : undefined\}/);
+  assert.match(source, /<span>No<\/span>/);
+  assert.match(source, /<span>Yes<\/span>/);
+  assert.match(source, /aria-labelledby="katakana-complete-title"/);
+  assert.match(source, /aria-labelledby="katakana-reset-title"/);
+  assert.match(source, /fetch\("\/api\/stations\/katakana\/knowledge"/);
+  assert.match(source, /data-known=\{isKnown \? "true" : undefined\}/);
+  assert.match(source, /onClick=\{\(\) => openTest\("Katakana", \[kana\]\)\}/);
+  assert.match(source, /onClick=\{\(\) => openTest\("Katakana", \[entry\]\)\}/);
+  assert.doesNotMatch(
+    source.slice(source.indexOf("function renderKatakana"), source.indexOf("function renderStudyKatakana")),
+    /playAudio/,
+  );
+  assert.match(styles, /\.kana-study-button-known[\s\S]*color:\s*var\(--known\)/);
+  assert.match(styles, /\.katakana-button-known,[\s\S]*\.katakana-button-known:hover\s*\{[^}]*color:\s*var\(--known\)/s);
+  assert.ok(
+    styles.indexOf(".katakana-button-known") > styles.indexOf(".katakana-button:hover"),
+    "known Katakana chart styling must follow the base hover rule in the cascade",
+  );
+  assert.match(schema, /katakanaKnowledge = sqliteTable\(\s*"katakana_knowledge"/s);
+  assert.match(repository, /listKnownKatakana/);
+  assert.match(repository, /setKatakanaKnown/);
+  assert.match(repository, /setAllKatakanaKnown/);
+  assert.match(repository, /KATAKANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30/);
+  assert.match(repository, /BASIC_KATAKANA\.slice\([\s\S]*start \+ KATAKANA_KNOWLEDGE_ROWS_PER_STATEMENT/);
+  assert.match(knowledgeApi, /export async function GET/);
+  assert.match(knowledgeApi, /export async function PUT/);
+  assert.match(knowledgeApi, /export async function PATCH/);
+  assert.match(knowledgeApi, /setAllKatakanaKnown\(user\.id, body\.known\)/);
+  assert.match(knowledgeApi, /body\.known \? BASIC_KATAKANA : \[\]/);
+  assert.match(knowledgeApi, /private, no-store/);
+  assert.equal((katakanaDomain.match(/"[ァ-ン]"/g) ?? []).length, 46);
+  assert.doesNotMatch(source, /romaji|score|streak|timer/i);
 
   for (const audioPath of audioPaths) {
     const audio = await readFile(new URL(`public${audioPath}`, root));

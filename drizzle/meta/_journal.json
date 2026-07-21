@@ -22,6 +22,13 @@
       "when": 1784548323919,
       "tag": "0002_young_marvel_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1784616769809,
+      "tag": "0003_far_shatterstar",
+      "breakpoints": true
     }
   ]
 }

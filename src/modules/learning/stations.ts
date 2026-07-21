@@ -23,10 +23,10 @@ export function isStationId(value: string): value is StationId {
 
 export function isStationAvailable(
   stationId: StationId,
-  introducedStations: readonly StationId[],
+  completedStations: readonly StationId[],
 ): boolean {
   const prerequisites = STATION_PREREQUISITES[stationId] ?? [];
   return prerequisites.every((prerequisite) =>
-    introducedStations.includes(prerequisite),
+    completedStations.includes(prerequisite),
   );
 }

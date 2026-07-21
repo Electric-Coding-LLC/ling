@@ -16,11 +16,16 @@ test("generated migrations create the account-scoped learning boundaries", async
     new URL("drizzle/0002_young_marvel_boy.sql", root),
     "utf8",
   );
+  const katakanaKnowledgeMigration = await readFile(
+    new URL("drizzle/0003_far_shatterstar.sql", root),
+    "utf8",
+  );
   const database = new DatabaseSync(":memory:");
   database.exec("PRAGMA foreign_keys = ON");
   database.exec(userMigration);
   database.exec(introductionMigration);
   database.exec(hiraganaKnowledgeMigration);
+  database.exec(katakanaKnowledgeMigration);
 
   const tables = database
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
@@ -28,6 +33,7 @@ test("generated migrations create the account-scoped learning boundaries", async
     .map(({ name }) => name);
   assert.deepEqual(tables, [
     "hiragana_knowledge",
+    "katakana_knowledge",
     "station_introductions",
     "user_identities",
     "users",
@@ -52,6 +58,13 @@ test("generated migrations create the account-scoped learning boundaries", async
   assert.equal(hiraganaKnowledgeForeignKeys[0].table, "users");
   assert.equal(hiraganaKnowledgeForeignKeys[0].on_delete, "CASCADE");
 
+  const katakanaKnowledgeForeignKeys = database
+    .prepare("PRAGMA foreign_key_list(katakana_knowledge)")
+    .all();
+  assert.equal(katakanaKnowledgeForeignKeys.length, 1);
+  assert.equal(katakanaKnowledgeForeignKeys[0].table, "users");
+  assert.equal(katakanaKnowledgeForeignKeys[0].on_delete, "CASCADE");
+
   database.prepare(
     "INSERT INTO users (id, created_at, updated_at) VALUES (?, ?, ?)",
   ).run("learner-1", 1, 1);
@@ -62,6 +75,15 @@ test("generated migrations create the account-scoped learning boundaries", async
     database.prepare(
       "INSERT INTO station_introductions (user_id, station_id, introduced_at) VALUES (?, ?, ?)",
     ).run("learner-1", "hiragana", 3);
+  }, /UNIQUE constraint failed/);
+
+  database.prepare(
+    "INSERT INTO katakana_knowledge (user_id, kana, known_at) VALUES (?, ?, ?)",
+  ).run("learner-1", "ア", 6);
+  assert.throws(() => {
+    database.prepare(
+      "INSERT INTO katakana_knowledge (user_id, kana, known_at) VALUES (?, ?, ?)",
+    ).run("learner-1", "ア", 7);
   }, /UNIQUE constraint failed/);
 
   database.prepare(
@@ -80,6 +102,10 @@ test("generated migrations create the account-scoped learning boundaries", async
   );
   assert.equal(
     database.prepare("SELECT COUNT(*) AS count FROM hiragana_knowledge").get().count,
+    0,
+  );
+  assert.equal(
+    database.prepare("SELECT COUNT(*) AS count FROM katakana_knowledge").get().count,
     0,
   );
   database.close();

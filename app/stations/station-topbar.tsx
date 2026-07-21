@@ -12,7 +12,6 @@ function NetworkGlyph({ position }: { position: NetworkPosition }) {
         viewBox="0 0 40 24"
       >
         <path className="station-map-writing" d="M20 8v14" />
-        <path className="station-map-sound" d="M20 8h18" />
         <circle className="station-map-current station-map-interchange" cx="20" cy="8" r="5" />
       </svg>
     );

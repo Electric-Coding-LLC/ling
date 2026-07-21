@@ -22,7 +22,7 @@ export async function POST() {
   }
 
   return Response.json(
-    { available: ["katakana"] },
+    { available: [] },
     { headers: privateNoStoreHeaders() },
   );
 }

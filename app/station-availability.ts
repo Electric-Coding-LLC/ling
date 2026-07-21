@@ -1,5 +1,5 @@
 import { getOrCreateUser } from "@/src/modules/users/repository";
-import { listStationIntroductions } from "@/src/modules/learning/repository";
+import { listCompletedStations } from "@/src/modules/learning/repository";
 import {
   isStationAvailable,
   STATION_IDS,
@@ -13,14 +13,14 @@ export async function getStationAvailabilityForCurrentUser(): Promise<
   const identity = await getCurrentIdentity();
   if (!identity) return null;
 
-  const introductions = await listStationIntroductions(
+  const completedStations = await listCompletedStations(
     (await getOrCreateUser(identity)).id,
   );
 
   return Object.fromEntries(
     STATION_IDS.map((stationId) => [
       stationId,
-      isStationAvailable(stationId, introductions),
+      isStationAvailable(stationId, completedStations),
     ]),
   ) as Record<StationId, boolean>;
 }

@@ -1,12 +1,12 @@
 import { getOrCreateUser } from "@/src/modules/users/repository";
 import {
-  BASIC_HIRAGANA,
-  isBasicHiragana,
-} from "@/src/modules/learning/hiragana";
+  BASIC_KATAKANA,
+  isBasicKatakana,
+} from "@/src/modules/learning/katakana";
 import {
-  listKnownHiragana,
-  setAllHiraganaKnown,
-  setHiraganaKnown,
+  listKnownKatakana,
+  setAllKatakanaKnown,
+  setKatakanaKnown,
 } from "@/src/modules/learning/repository";
 import { getCurrentIdentity } from "@/src/platform/current-identity";
 
@@ -17,7 +17,7 @@ export async function GET() {
   if (!user) return unauthorized();
 
   return Response.json(
-    { known: await listKnownHiragana(user.id) },
+    { known: await listKnownKatakana(user.id) },
     { headers: privateNoStoreHeaders() },
   );
 }
@@ -35,7 +35,7 @@ export async function PUT(request: Request) {
 
   if (!isKnowledgeUpdate(body)) return invalidKnowledge();
 
-  await setHiraganaKnown(user.id, body.kana, body.known);
+  await setKatakanaKnown(user.id, body.kana, body.known);
   return Response.json(body, { headers: privateNoStoreHeaders() });
 }
 
@@ -52,9 +52,9 @@ export async function PATCH(request: Request) {
 
   if (!isBulkKnowledgeUpdate(body)) return invalidKnowledge();
 
-  await setAllHiraganaKnown(user.id, body.known);
+  await setAllKatakanaKnown(user.id, body.known);
   return Response.json(
-    { known: body.known ? BASIC_HIRAGANA : [] },
+    { known: body.known ? BASIC_KATAKANA : [] },
     { headers: privateNoStoreHeaders() },
   );
 }
@@ -66,10 +66,10 @@ async function getCurrentUser() {
 
 function isKnowledgeUpdate(
   value: unknown,
-): value is { kana: Parameters<typeof setHiraganaKnown>[1]; known: boolean } {
+): value is { kana: Parameters<typeof setKatakanaKnown>[1]; known: boolean } {
   if (!value || typeof value !== "object") return false;
   const candidate = value as { kana?: unknown; known?: unknown };
-  return isBasicHiragana(candidate.kana) && typeof candidate.known === "boolean";
+  return isBasicKatakana(candidate.kana) && typeof candidate.known === "boolean";
 }
 
 function isBulkKnowledgeUpdate(
@@ -89,7 +89,7 @@ function unauthorized() {
 
 function invalidKnowledge() {
   return Response.json(
-    { error: "invalid_hiragana_knowledge" },
+    { error: "invalid_katakana_knowledge" },
     { status: 400, headers: privateNoStoreHeaders() },
   );
 }

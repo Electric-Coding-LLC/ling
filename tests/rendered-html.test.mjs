@@ -127,7 +127,7 @@ test("server-renders the Kana orientation", async () => {
   assert.match(html, /aria-label="Return to network map from Kana"/i);
   assert.equal((html.match(/href="\/\?focus=kana"/gi) ?? []).length, 1);
   assert.match(html, /data-position="kana"/i);
-  assert.match(html, /class="station-map-sound"/i);
+  assert.doesNotMatch(html, /class="station-map-sound"/i);
   assert.match(html, /class="station-map-writing"/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);
   assert.match(html, /data-line="writing"[^>]*>Writing</i);
@@ -207,6 +207,18 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(knowledgeUpdate.status, 401);
   assert.equal(knowledgeUpdate.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await knowledgeUpdate.json(), { error: "unauthorized" });
+
+  const bulkKnowledgeUpdate = await request(
+    "/api/stations/hiragana/knowledge",
+    {
+      body: JSON.stringify({ known: true }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    },
+  );
+  assert.equal(bulkKnowledgeUpdate.status, 401);
+  assert.equal(bulkKnowledgeUpdate.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await bulkKnowledgeUpdate.json(), { error: "unauthorized" });
 
   const availability = await request("/api/stations/availability");
   assert.equal(availability.status, 401);

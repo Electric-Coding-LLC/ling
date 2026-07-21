@@ -190,7 +190,7 @@ const HIRAGANA_STUDY_GROUPS = [
     entries: [
       { english: "wah", example: "わに", exampleAudio: "/audio/ja-wani.wav", kana: "わ", kanaAudio: "/audio/ja-wa.wav", translation: "crocodile" },
       { english: "oh", example: "これを", exampleAudio: "/audio/ja-kore-o.wav", kana: "を", kanaAudio: "/audio/ja-wo.wav", translation: "this (object)" },
-      { english: "n", example: "ほん", exampleAudio: "/audio/ja-hon.wav", kana: "ん", kanaAudio: "/audio/ja-n.wav", translation: "book" },
+      { english: "nn", example: "ほん", exampleAudio: "/audio/ja-hon.wav", kana: "ん", kanaAudio: "/audio/ja-n.wav", translation: "book" },
     ],
     id: "hiragana-w-row",
     title: "The W row and ん",
@@ -198,6 +198,7 @@ const HIRAGANA_STUDY_GROUPS = [
 ] as const;
 
 type HiraganaTestEntry = {
+  readonly english: string;
   readonly kana: string;
   readonly kanaAudio: string;
 };
@@ -211,19 +212,31 @@ const ALL_HIRAGANA_TEST_ENTRIES = HIRAGANA_STUDY_GROUPS.reduce<HiraganaTestEntry
   (entries, group) => [...entries, ...group.entries],
   [],
 );
+const HIRAGANA_TEST_ENTRY_BY_KANA = new Map(
+  ALL_HIRAGANA_TEST_ENTRIES.map((entry) => [entry.kana, entry]),
+);
 const BASIC_HIRAGANA_SET = new Set(
   ALL_HIRAGANA_TEST_ENTRIES.map((entry) => entry.kana),
 );
 
 export function HiraganaGuide() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const completeDialogRef = useRef<HTMLDialogElement | null>(null);
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const resetDialogRef = useRef<HTMLDialogElement | null>(null);
+  const stationOptionsRef = useRef<HTMLDetailsElement | null>(null);
   const [audioError, setAudioError] = useState(false);
+  const [bulkKnowledgeAction, setBulkKnowledgeAction] = useState<"complete" | "reset" | null>(null);
   const [knowledgeError, setKnowledgeError] = useState(false);
   const [knownHiragana, setKnownHiragana] = useState<Set<string>>(() => new Set());
   const [activeTest, setActiveTest] = useState<HiraganaTest | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
+  const [pronunciationRevealed, setPronunciationRevealed] = useState(false);
   const [testIndex, setTestIndex] = useState(0);
   const activeCard = activeTest?.cards[testIndex] ?? null;
+  const allHiraganaKnown = knownHiragana.size === ALL_HIRAGANA_TEST_ENTRIES.length;
+  const hasHiraganaProgress = knownHiragana.size > 0;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -257,8 +270,37 @@ export function HiraganaGuide() {
     if (activeTest && dialog && !dialog.open) dialog.showModal();
   }, [activeTest]);
 
+  useEffect(() => {
+    function dismissStationOptions(event: PointerEvent) {
+      const stationOptions = stationOptionsRef.current;
+      if (
+        stationOptions?.open
+        && event.target instanceof Node
+        && !stationOptions.contains(event.target)
+      ) {
+        stationOptions.open = false;
+      }
+    }
+
+    function closeStationOptionsWithEscape(event: KeyboardEvent) {
+      const stationOptions = stationOptionsRef.current;
+      if (event.key !== "Escape" || !stationOptions?.open) return;
+
+      stationOptions.open = false;
+      stationOptions.querySelector<HTMLElement>("summary")?.focus();
+    }
+
+    document.addEventListener("pointerdown", dismissStationOptions);
+    document.addEventListener("keydown", closeStationOptionsWithEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismissStationOptions);
+      document.removeEventListener("keydown", closeStationOptionsWithEscape);
+    };
+  }, []);
+
   async function playAudio(src: string) {
     setAudioError(false);
+    setAudioPlaying(false);
     const audio = audioRef.current;
     if (!audio) {
       setAudioError(true);
@@ -272,17 +314,30 @@ export function HiraganaGuide() {
       await audio.play();
     } catch {
       setAudioError(true);
+      setAudioPlaying(false);
     }
   }
 
+  function stopAudio() {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setAudioPlaying(false);
+  }
+
   function renderKana(kana: { readonly audio: string; readonly character: string }) {
+    const testEntry = HIRAGANA_TEST_ENTRY_BY_KANA.get(kana.character);
+    if (!testEntry) throw new Error(`Missing flashcard for ${kana.character}`);
+
     const isKnown = knownHiragana.has(kana.character);
     return (
       <button
-        aria-label={`Play ${kana.character}${isKnown ? ", marked known" : ""}`}
+        aria-label={`Study ${kana.character}${isKnown ? ", marked known" : ""}`}
         className={`hiragana-button${isKnown ? " hiragana-button-known" : ""}`}
         data-known={isKnown ? "true" : undefined}
-        onClick={() => playAudio(kana.audio)}
+        onClick={() => openTest("Hiragana", [testEntry])}
         type="button"
       >
         <span lang="ja">{kana.character}</span>
@@ -294,10 +349,10 @@ export function HiraganaGuide() {
     const isKnown = knownHiragana.has(entry.kana);
     return (
       <button
-        aria-label={`Play ${entry.kana}${isKnown ? ", marked known" : ""}`}
+        aria-label={`Study ${entry.kana}${isKnown ? ", marked known" : ""}`}
         className={`kana-study-button kana-study-kana-button${isKnown ? " kana-study-button-known" : ""}`}
         data-known={isKnown ? "true" : undefined}
-        onClick={() => playAudio(entry.kanaAudio)}
+        onClick={() => openTest("Hiragana", [entry])}
         type="button"
       >
         <span lang="ja">{entry.kana}</span>
@@ -306,20 +361,32 @@ export function HiraganaGuide() {
   }
 
   function openTest(title: string, entries: readonly HiraganaTestEntry[]) {
+    stopAudio();
     setKnowledgeError(false);
+    setPronunciationRevealed(false);
     setTestIndex(0);
     setActiveTest({ cards: shuffle(entries), title });
   }
 
   function closeTest() {
+    stopAudio();
     dialogRef.current?.close();
     setActiveTest(null);
+    setPronunciationRevealed(false);
     setTestIndex(0);
+  }
+
+  function revealPronunciation() {
+    if (!activeCard) return;
+    setPronunciationRevealed(true);
+    void playAudio(activeCard.kanaAudio);
   }
 
   function answerCard(known: boolean) {
     if (!activeCard || !activeTest) return;
 
+    stopAudio();
+    setPronunciationRevealed(false);
     const kana = activeCard.kana;
     const wasKnown = knownHiragana.has(kana);
     updateKnownState(kana, known);
@@ -352,27 +419,92 @@ export function HiraganaGuide() {
     });
   }
 
+  function toggleStudyGroup(groupId: string) {
+    setExpandedGroups((current) => {
+      const next = new Set(current);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  }
+
+  async function setAllKnowledge(known: boolean) {
+    setBulkKnowledgeAction(known ? "complete" : "reset");
+    setKnowledgeError(false);
+
+    try {
+      const response = await fetch("/api/stations/hiragana/knowledge", {
+        body: JSON.stringify({ known }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      });
+      if (!response.ok) throw new Error("Knowledge could not save");
+
+      const payload = await response.json() as { known?: unknown };
+      if (!Array.isArray(payload.known)) throw new Error("Knowledge is invalid");
+      const nextKnown = payload.known.filter(
+        (kana): kana is string => typeof kana === "string" && BASIC_HIRAGANA_SET.has(kana),
+      );
+      if (nextKnown.length !== payload.known.length) throw new Error("Knowledge is invalid");
+
+      setKnownHiragana(new Set(nextKnown));
+      closeStationOptions();
+      if (known) completeDialogRef.current?.close();
+      else resetDialogRef.current?.close();
+    } catch {
+      setKnowledgeError(true);
+    } finally {
+      setBulkKnowledgeAction(null);
+    }
+  }
+
+  function closeStationOptions() {
+    if (stationOptionsRef.current) stationOptionsRef.current.open = false;
+  }
+
+  function openCompleteDialog() {
+    closeStationOptions();
+    completeDialogRef.current?.showModal();
+  }
+
+  function openResetDialog() {
+    closeStationOptions();
+    resetDialogRef.current?.showModal();
+  }
+
   function renderTestButton(
     title: string,
     entries: readonly HiraganaTestEntry[],
   ) {
     const knownCount = entries.filter((entry) => knownHiragana.has(entry.kana)).length;
     const total = entries.length;
-    const testLabel = `Test ${title}. ${knownCount} of ${total} known.`;
+    const remainingCount = total - knownCount;
+    const testLabel = remainingCount === 0
+      ? `Test ${title}. Complete.`
+      : `Test ${title}. ${remainingCount} remaining.`;
 
     return (
-      <button
-        aria-label={testLabel}
-        className="hiragana-test-trigger"
-        onClick={() => openTest(title, entries)}
-        style={{ "--hiragana-test-progress": `${knownCount / total}turn` } as CSSProperties}
-        title={testLabel}
-        type="button"
-      >
-        <span className="hiragana-test-progress-text">
-          {knownCount}/{total}
+      <span className="hiragana-test-trigger-wrap">
+        <button
+          aria-label={testLabel}
+          className="hiragana-test-trigger"
+          data-complete={remainingCount === 0 ? "true" : undefined}
+          onClick={() => openTest(title, entries)}
+          style={{ "--hiragana-test-progress": `${knownCount / total}turn` } as CSSProperties}
+          type="button"
+        >
+          <span className="hiragana-test-progress-text">
+            {remainingCount === 0 ? (
+              <svg aria-hidden="true" className="hiragana-test-complete-icon" viewBox="0 0 16 16">
+                <path d="m3 8.5 3 3 7-7" />
+              </svg>
+            ) : remainingCount}
+          </span>
+        </button>
+        <span className="network-tooltip hiragana-test-tooltip">
+          {testLabel}
         </span>
-      </button>
+      </span>
     );
   }
 
@@ -385,13 +517,73 @@ export function HiraganaGuide() {
               Writing
             </span>
           </div>
-          {renderTestButton("All Hiragana", ALL_HIRAGANA_TEST_ENTRIES)}
+          <div className="station-heading-actions">
+            <details className="station-options" ref={stationOptionsRef}>
+              <summary aria-label="Station options">
+                <svg aria-hidden="true" viewBox="0 0 20 20">
+                  <circle cx="4" cy="10" r="1.5" />
+                  <circle cx="10" cy="10" r="1.5" />
+                  <circle cx="16" cy="10" r="1.5" />
+                </svg>
+              </summary>
+              <div aria-label="Station options" className="station-options-menu">
+                <button
+                  aria-label="Close station options"
+                  className="station-options-close"
+                  onClick={closeStationOptions}
+                  type="button"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 16 16">
+                    <path d="m4 4 8 8M12 4l-8 8" />
+                  </svg>
+                </button>
+                {!allHiraganaKnown ? (
+                  <button
+                    className="station-options-action"
+                    disabled={bulkKnowledgeAction !== null}
+                    onClick={openCompleteDialog}
+                    type="button"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 16 16">
+                      <path d="m3 8.5 3 3 7-7" />
+                    </svg>
+                    <span>I know this</span>
+                  </button>
+                ) : null}
+                {hasHiraganaProgress ? (
+                  <button
+                    className="station-options-action"
+                    disabled={bulkKnowledgeAction !== null}
+                    onClick={openResetDialog}
+                    type="button"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 16 16">
+                      <path d="M12.5 5.5A5 5 0 1 0 13 10" />
+                      <path d="M12.5 2.5v3h-3" />
+                    </svg>
+                    <span>Reset station</span>
+                  </button>
+                ) : null}
+              </div>
+            </details>
+            {renderTestButton("All Hiragana", ALL_HIRAGANA_TEST_ENTRIES)}
+          </div>
         </div>
         <h1>Hiragana</h1>
       </header>
 
       <section className="hiragana-guide">
-        <audio onError={() => setAudioError(true)} preload="none" ref={audioRef} />
+        <audio
+          onEnded={() => setAudioPlaying(false)}
+          onError={() => {
+            setAudioError(true);
+            setAudioPlaying(false);
+          }}
+          onPause={() => setAudioPlaying(false)}
+          onPlaying={() => setAudioPlaying(true)}
+          preload="none"
+          ref={audioRef}
+        />
         <div className="station-intro hiragana-intro">
           <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
           <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
@@ -424,7 +616,7 @@ export function HiraganaGuide() {
       </table>
 
       {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
-      {knowledgeError ? <p className="station-knowledge-error" role="alert">Your test results could not sync. Try that card again.</p> : null}
+      {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Hiragana progress could not sync. Try again.</p> : null}
 
       <div className="station-notes">
         <p><strong>Read each row across.</strong> The vowel pattern stays in the same five-column order.</p>
@@ -437,56 +629,74 @@ export function HiraganaGuide() {
           <p>Work through one row at a time. Tap a kana or example to hear it. English spellings are approximate; follow the audio.</p>
         </header>
 
-        {HIRAGANA_STUDY_GROUPS.map((group) => (
-          <section aria-labelledby={`${group.id}-title`} className="hiragana-study-group" key={group.id}>
-            <div className="hiragana-study-group-heading">
-              <h3 id={`${group.id}-title`}>{group.title}</h3>
-              {renderTestButton(group.title, group.entries)}
-            </div>
-            <p>{group.description}</p>
-            <table aria-label={group.title} className="kana-study-table">
-              <colgroup>
-                <col className="kana-study-col-kana" />
-                <col className="kana-study-col-cue" />
-                <col className="kana-study-col-example" />
-                <col className="kana-study-col-translation" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th scope="col">Kana</th>
-                  <th scope="col">Sound</th>
-                  <th scope="col">Example</th>
-                  <th scope="col">Translation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {group.entries.map((entry) => (
-                  <tr key={entry.kana}>
-                    <td>{renderStudyKana(entry)}</td>
-                    <td className="kana-study-cue">{entry.english}</td>
-                    <td>
-                      <button
-                        aria-label={`Play example word ${entry.example}`}
-                        className="kana-study-button kana-study-example-button"
-                        onClick={() => playAudio(entry.exampleAudio)}
-                        type="button"
-                      >
-                        <span lang="ja">{entry.example}</span>
-                      </button>
-                    </td>
-                    <td className="kana-study-translation">{entry.translation}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {group.id === "hiragana-vowels" ? (
-              <div className="kana-study-notes">
-                <p><strong>One symbol, one steady sound.</strong> English vowels often glide; Japanese vowels stay comparatively clean.</p>
-                <p><strong>Length matters.</strong> Holding a vowel longer can change a word&apos;s meaning.</p>
+        {HIRAGANA_STUDY_GROUPS.map((group) => {
+          const expanded = expandedGroups.has(group.id);
+          return (
+            <section aria-labelledby={`${group.id}-title`} className="hiragana-study-group" key={group.id}>
+              <div className="hiragana-study-group-heading">
+                <h3 id={`${group.id}-title`}>
+                  <button
+                    aria-controls={`${group.id}-content`}
+                    aria-expanded={expanded}
+                    className="hiragana-study-group-toggle"
+                    onClick={() => toggleStudyGroup(group.id)}
+                    type="button"
+                  >
+                    <span>{group.title}</span>
+                    <svg aria-hidden="true" className="hiragana-study-group-chevron" viewBox="0 0 16 16">
+                      <path d="m3 6 5 5 5-5" />
+                    </svg>
+                  </button>
+                </h3>
+                {renderTestButton(group.title, group.entries)}
               </div>
-            ) : null}
-          </section>
-        ))}
+              <div className="hiragana-study-group-content" hidden={!expanded} id={`${group.id}-content`}>
+                <p>{group.description}</p>
+                <table aria-label={group.title} className="kana-study-table">
+                  <colgroup>
+                    <col className="kana-study-col-kana" />
+                    <col className="kana-study-col-cue" />
+                    <col className="kana-study-col-example" />
+                    <col className="kana-study-col-translation" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th scope="col">Kana</th>
+                      <th scope="col">Sound</th>
+                      <th scope="col">Example</th>
+                      <th scope="col">Translation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.entries.map((entry) => (
+                      <tr key={entry.kana}>
+                        <td>{renderStudyKana(entry)}</td>
+                        <td className="kana-study-cue">{entry.english}</td>
+                        <td>
+                          <button
+                            aria-label={`Play example word ${entry.example}`}
+                            className="kana-study-button kana-study-example-button"
+                            onClick={() => playAudio(entry.exampleAudio)}
+                            type="button"
+                          >
+                            <span lang="ja">{entry.example}</span>
+                          </button>
+                        </td>
+                        <td className="kana-study-translation">{entry.translation}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {group.id === "hiragana-vowels" ? (
+                  <div className="kana-study-notes">
+                    <p><strong>One symbol, one steady sound.</strong> English vowels often glide; Japanese vowels stay comparatively clean.</p>
+                    <p><strong>Length matters.</strong> Holding a vowel longer can change a word&apos;s meaning.</p>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          );
+        })}
       </section>
 
         {activeTest && activeCard ? (
@@ -514,34 +724,129 @@ export function HiraganaGuide() {
             </header>
 
             <button
-              aria-label={`Play the answer for ${activeCard.kana}`}
+              aria-label={`Play ${activeCard.kana} and reveal its pronunciation`}
               className="hiragana-test-card"
-              onClick={() => playAudio(activeCard.kanaAudio)}
+              data-playing={audioPlaying ? "true" : undefined}
+              onClick={revealPronunciation}
               type="button"
             >
-              <span lang="ja">{activeCard.kana}</span>
+              <span aria-hidden="true" className="hiragana-test-playing-indicator">
+                <span />
+                <span />
+                <span />
+              </span>
+              <span className="hiragana-test-card-kana" lang="ja">{activeCard.kana}</span>
+              <span aria-hidden="true" className="hiragana-test-pronunciation">
+                {pronunciationRevealed ? activeCard.english : "\u00a0"}
+              </span>
             </button>
-            <p className="hiragana-test-instruction">Say the sound, then tap the Kana to hear it.</p>
+            <span aria-live="polite" className="sr-only">
+              {pronunciationRevealed ? activeCard.english : ""}
+            </span>
+            <p className="hiragana-test-instruction">Say the sound, then tap the Kana to hear it and reveal the pronunciation.</p>
 
             <div className="hiragana-test-actions">
               <button
-                className="hiragana-test-answer hiragana-test-answer-not-yet"
+                className="hiragana-test-answer hiragana-test-answer-no"
                 onClick={() => answerCard(false)}
                 type="button"
               >
-                Not yet
+                <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
+                  <path d="m4 4 8 8M12 4l-8 8" />
+                </svg>
+                <span>No</span>
               </button>
               <button
                 className="hiragana-test-answer hiragana-test-answer-yes"
                 onClick={() => answerCard(true)}
                 type="button"
               >
-                Yes
+                <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
+                  <path d="m3 8.5 3 3 7-7" />
+                </svg>
+                <span>Yes</span>
               </button>
             </div>
           </div>
           </dialog>
         ) : null}
+        <dialog
+          aria-labelledby="hiragana-complete-title"
+          className="station-confirm-dialog"
+          onCancel={(event) => {
+            event.preventDefault();
+            completeDialogRef.current?.close();
+          }}
+          ref={completeDialogRef}
+        >
+          <div className="station-confirm-modal">
+            <h2 id="hiragana-complete-title">Mark Hiragana complete?</h2>
+            <p>This marks all 46 Hiragana as complete and unlocks Katakana.</p>
+            <div className="hiragana-test-actions">
+              <button
+                className="hiragana-test-answer hiragana-test-answer-no"
+                disabled={bulkKnowledgeAction !== null}
+                onClick={() => completeDialogRef.current?.close()}
+                type="button"
+              >
+                <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
+                  <path d="m4 4 8 8M12 4l-8 8" />
+                </svg>
+                <span>Cancel</span>
+              </button>
+              <button
+                className="hiragana-test-answer hiragana-test-answer-yes"
+                disabled={bulkKnowledgeAction !== null}
+                onClick={() => void setAllKnowledge(true)}
+                type="button"
+              >
+                <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
+                  <path d="m3 8.5 3 3 7-7" />
+                </svg>
+                <span>{bulkKnowledgeAction === "complete" ? "Completing…" : "Complete"}</span>
+              </button>
+            </div>
+          </div>
+        </dialog>
+        <dialog
+          aria-labelledby="hiragana-reset-title"
+          className="station-confirm-dialog"
+          onCancel={(event) => {
+            event.preventDefault();
+            resetDialogRef.current?.close();
+          }}
+          ref={resetDialogRef}
+        >
+          <div className="station-confirm-modal">
+            <h2 id="hiragana-reset-title">Reset Hiragana?</h2>
+            <p>This marks all 46 Hiragana as incomplete. Later stations will stay hidden until Hiragana is complete again.</p>
+            <div className="hiragana-test-actions">
+              <button
+                className="hiragana-test-answer hiragana-test-answer-no"
+                disabled={bulkKnowledgeAction !== null}
+                onClick={() => resetDialogRef.current?.close()}
+                type="button"
+              >
+                <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
+                  <path d="m4 4 8 8M12 4l-8 8" />
+                </svg>
+                <span>Cancel</span>
+              </button>
+              <button
+                className="hiragana-test-answer station-confirm-reset"
+                disabled={bulkKnowledgeAction !== null}
+                onClick={() => void setAllKnowledge(false)}
+                type="button"
+              >
+                <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
+                  <path d="M12.5 5.5A5 5 0 1 0 13 10" />
+                  <path d="M12.5 2.5v3h-3" />
+                </svg>
+                <span>{bulkKnowledgeAction === "reset" ? "Resetting…" : "Reset"}</span>
+              </button>
+            </div>
+          </div>
+        </dialog>
       </section>
     </>
   );

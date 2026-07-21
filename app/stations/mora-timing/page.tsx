@@ -17,7 +17,7 @@ export default async function MoraTimingPage() {
         <header className="station-heading">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-sound" data-line="sound">
-              Sound
+              Speech
             </span>
           </div>
           <h1>Mora timing</h1>

@@ -2,7 +2,17 @@
 
 import { useRef, useState } from "react";
 
-const MORA_EXAMPLES = [
+type MoraExample = {
+  readonly meaning: string;
+  readonly morae: readonly {
+    readonly audio?: string;
+    readonly text: string;
+  }[];
+  readonly word: string;
+  readonly wordAudio: string;
+};
+
+const MORA_EXAMPLES: readonly MoraExample[] = [
   {
     meaning: "dog",
     morae: [
@@ -34,6 +44,26 @@ const MORA_EXAMPLES = [
     wordAudio: "/audio/ja-okaasan.wav",
   },
   {
+    meaning: "stamp",
+    morae: [
+      { audio: "/audio/ja-ki.wav", text: "き" },
+      { text: "っ" },
+      { audio: "/audio/ja-te.wav", text: "て" },
+    ],
+    word: "きって",
+    wordAudio: "/audio/ja-kitte.wav",
+  },
+  {
+    meaning: "cake",
+    morae: [
+      { audio: "/audio/ja-ke.wav", text: "ケ" },
+      { text: "ー" },
+      { audio: "/audio/ja-ki.wav", text: "キ" },
+    ],
+    word: "ケーキ",
+    wordAudio: "/audio/ja-keeki.wav",
+  },
+  {
     meaning: "book",
     morae: [
       { audio: "/audio/ja-ho.wav", text: "ほ" },
@@ -42,7 +72,7 @@ const MORA_EXAMPLES = [
     word: "ほん",
     wordAudio: "/audio/ja-hon.wav",
   },
-] as const;
+];
 
 export function MoraTimingGuide() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -72,6 +102,7 @@ export function MoraTimingGuide() {
       <div className="mora-explanation">
         <p><strong>Japanese words are spoken in even rhythmic beats.</strong> Linguists call each beat a mora.</p>
         <p>A mora is one unit of timing. It is not exactly the same as an English syllable. Tap a word to hear it, then say each part at a steady pace.</p>
+        <p>Small <span lang="ja">っ・ッ</span> add a short pause. The Katakana mark <span lang="ja">ー</span> makes the sound before it longer. Each one takes a beat.</p>
       </div>
 
       <div aria-label="Japanese mora timing examples" className="mora-rows" role="list">
@@ -93,14 +124,18 @@ export function MoraTimingGuide() {
                 {example.morae.map((mora, index) => (
                   <span key={`${example.word}-${index}`}>
                     {index > 0 ? <span aria-hidden="true" className="mora-divider">｜</span> : null}
-                    <button
-                      aria-label={`Play timing unit ${mora.text}`}
-                      className="mora-part-button"
-                      onClick={() => playAudio(mora.audio)}
-                      type="button"
-                    >
-                      <span lang="ja">{mora.text}</span>
-                    </button>
+                    {mora.audio ? (
+                      <button
+                        aria-label={`Play timing unit ${mora.text}`}
+                        className="mora-part-button"
+                        onClick={() => playAudio(mora.audio as string)}
+                        type="button"
+                      >
+                        <span lang="ja">{mora.text}</span>
+                      </button>
+                    ) : (
+                      <span className="mora-part-sign" lang="ja">{mora.text}</span>
+                    )}
                   </span>
                 ))}
               </span>
@@ -115,6 +150,7 @@ export function MoraTimingGuide() {
       <section aria-labelledby="mora-why-title" className="mora-explanation mora-explanation-after">
         <h2 id="mora-why-title">Why the count matters</h2>
         <p><span lang="ja">おかあさん</span> may feel like fewer syllables to an English speaker, but Japanese gives it five timing units. The long vowel and <span lang="ja">ん</span> each take their own beat.</p>
+        <p>In <span lang="ja">きって</span>, small <span lang="ja">っ</span> holds a beat before <span lang="ja">て</span>. In <span lang="ja">ケーキ</span>, <span lang="ja">ー</span> holds the sound in <span lang="ja">ケ</span> for another beat.</p>
         <p>Keeping those beats even helps Japanese sound natural and makes words easier to understand.</p>
       </section>
     </section>

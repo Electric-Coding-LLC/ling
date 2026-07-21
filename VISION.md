@@ -80,41 +80,45 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-The current mapped network has two lines and five stations:
+The current mapped network has two lines and six stations:
 
 ```text
-Sound                Kana ───────── Mora timing
-                       │
-Writing                │
-                       │
-                   Hiragana
-                       │
-                   Katakana
-                       │
-                Kana extensions
+Speech              Vowels ───────── Mora timing
+                      │
+Kana                  │
+                      │
+                  Hiragana
+                      │
+                  Katakana
+                      │
+                 Dakuten & Handakuten
+                      │
+               Yōon
 ```
 
-`Kana` is the starting station. It introduces Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
+`Vowels` is the starting station. It introduces Kana through Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
 
 ```text
 あ / ア  い / イ  う / ウ  え / エ  お / オ
 ```
 
-Each study row plays the shared vowel sound, shows its paired Hiragana and Katakana forms, provides one playable Japanese example word, and remains directly revisitable without staged gates.
+The chart places Hiragana and Katakana in separate rows beneath the same five sounds. Each Kana opens a flashcard with its pronunciation, a playable Japanese example word, and a translation.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Kana` alone, reveals the Writing segment to `Hiragana` after the learner explores Kana, extends to `Katakana` after Hiragana is known, and then reaches `Kana extensions` after Katakana is known. Exploring Kana extensions reveals `Mora timing` on the Sound line. Future stations and connecting segments stay hidden until their preceding station has been explored. Do not use faint or inactive geography, and add no line segments for speculative stations.
+This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Vowels` alone, reveals the Kana segment to `Hiragana` after the learner explores Vowels, extends to `Katakana` after Hiragana is known, then reaches `Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is completed. Completing Yōon reveals `Mora timing` on the Speech line. Future stations and connecting segments stay hidden until their prerequisites are complete. Do not use faint or inactive geography, and add no line segments for speculative stations.
 
 ## Current Station Interiors
 
-`Kana` provides the orientation needed before either character system is studied in full. It defines Kana, distinguishes Hiragana from Katakana and both from Kanji, then teaches the five vowel sounds through paired forms, bundled pronunciation, playable examples, and translations.
+`Vowels` provides the orientation needed before either Kana system is studied in full. It defines Kana, explains the different roles of Hiragana and Katakana, and introduces their five shared vowel sounds in one chart. Each of the ten Kana opens a flashcard with bundled pronunciation, a playable example, and a translation.
 
-`Hiragana` presents the complete 46-character basic chart without Japanese romanization. Every kana plays bundled synthetic pronunciation directly. Beneath that overview, compact study groups cover the vowel row and every consonant row, pairing each clickable kana with an approximate English pronunciation spelling, one playable Japanese example, and its translation. The row structure makes the repeating vowel pattern explicit while calling out irregular sounds such as `し`, `ち`, `つ`, and `ふ`.
+`Hiragana` presents the complete 46-character basic chart under five approximate English vowel-sound headings. Every Kana opens a flashcard that reveals its pronunciation and translation alongside a playable Japanese example. Self-reported knowledge is saved privately and reflected in the chart and station progress ring.
 
-`Katakana` presents the same 46 basic sounds as a second, more angular character set. Each playable Katakana is paired directly with its familiar Hiragana form and approximate sound spelling so the learner can concentrate on connecting new shapes to known sounds.
+`Katakana` introduces why Japanese uses a second Kana system, then presents the same 46 basic sounds with the same chart and flashcard interaction as Hiragana. Its examples emphasize the borrowed words and foreign names for which Katakana is commonly used.
 
-`Kana extensions` teaches the shared mechanisms that expand both basic Kana charts: dakuten and handakuten sound marks, small-kana combinations, small `っ` and `ッ`, and the Katakana long-vowel mark `ー`. Compact reference rows preserve the complete pattern while 12 representative paired forms provide playable examples, direct self-tests, and private progress controls.
+`Dakuten & Handakuten` teaches the two marks that change familiar Kana sounds. Enlarged mark forms lead into one complete five-column chart of marked Hiragana and Katakana. Every distinct chart entry opens a flashcard with pronunciation, a playable example, a translation, and private self-reported progress.
 
-`Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. Every visible timing unit is independently playable. It remains hidden until the shared Kana extensions that precede it have been introduced.
+`Yōon` teaches how small `ゃ`, `ゅ`, and `ょ` and their Katakana matches join the Kana before them to make one sound. One complete three-column chart keeps every Hiragana and Katakana combination visible, and every entry opens the same flashcard and private progress interaction used by the preceding Kana stations.
+
+`Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division. The station remains hidden until Yōon is complete.
 
 All pronunciation is bundled synthetic speech played at its authored speed. Stations record no score. Kana chart and extension tests record only the learner's self-reported knowledge and show it through restrained progress rings on the chart and study rows.
 

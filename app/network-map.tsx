@@ -5,7 +5,7 @@ import type { KeyboardEvent, PointerEvent } from "react";
 import { LingWordmark } from "./brand";
 import { NavigationLink, useRouteReady } from "./navigation-feedback";
 
-type MobileFocus = "kana" | "hiragana" | "katakana" | "extensions" | "mora";
+type MobileFocus = "combined" | "hiragana" | "kana" | "katakana" | "marks" | "mora";
 export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 type AvailabilityStatus = "error" | "loading" | "ready";
@@ -19,11 +19,12 @@ const DESKTOP_MORA_X = DESKTOP_KANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_KANA_X = NETWORK_SEGMENT_LENGTH;
 const MOBILE_MORA_X = MOBILE_KANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_VIEW_WIDTH = MOBILE_MORA_X;
-const NETWORK_VIEW_HEIGHT = 810;
+const NETWORK_VIEW_HEIGHT = 990;
 const SOUND_Y = 180;
 const HIRAGANA_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
 const KATAKANA_Y = HIRAGANA_Y + NETWORK_SEGMENT_LENGTH;
-const KANA_EXTENSIONS_Y = KATAKANA_Y + NETWORK_SEGMENT_LENGTH;
+const SOUND_MARKS_Y = KATAKANA_Y + NETWORK_SEGMENT_LENGTH;
+const COMBINED_SOUNDS_Y = SOUND_MARKS_Y + NETWORK_SEGMENT_LENGTH;
 const WRITING_LABEL_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH / 2;
 const MOBILE_SWIPE_THRESHOLD = 40;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
@@ -31,21 +32,24 @@ const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
 const INITIAL_AVAILABILITY = {
   hiragana: false,
   katakana: false,
-  extensions: false,
+  marks: false,
+  combined: false,
   mora: false,
 } as const;
 const ROUTABLE_STATION_HREFS = {
   kana: "/stations/kana",
   hiragana: "/stations/hiragana",
   katakana: "/stations/katakana",
-  extensions: "/stations/kana-extensions",
+  marks: "/stations/sound-marks",
+  combined: "/stations/combined-sounds",
   mora: "/stations/mora-timing",
 } as const;
 const STATION_LABELS: Record<StationFocus, string> = {
-  kana: "Kana",
+  kana: "Vowels",
   hiragana: "Hiragana",
   katakana: "Katakana",
-  extensions: "Kana extensions",
+  marks: "Dakuten & Handakuten",
+  combined: "Yōon",
   mora: "Mora timing",
 };
 const STATION_NEIGHBORS: Record<
@@ -54,8 +58,9 @@ const STATION_NEIGHBORS: Record<
 > = {
   kana: { ArrowDown: "hiragana", ArrowRight: "mora" },
   hiragana: { ArrowDown: "katakana", ArrowUp: "kana" },
-  katakana: { ArrowDown: "extensions", ArrowUp: "hiragana" },
-  extensions: { ArrowUp: "katakana" },
+  katakana: { ArrowDown: "marks", ArrowUp: "hiragana" },
+  marks: { ArrowDown: "combined", ArrowUp: "katakana" },
+  combined: { ArrowUp: "marks" },
   mora: { ArrowLeft: "kana" },
 };
 
@@ -85,7 +90,8 @@ type NetworkViewProps = {
   mobileFocus?: MobileFocus;
   hiraganaAvailable: boolean;
   katakanaAvailable: boolean;
-  kanaExtensionsAvailable: boolean;
+  soundMarksAvailable: boolean;
+  combinedSoundsAvailable: boolean;
   moraTimingAvailable: boolean;
   onLinePointerLeave: () => void;
   onStationFocus: (focus: StationFocus) => void;
@@ -94,7 +100,7 @@ type NetworkViewProps = {
 
 function readStoredStationFocus(): StationFocus | null {
   const storedFocus = localStorage.getItem(STATION_FOCUS_STORAGE_KEY);
-  return storedFocus === "mora" || storedFocus === "extensions" || storedFocus === "katakana" || storedFocus === "hiragana" || storedFocus === "kana"
+  return storedFocus === "mora" || storedFocus === "combined" || storedFocus === "marks" || storedFocus === "katakana" || storedFocus === "hiragana" || storedFocus === "kana"
     ? storedFocus
     : null;
 }
@@ -125,13 +131,15 @@ function isStationVisible(
   focus: StationFocus,
   hiraganaAvailable: boolean,
   katakanaAvailable: boolean,
-  kanaExtensionsAvailable: boolean,
+  soundMarksAvailable: boolean,
+  combinedSoundsAvailable: boolean,
   moraTimingAvailable: boolean,
 ) {
   return focus === "kana"
     || (focus === "hiragana" && hiraganaAvailable)
     || (focus === "katakana" && katakanaAvailable)
-    || (focus === "extensions" && kanaExtensionsAvailable)
+    || (focus === "marks" && soundMarksAvailable)
+    || (focus === "combined" && combinedSoundsAvailable)
     || (focus === "mora" && moraTimingAvailable);
 }
 
@@ -139,6 +147,7 @@ function LinkedStation({
   backlightId,
   kind,
   label,
+  labelLines,
   labelPlacement = "above",
   href,
   onFocus,
@@ -150,6 +159,7 @@ function LinkedStation({
   backlightId: string;
   kind: "interchange" | "sound" | "writing";
   label: string;
+  labelLines?: readonly string[];
   labelPlacement?: "above" | "right";
   href: string;
   onFocus: () => void;
@@ -179,7 +189,17 @@ function LinkedStation({
         x={labelPlacement === "right" ? 26 : 0}
         y={labelPlacement === "right" ? 0 : interchange ? -48 : -36}
       >
-        {label}
+        {labelLines
+          ? labelLines.map((line, index) => (
+              <tspan
+                key={line}
+                x={labelPlacement === "right" ? 26 : 0}
+                dy={index === 0 ? "-0.55em" : "1.1em"}
+              >
+                {line}
+              </tspan>
+            ))
+          : label}
       </text>
       {interchange ? (
         <>
@@ -216,7 +236,8 @@ function NetworkView({
   mobileFocus = "kana",
   hiraganaAvailable,
   katakanaAvailable,
-  kanaExtensionsAvailable,
+  soundMarksAvailable,
+  combinedSoundsAvailable,
   moraTimingAvailable,
   onLinePointerLeave,
   onStationFocus,
@@ -241,17 +262,17 @@ function NetworkView({
         x={kanaX - 48}
         y={SOUND_Y}
       >
-        SOUND
+        SPEECH
       </text>
       {moraTimingAvailable ? (
         <g className="network-line-target">
           <line
-            aria-label="Sound line"
+            aria-label="Speech line"
             className="network-line-hit"
-            data-tooltip="Sound line"
-            onPointerEnter={(event) => onTooltipPointerMove(event, "Sound line")}
+            data-tooltip="Speech line"
+            onPointerEnter={(event) => onTooltipPointerMove(event, "Speech line")}
             onPointerLeave={onLinePointerLeave}
-            onPointerMove={(event) => onTooltipPointerMove(event, "Sound line")}
+            onPointerMove={(event) => onTooltipPointerMove(event, "Speech line")}
             pointerEvents="stroke"
             stroke="transparent"
             strokeWidth="24"
@@ -281,16 +302,16 @@ function NetworkView({
             x={kanaX - 20}
             y={WRITING_LABEL_Y}
           >
-            WRITING
+            KANA
           </text>
           <g className="network-line-target">
             <line
-              aria-label="Writing line"
+              aria-label="Kana line"
               className="network-line-hit"
-              data-tooltip="Writing line"
-              onPointerEnter={(event) => onTooltipPointerMove(event, "Writing line")}
+              data-tooltip="Kana line"
+              onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
               onPointerLeave={onLinePointerLeave}
-              onPointerMove={(event) => onTooltipPointerMove(event, "Writing line")}
+              onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
               pointerEvents="stroke"
               stroke="transparent"
               strokeWidth="24"
@@ -312,12 +333,12 @@ function NetworkView({
           {katakanaAvailable ? (
             <g className="network-line-target">
               <line
-                aria-label="Writing line"
+                aria-label="Kana line"
                 className="network-line-hit"
-                data-tooltip="Writing line"
-                onPointerEnter={(event) => onTooltipPointerMove(event, "Writing line")}
+                data-tooltip="Kana line"
+                onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
                 onPointerLeave={onLinePointerLeave}
-                onPointerMove={(event) => onTooltipPointerMove(event, "Writing line")}
+                onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
                 pointerEvents="stroke"
                 stroke="transparent"
                 strokeWidth="24"
@@ -337,22 +358,22 @@ function NetworkView({
               />
             </g>
           ) : null}
-          {kanaExtensionsAvailable ? (
+          {soundMarksAvailable ? (
             <g className="network-line-target">
               <line
-                aria-label="Writing line"
+                aria-label="Kana line"
                 className="network-line-hit"
-                data-tooltip="Writing line"
-                onPointerEnter={(event) => onTooltipPointerMove(event, "Writing line")}
+                data-tooltip="Kana line"
+                onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
                 onPointerLeave={onLinePointerLeave}
-                onPointerMove={(event) => onTooltipPointerMove(event, "Writing line")}
+                onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
                 pointerEvents="stroke"
                 stroke="transparent"
                 strokeWidth="24"
                 x1={kanaX}
                 x2={kanaX}
                 y1={KATAKANA_Y + NETWORK_LINE_NODE_OFFSET}
-                y2={KANA_EXTENSIONS_Y - NETWORK_LINE_NODE_OFFSET}
+                y2={SOUND_MARKS_Y - NETWORK_LINE_NODE_OFFSET}
               />
               <line
                 aria-hidden="true"
@@ -361,13 +382,41 @@ function NetworkView({
                 x1={kanaX}
                 x2={kanaX}
                 y1={KATAKANA_Y + NETWORK_LINE_NODE_OFFSET}
-                y2={KANA_EXTENSIONS_Y - NETWORK_LINE_NODE_OFFSET}
+                y2={SOUND_MARKS_Y - NETWORK_LINE_NODE_OFFSET}
+              />
+            </g>
+          ) : null}
+          {combinedSoundsAvailable ? (
+            <g className="network-line-target">
+              <line
+                aria-label="Kana line"
+                className="network-line-hit"
+                data-tooltip="Kana line"
+                onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
+                onPointerLeave={onLinePointerLeave}
+                onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
+                pointerEvents="stroke"
+                stroke="transparent"
+                strokeWidth="24"
+                x1={kanaX}
+                x2={kanaX}
+                y1={SOUND_MARKS_Y + NETWORK_LINE_NODE_OFFSET}
+                y2={COMBINED_SOUNDS_Y - NETWORK_LINE_NODE_OFFSET}
+              />
+              <line
+                aria-hidden="true"
+                className="network-line network-line-writing"
+                pointerEvents="none"
+                x1={kanaX}
+                x2={kanaX}
+                y1={SOUND_MARKS_Y + NETWORK_LINE_NODE_OFFSET}
+                y2={COMBINED_SOUNDS_Y - NETWORK_LINE_NODE_OFFSET}
               />
             </g>
           ) : null}
         </>
       ) : null}
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Kana" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
+      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Vowels" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
       {hiraganaAvailable ? (
         <LinkedStation
           backlightId={backlightId}
@@ -396,18 +445,33 @@ function NetworkView({
           y={KATAKANA_Y}
         />
       ) : null}
-      {kanaExtensionsAvailable ? (
+      {soundMarksAvailable ? (
         <LinkedStation
           backlightId={backlightId}
-          href={ROUTABLE_STATION_HREFS.extensions}
+          href={ROUTABLE_STATION_HREFS.marks}
           kind="writing"
-          label="Kana extensions"
+          label="Dakuten & Handakuten"
+          labelLines={["Dakuten &", "Handakuten"]}
           labelPlacement="right"
-          onFocus={() => onStationFocus("extensions")}
+          onFocus={() => onStationFocus("marks")}
           onPointerLeave={onLinePointerLeave}
-          slug="kana-extensions"
+          slug="sound-marks"
           x={kanaX}
-          y={KANA_EXTENSIONS_Y}
+          y={SOUND_MARKS_Y}
+        />
+      ) : null}
+      {combinedSoundsAvailable ? (
+        <LinkedStation
+          backlightId={backlightId}
+          href={ROUTABLE_STATION_HREFS.combined}
+          kind="writing"
+          label="Yōon"
+          labelPlacement="right"
+          onFocus={() => onStationFocus("combined")}
+          onPointerLeave={onLinePointerLeave}
+          slug="combined-sounds"
+          x={kanaX}
+          y={COMBINED_SOUNDS_Y}
         />
       ) : null}
       {moraTimingAvailable ? (
@@ -428,7 +492,7 @@ function NetworkView({
   return (
     <svg
       aria-describedby={`${view}-network-description`}
-      aria-label={hiraganaAvailable ? "Sound and Writing network" : "Sound network"}
+      aria-label={hiraganaAvailable ? "Speech and Kana network" : "Speech network"}
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
@@ -462,8 +526,8 @@ function NetworkView({
       </defs>
       <desc id={`${view}-network-description`}>
         {hiraganaAvailable
-          ? "Kana connects the Sound and Writing lines. Hiragana, Katakana, and Kana extensions follow Kana on the Writing line."
-          : "Kana is the first station on the Sound line."}
+          ? "Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line."
+          : "Vowels is the first station on the Speech line."}
       </desc>
       {mobile ? (
         <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>
@@ -478,13 +542,15 @@ export function NetworkMap({
   initialStationFocus,
   hiraganaAvailable: initialHiraganaAvailable = false,
   katakanaAvailable: initialKatakanaAvailable = false,
-  kanaExtensionsAvailable: initialKanaExtensionsAvailable = false,
+  soundMarksAvailable: initialSoundMarksAvailable = false,
+  combinedSoundsAvailable: initialCombinedSoundsAvailable = false,
   moraTimingAvailable: initialMoraTimingAvailable = false,
 }: {
   initialStationFocus?: StationFocus;
   hiraganaAvailable?: boolean;
   katakanaAvailable?: boolean;
-  kanaExtensionsAvailable?: boolean;
+  soundMarksAvailable?: boolean;
+  combinedSoundsAvailable?: boolean;
   moraTimingAvailable?: boolean;
 }) {
   const routeReady = useRouteReady();
@@ -500,7 +566,8 @@ export function NetworkMap({
     ...INITIAL_AVAILABILITY,
     hiragana: initialHiraganaAvailable,
     katakana: initialKatakanaAvailable,
-    extensions: initialKanaExtensionsAvailable,
+    marks: initialSoundMarksAvailable,
+    combined: initialCombinedSoundsAvailable,
     mora: initialMoraTimingAvailable,
   }));
   const [availabilityAttempt, setAvailabilityAttempt] = useState(0);
@@ -508,14 +575,16 @@ export function NetworkMap({
     useState<AvailabilityStatus>("loading");
   const hiraganaAvailable = availability.hiragana;
   const katakanaAvailable = availability.katakana;
-  const kanaExtensionsAvailable = availability.extensions;
+  const soundMarksAvailable = availability.marks;
+  const combinedSoundsAvailable = availability.combined;
   const moraTimingAvailable = availability.mora;
   const requestedStationFocus = selectedStationFocus ?? storedStationFocus;
   const stationFocus = isStationVisible(
     requestedStationFocus,
     hiraganaAvailable,
     katakanaAvailable,
-    kanaExtensionsAvailable,
+    soundMarksAvailable,
+    combinedSoundsAvailable,
     moraTimingAvailable,
   )
     ? requestedStationFocus
@@ -531,8 +600,10 @@ export function NetworkMap({
     const requestedFocus = new URLSearchParams(window.location.search).get("focus");
     const focus = requestedFocus === "mora-timing"
       ? "mora"
-      : requestedFocus === "kana-extensions"
-        ? "extensions"
+      : requestedFocus === "sound-marks" || requestedFocus === "kana-extensions"
+        ? "marks"
+      : requestedFocus === "combined-sounds"
+        ? "combined"
       : requestedFocus === "vowels"
         ? "kana"
         : requestedFocus;
@@ -540,7 +611,8 @@ export function NetworkMap({
       focus === "kana"
       || focus === "hiragana"
       || focus === "katakana"
-      || focus === "extensions"
+      || focus === "marks"
+      || focus === "combined"
       || focus === "mora"
     ) {
       storeStationFocus(focus);
@@ -564,7 +636,8 @@ export function NetworkMap({
         setAvailability({
           hiragana: payload.available.includes("hiragana"),
           katakana: payload.available.includes("katakana"),
-          extensions: payload.available.includes("kana-extensions"),
+          marks: payload.available.includes("sound-marks"),
+          combined: payload.available.includes("combined-sounds"),
           mora: payload.available.includes("mora-timing"),
         });
         setAvailabilityStatus("ready");
@@ -679,7 +752,8 @@ export function NetworkMap({
         nextFocus,
         hiraganaAvailable,
         katakanaAvailable,
-        kanaExtensionsAvailable,
+        soundMarksAvailable,
+        combinedSoundsAvailable,
         moraTimingAvailable,
       )) {
         selectStation(nextFocus);
@@ -712,7 +786,8 @@ export function NetworkMap({
         nextFocus,
         hiraganaAvailable,
         katakanaAvailable,
-        kanaExtensionsAvailable,
+        soundMarksAvailable,
+        combinedSoundsAvailable,
         moraTimingAvailable,
       )) return;
 
@@ -757,13 +832,14 @@ export function NetworkMap({
         tabIndex={0}
       >
         <NetworkView
+          combinedSoundsAvailable={combinedSoundsAvailable}
           hiraganaAvailable={hiraganaAvailable}
           katakanaAvailable={katakanaAvailable}
-          kanaExtensionsAvailable={kanaExtensionsAvailable}
           moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
           onTooltipPointerMove={onTooltipPointerMove}
+          soundMarksAvailable={soundMarksAvailable}
         />
         <span aria-live="polite" className="sr-only">
           {stationAnnouncement}
@@ -790,15 +866,16 @@ export function NetworkMap({
         tabIndex={0}
       >
         <NetworkView
+          combinedSoundsAvailable={combinedSoundsAvailable}
           hiraganaAvailable={hiraganaAvailable}
           katakanaAvailable={katakanaAvailable}
-          kanaExtensionsAvailable={kanaExtensionsAvailable}
           mobile
           mobileFocus={mobileFocus}
           moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
           onTooltipPointerMove={onTooltipPointerMove}
+          soundMarksAvailable={soundMarksAvailable}
         />
         <span aria-live="polite" className="sr-only">
           {stationAnnouncement}

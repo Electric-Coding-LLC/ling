@@ -2,7 +2,8 @@ export const STATION_IDS = [
   "kana",
   "hiragana",
   "katakana",
-  "kana-extensions",
+  "sound-marks",
+  "combined-sounds",
   "mora-timing",
 ] as const;
 
@@ -13,8 +14,9 @@ export const STATION_PREREQUISITES: Partial<
 > = {
   hiragana: ["kana"],
   katakana: ["hiragana"],
-  "kana-extensions": ["katakana"],
-  "mora-timing": ["kana-extensions"],
+  "sound-marks": ["katakana"],
+  "combined-sounds": ["sound-marks"],
+  "mora-timing": ["combined-sounds"],
 };
 
 export function isStationId(value: string): value is StationId {
@@ -29,4 +31,21 @@ export function isStationAvailable(
   return prerequisites.every((prerequisite) =>
     completedStations.includes(prerequisite),
   );
+}
+
+export function retainPrerequisiteCompleteStations(
+  candidates: readonly StationId[],
+): StationId[] {
+  const completed: StationId[] = [];
+
+  for (const stationId of STATION_IDS) {
+    if (
+      candidates.includes(stationId)
+      && isStationAvailable(stationId, completed)
+    ) {
+      completed.push(stationId);
+    }
+  }
+
+  return completed;
 }

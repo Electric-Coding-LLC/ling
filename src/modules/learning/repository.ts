@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   hiraganaKnowledge,
@@ -17,17 +17,21 @@ import {
   type BasicKatakana,
 } from "./katakana";
 import {
+  COMBINED_SOUND_PATTERN_IDS,
   isKanaExtensionPatternId,
   KANA_EXTENSION_PATTERN_IDS,
+  SOUND_MARK_PATTERN_IDS,
   type KanaExtensionPatternId,
 } from "./kana-extensions";
 import {
   isStationAvailable,
   isStationId,
+  retainPrerequisiteCompleteStations,
   type StationId,
 } from "./stations";
 
 const HIRAGANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
+const KANA_EXTENSION_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 const KATAKANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 
 export async function listStationIntroductions(
@@ -64,16 +68,33 @@ export async function listCompletedStations(
   userId: string,
 ): Promise<StationId[]> {
   const introductions = await listStationIntroductions(userId);
-  const [knownHiragana, knownKatakana] = await Promise.all([
+  const [knownHiragana, knownKatakana, knownKanaExtensionPatterns] = await Promise.all([
     introductions.includes("hiragana") ? listKnownHiragana(userId) : [],
     introductions.includes("katakana") ? listKnownKatakana(userId) : [],
+    introductions.includes("sound-marks") || introductions.includes("combined-sounds")
+      ? listKnownKanaExtensionPatterns(userId)
+      : [] as KanaExtensionPatternId[],
   ]);
-  return introductions.filter(
+  const independentlyCompleted = introductions.filter(
     (stationId) => (
       (stationId !== "hiragana" || knownHiragana.length === BASIC_HIRAGANA.length)
       && (stationId !== "katakana" || knownKatakana.length === BASIC_KATAKANA.length)
+      && (
+        stationId !== "sound-marks"
+        || SOUND_MARK_PATTERN_IDS.every((patternId) =>
+          knownKanaExtensionPatterns.includes(patternId),
+        )
+      )
+      && (
+        stationId !== "combined-sounds"
+        || COMBINED_SOUND_PATTERN_IDS.every((patternId) =>
+          knownKanaExtensionPatterns.includes(patternId),
+        )
+      )
     ),
   );
+
+  return retainPrerequisiteCompleteStations(independentlyCompleted);
 }
 
 export async function listKnownHiragana(
@@ -284,27 +305,53 @@ export async function setAllKanaExtensionPatternsKnown(
   userId: string,
   known: boolean,
 ): Promise<void> {
+  return setKanaExtensionPatternsKnown(userId, KANA_EXTENSION_PATTERN_IDS, known);
+}
+
+export async function setKanaExtensionPatternsKnown(
+  userId: string,
+  patternIds: readonly KanaExtensionPatternId[],
+  known: boolean,
+): Promise<void> {
+  if (patternIds.length === 0) return;
+
   const db = await getDb();
 
   if (!known) {
     await db
       .delete(kanaExtensionKnowledge)
-      .where(eq(kanaExtensionKnowledge.userId, userId));
+      .where(and(
+        eq(kanaExtensionKnowledge.userId, userId),
+        inArray(kanaExtensionKnowledge.patternId, patternIds),
+      ));
     return;
   }
 
   const knownAt = new Date();
-  await db
-    .insert(kanaExtensionKnowledge)
-    .values(
-      KANA_EXTENSION_PATTERN_IDS.map((patternId) => ({
-        userId,
-        patternId,
-        knownAt,
-      })),
-    )
-    .onConflictDoUpdate({
-      target: [kanaExtensionKnowledge.userId, kanaExtensionKnowledge.patternId],
-      set: { knownAt },
-    });
+  const statements = [];
+
+  for (
+    let start = 0;
+    start < patternIds.length;
+    start += KANA_EXTENSION_KNOWLEDGE_ROWS_PER_STATEMENT
+  ) {
+    const patterns = patternIds.slice(
+      start,
+      start + KANA_EXTENSION_KNOWLEDGE_ROWS_PER_STATEMENT,
+    );
+    statements.push(
+      db
+        .insert(kanaExtensionKnowledge)
+        .values(patterns.map((patternId) => ({ userId, patternId, knownAt })))
+        .onConflictDoUpdate({
+          target: [kanaExtensionKnowledge.userId, kanaExtensionKnowledge.patternId],
+          set: { knownAt },
+        }),
+    );
+  }
+
+  const [firstStatement, ...remainingStatements] = statements;
+  if (!firstStatement) return;
+
+  await db.batch([firstStatement, ...remainingStatements]);
 }

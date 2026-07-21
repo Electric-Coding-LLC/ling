@@ -78,9 +78,8 @@ const HIRAGANA_ROWS = [
 
 const FINAL_HIRAGANA = { audio: "/audio/ja-n.wav", character: "ん" } as const;
 const HIRAGANA_VOWEL_SOUNDS = ["ah", "ee", "oo", "eh", "oh"] as const;
-const HIRAGANA_STUDY_GROUPS = [
+const HIRAGANA_FLASHCARD_GROUPS = [
   {
-    description: "These five clear, steady vowel sounds anchor every row that follows.",
     entries: [
       { english: "ah", example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ", kanaAudio: "/audio/ja-a.wav", translation: "morning" },
       { english: "ee", example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い", kanaAudio: "/audio/ja-i.wav", translation: "dog" },
@@ -88,11 +87,8 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "eh", example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え", kanaAudio: "/audio/ja-e.wav", translation: "station" },
       { english: "oh", example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お", kanaAudio: "/audio/ja-o.wav", translation: "sound" },
     ],
-    id: "hiragana-vowels",
-    title: "The vowel row",
   },
   {
-    description: "The K row pairs a short k sound with each of the five vowels.",
     entries: [
       { english: "kah", example: "かさ", exampleAudio: "/audio/ja-kasa.wav", kana: "か", kanaAudio: "/audio/ja-ka.wav", translation: "umbrella" },
       { english: "kee", example: "きく", exampleAudio: "/audio/ja-kiku.wav", kana: "き", kanaAudio: "/audio/ja-ki.wav", translation: "listen" },
@@ -100,11 +96,8 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "keh", example: "けさ", exampleAudio: "/audio/ja-kesa.wav", kana: "け", kanaAudio: "/audio/ja-ke.wav", translation: "this morning" },
       { english: "koh", example: "こえ", exampleAudio: "/audio/ja-koe.wav", kana: "こ", kanaAudio: "/audio/ja-ko.wav", translation: "voice" },
     ],
-    id: "hiragana-k-row",
-    title: "The K row",
   },
   {
-    description: "The S row follows the vowel pattern, but し sounds closer to shee than see.",
     entries: [
       { english: "sah", example: "さかな", exampleAudio: "/audio/ja-sakana.wav", kana: "さ", kanaAudio: "/audio/ja-sa.wav", translation: "fish" },
       { english: "shee", example: "しお", exampleAudio: "/audio/ja-shio.wav", kana: "し", kanaAudio: "/audio/ja-shi.wav", translation: "salt" },
@@ -112,11 +105,8 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "seh", example: "せかい", exampleAudio: "/audio/ja-sekai.wav", kana: "せ", kanaAudio: "/audio/ja-se.wav", translation: "world" },
       { english: "soh", example: "そと", exampleAudio: "/audio/ja-soto.wav", kana: "そ", kanaAudio: "/audio/ja-so.wav", translation: "outside" },
     ],
-    id: "hiragana-s-row",
-    title: "The S row",
   },
   {
-    description: "The T row includes two changes: ち sounds like chee and つ sounds like tsoo.",
     entries: [
       { english: "tah", example: "たこ", exampleAudio: "/audio/ja-tako.wav", kana: "た", kanaAudio: "/audio/ja-ta.wav", translation: "octopus" },
       { english: "chee", example: "ちち", exampleAudio: "/audio/ja-chichi.wav", kana: "ち", kanaAudio: "/audio/ja-chi.wav", translation: "father" },
@@ -124,11 +114,8 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "teh", example: "て", exampleAudio: "/audio/ja-te.wav", kana: "て", kanaAudio: "/audio/ja-te.wav", translation: "hand" },
       { english: "toh", example: "とり", exampleAudio: "/audio/ja-tori.wav", kana: "と", kanaAudio: "/audio/ja-to.wav", translation: "bird" },
     ],
-    id: "hiragana-t-row",
-    title: "The T row",
   },
   {
-    description: "The N row pairs an n sound with each vowel without a major sound change.",
     entries: [
       { english: "nah", example: "なつ", exampleAudio: "/audio/ja-natsu.wav", kana: "な", kanaAudio: "/audio/ja-na.wav", translation: "summer" },
       { english: "nee", example: "にく", exampleAudio: "/audio/ja-niku.wav", kana: "に", kanaAudio: "/audio/ja-ni.wav", translation: "meat" },
@@ -136,11 +123,8 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "neh", example: "ねこ", exampleAudio: "/audio/ja-neko.wav", kana: "ね", kanaAudio: "/audio/ja-ne.wav", translation: "cat" },
       { english: "noh", example: "のむ", exampleAudio: "/audio/ja-nomu.wav", kana: "の", kanaAudio: "/audio/ja-no.wav", translation: "drink" },
     ],
-    id: "hiragana-n-row",
-    title: "The N row",
   },
   {
-    description: "The H row follows the pattern, but ふ begins with a soft breath closer to foo.",
     entries: [
       { english: "hah", example: "はな", exampleAudio: "/audio/ja-hana.wav", kana: "は", kanaAudio: "/audio/ja-ha.wav", translation: "flower" },
       { english: "hee", example: "ひと", exampleAudio: "/audio/ja-hito.wav", kana: "ひ", kanaAudio: "/audio/ja-hi.wav", translation: "person" },
@@ -148,11 +132,8 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "heh", example: "へや", exampleAudio: "/audio/ja-heya.wav", kana: "へ", kanaAudio: "/audio/ja-he.wav", translation: "room" },
       { english: "hoh", example: "ほし", exampleAudio: "/audio/ja-hoshi.wav", kana: "ほ", kanaAudio: "/audio/ja-ho.wav", translation: "star" },
     ],
-    id: "hiragana-h-row",
-    title: "The H row",
   },
   {
-    description: "The M row pairs an m sound with each of the five vowels.",
     entries: [
       { english: "mah", example: "まめ", exampleAudio: "/audio/ja-mame.wav", kana: "ま", kanaAudio: "/audio/ja-ma.wav", translation: "bean" },
       { english: "mee", example: "みみ", exampleAudio: "/audio/ja-mimi.wav", kana: "み", kanaAudio: "/audio/ja-mi.wav", translation: "ear" },
@@ -160,21 +141,15 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "meh", example: "め", exampleAudio: "/audio/ja-me.wav", kana: "め", kanaAudio: "/audio/ja-me.wav", translation: "eye" },
       { english: "moh", example: "もも", exampleAudio: "/audio/ja-momo.wav", kana: "も", kanaAudio: "/audio/ja-mo.wav", translation: "peach" },
     ],
-    id: "hiragana-m-row",
-    title: "The M row",
   },
   {
-    description: "The Y row has only three modern basic kana: や, ゆ, and よ.",
     entries: [
       { english: "yah", example: "やま", exampleAudio: "/audio/ja-yama.wav", kana: "や", kanaAudio: "/audio/ja-ya.wav", translation: "mountain" },
       { english: "yoo", example: "ゆき", exampleAudio: "/audio/ja-yuki.wav", kana: "ゆ", kanaAudio: "/audio/ja-yu.wav", translation: "snow" },
       { english: "yoh", example: "よる", exampleAudio: "/audio/ja-yoru.wav", kana: "よ", kanaAudio: "/audio/ja-yo.wav", translation: "night" },
     ],
-    id: "hiragana-y-row",
-    title: "The Y row",
   },
   {
-    description: "The R row uses a quick tongue tap between an English r and l; follow the audio closely.",
     entries: [
       { english: "rah", example: "らいねん", exampleAudio: "/audio/ja-rainen.wav", kana: "ら", kanaAudio: "/audio/ja-ra.wav", translation: "next year" },
       { english: "ree", example: "りす", exampleAudio: "/audio/ja-risu.wav", kana: "り", kanaAudio: "/audio/ja-ri.wav", translation: "squirrel" },
@@ -182,32 +157,27 @@ const HIRAGANA_STUDY_GROUPS = [
       { english: "reh", example: "れきし", exampleAudio: "/audio/ja-rekishi.wav", kana: "れ", kanaAudio: "/audio/ja-re.wav", translation: "history" },
       { english: "roh", example: "ろく", exampleAudio: "/audio/ja-roku.wav", kana: "ろ", kanaAudio: "/audio/ja-ro.wav", translation: "six" },
     ],
-    id: "hiragana-r-row",
-    title: "The R row",
   },
   {
-    description: "The W row keeps わ and を. を sounds like お and usually marks an object.",
     entries: [
       { english: "wah", example: "わに", exampleAudio: "/audio/ja-wani.wav", kana: "わ", kanaAudio: "/audio/ja-wa.wav", translation: "crocodile" },
       { english: "oh", example: "これを", exampleAudio: "/audio/ja-kore-o.wav", kana: "を", kanaAudio: "/audio/ja-wo.wav", translation: "this (object)" },
     ],
-    id: "hiragana-w-row",
-    title: "The W row",
   },
   {
-    description: "ん is the only basic Hiragana without a following vowel and takes its own beat.",
     entries: [
       { english: "nn", example: "ほん", exampleAudio: "/audio/ja-hon.wav", kana: "ん", kanaAudio: "/audio/ja-n.wav", translation: "book" },
     ],
-    id: "hiragana-final-n",
-    title: "ん",
   },
 ] as const;
 
 type HiraganaTestEntry = {
   readonly english: string;
+  readonly example: string;
+  readonly exampleAudio: string;
   readonly kana: string;
   readonly kanaAudio: string;
+  readonly translation: string;
 };
 
 type HiraganaTest = {
@@ -215,7 +185,7 @@ type HiraganaTest = {
   title: string;
 };
 
-const ALL_HIRAGANA_TEST_ENTRIES = HIRAGANA_STUDY_GROUPS.reduce<HiraganaTestEntry[]>(
+const ALL_HIRAGANA_TEST_ENTRIES = HIRAGANA_FLASHCARD_GROUPS.reduce<HiraganaTestEntry[]>(
   (entries, group) => [...entries, ...group.entries],
   [],
 );
@@ -238,7 +208,6 @@ export function HiraganaGuide() {
   const [knownHiragana, setKnownHiragana] = useState<Set<string>>(() => new Set());
   const [activeTest, setActiveTest] = useState<HiraganaTest | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set());
   const [pronunciationRevealed, setPronunciationRevealed] = useState(false);
   const [testIndex, setTestIndex] = useState(0);
   const activeCard = activeTest?.cards[testIndex] ?? null;
@@ -352,21 +321,6 @@ export function HiraganaGuide() {
     );
   }
 
-  function renderStudyKana(entry: HiraganaTestEntry) {
-    const isKnown = knownHiragana.has(entry.kana);
-    return (
-      <button
-        aria-label={`Study ${entry.kana}${isKnown ? ", marked known" : ""}`}
-        className={`kana-study-button kana-study-kana-button${isKnown ? " kana-study-button-known" : ""}`}
-        data-known={isKnown ? "true" : undefined}
-        onClick={() => openTest("Hiragana", [entry])}
-        type="button"
-      >
-        <span lang="ja">{entry.kana}</span>
-      </button>
-    );
-  }
-
   function openTest(title: string, entries: readonly HiraganaTestEntry[]) {
     stopAudio();
     setKnowledgeError(false);
@@ -422,15 +376,6 @@ export function HiraganaGuide() {
       const next = new Set(current);
       if (known) next.add(kana);
       else next.delete(kana);
-      return next;
-    });
-  }
-
-  function toggleStudyGroup(groupId: string) {
-    setExpandedGroups((current) => {
-      const next = new Set(current);
-      if (next.has(groupId)) next.delete(groupId);
-      else next.add(groupId);
       return next;
     });
   }
@@ -521,7 +466,7 @@ export function HiraganaGuide() {
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Writing
+              Kana
             </span>
           </div>
           <div className="station-heading-actions">
@@ -593,7 +538,7 @@ export function HiraganaGuide() {
         />
         <div className="station-intro hiragana-intro">
           <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
-          <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana to hear it.</p>
+          <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana in the chart to practice its sound.</p>
         </div>
 
       <table aria-label="The 46 basic hiragana" className="hiragana-table">
@@ -625,87 +570,6 @@ export function HiraganaGuide() {
       {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
       {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Hiragana progress could not sync. Try again.</p> : null}
 
-      <div className="station-notes">
-        <p><strong>Read each row across.</strong> The vowel pattern stays in the same five-column order.</p>
-        <p><strong>This is the base chart.</strong> Sound marks and small kana extend these forms without replacing them.</p>
-      </div>
-
-      <section aria-labelledby="hiragana-groups-title" className="hiragana-groups">
-        <header className="hiragana-groups-heading">
-          <h2 id="hiragana-groups-title">Hear them in words</h2>
-          <p>Work through one row at a time. Tap a kana or example to hear it. English spellings are approximate; follow the audio.</p>
-        </header>
-
-        {HIRAGANA_STUDY_GROUPS.map((group) => {
-          const expanded = expandedGroups.has(group.id);
-          return (
-            <section aria-labelledby={`${group.id}-title`} className="hiragana-study-group" key={group.id}>
-              <div className="hiragana-study-group-heading">
-                <h3 id={`${group.id}-title`}>
-                  <button
-                    aria-controls={`${group.id}-content`}
-                    aria-expanded={expanded}
-                    className="hiragana-study-group-toggle"
-                    onClick={() => toggleStudyGroup(group.id)}
-                    type="button"
-                  >
-                    <span>{group.title}</span>
-                    <svg aria-hidden="true" className="hiragana-study-group-chevron" viewBox="0 0 16 16">
-                      <path d="m3 6 5 5 5-5" />
-                    </svg>
-                  </button>
-                </h3>
-                {renderTestButton(group.title, group.entries)}
-              </div>
-              <div className="hiragana-study-group-content" hidden={!expanded} id={`${group.id}-content`}>
-                <p>{group.description}</p>
-                <table aria-label={group.title} className="kana-study-table">
-                  <colgroup>
-                    <col className="kana-study-col-kana" />
-                    <col className="kana-study-col-cue" />
-                    <col className="kana-study-col-example" />
-                    <col className="kana-study-col-translation" />
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th scope="col">Kana</th>
-                      <th scope="col">Sound</th>
-                      <th scope="col">Example</th>
-                      <th scope="col">Translation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.entries.map((entry) => (
-                      <tr key={entry.kana}>
-                        <td>{renderStudyKana(entry)}</td>
-                        <td className="kana-study-cue">{entry.english}</td>
-                        <td>
-                          <button
-                            aria-label={`Play example word ${entry.example}`}
-                            className="kana-study-button kana-study-example-button"
-                            onClick={() => playAudio(entry.exampleAudio)}
-                            type="button"
-                          >
-                            <span lang="ja">{entry.example}</span>
-                          </button>
-                        </td>
-                        <td className="kana-study-translation">{entry.translation}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {group.id === "hiragana-vowels" ? (
-                  <div className="kana-study-notes">
-                    <p><strong>One symbol, one steady sound.</strong> English vowels often glide; Japanese vowels stay comparatively clean.</p>
-                    <p><strong>Length matters.</strong> Holding a vowel longer can change a word&apos;s meaning.</p>
-                  </div>
-                ) : null}
-              </div>
-            </section>
-          );
-        })}
-      </section>
-
         {activeTest && activeCard ? (
           <dialog
           aria-labelledby="hiragana-test-title"
@@ -730,27 +594,52 @@ export function HiraganaGuide() {
               </button>
             </header>
 
-            <button
-              aria-label={`Play ${activeCard.kana} and reveal its pronunciation`}
-              className="hiragana-test-card"
+            <div
+              className="hiragana-test-card hiragana-test-card-with-example"
               data-playing={audioPlaying ? "true" : undefined}
-              onClick={revealPronunciation}
-              type="button"
             >
               <span aria-hidden="true" className="hiragana-test-playing-indicator">
                 <span />
                 <span />
                 <span />
               </span>
-              <span className="hiragana-test-card-kana" lang="ja">{activeCard.kana}</span>
-              <span aria-hidden="true" className="hiragana-test-pronunciation">
-                {pronunciationRevealed ? activeCard.english : "\u00a0"}
-              </span>
-            </button>
+              <button
+                aria-label={`Play ${activeCard.kana} and reveal its pronunciation`}
+                className="hiragana-test-reveal"
+                onClick={revealPronunciation}
+                type="button"
+              >
+                <span
+                  aria-hidden="true"
+                  className="hiragana-test-pronunciation"
+                  data-revealed={pronunciationRevealed ? "true" : undefined}
+                >
+                  {pronunciationRevealed ? activeCard.english : "\u00a0"}
+                </span>
+                <span className="hiragana-test-card-kana" lang="ja">{activeCard.kana}</span>
+              </button>
+              <button
+                aria-label={`Play example word ${activeCard.example}`}
+                className="hiragana-test-example"
+                onClick={() => void playAudio(activeCard.exampleAudio)}
+                type="button"
+              >
+                <span className="hiragana-test-example-word" lang="ja">{activeCard.example}</span>
+                <span
+                  aria-hidden={!pronunciationRevealed}
+                  className="hiragana-test-example-translation"
+                  data-revealed={pronunciationRevealed ? "true" : undefined}
+                >
+                  {activeCard.translation}
+                </span>
+              </button>
+            </div>
             <span aria-live="polite" className="sr-only">
-              {pronunciationRevealed ? activeCard.english : ""}
+              {pronunciationRevealed
+                ? `${activeCard.english}. Example: ${activeCard.example}, ${activeCard.translation}`
+                : ""}
             </span>
-            <p className="hiragana-test-instruction">Say the sound, then tap the Kana to hear it and reveal the pronunciation.</p>
+            <p className="hiragana-test-instruction">Say the sound, then tap the Kana to reveal the pronunciation and translation.</p>
 
             <div className="hiragana-test-actions">
               <button

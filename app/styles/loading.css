@@ -30,13 +30,15 @@ html[data-ling-ready="true"] .loading-shell-boot {
   z-index: 300;
 }
 
-.loading-shell[data-station="kana"] {
+.loading-shell[data-station="vowels"] {
   --loading-accent: linear-gradient(90deg, var(--sound), var(--writing));
 }
 
 .loading-shell[data-station="hiragana"],
 .loading-shell[data-station="katakana"],
-.loading-shell[data-station="kana-extensions"] {
+.loading-shell[data-station="kana-extensions"],
+.loading-shell[data-station="sound-marks"],
+.loading-shell[data-station="combined-sounds"] {
   --loading-accent: var(--writing);
 }
 

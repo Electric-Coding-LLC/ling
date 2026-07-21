@@ -133,8 +133,10 @@ test("the server-rendered boot screen remains until the current route is ready",
   assert.match(hydrated, /performance\.mark\(HYDRATION_MARK\)/);
   assert.doesNotMatch(hydrated, /dataset\.lingReady/);
   assert.match(navigation, /document\.documentElement\.dataset\.lingReady = "true"/);
+  assert.match(navigation, /if \(pathname === "\/"\)[\s\S]*removeAttribute\("data-ling-ready"\)/);
   assert.match(navigation, /if \(pathname !== "\/"\) onComplete\(\)/);
-  assert.match(network, /if \(!controller\.signal\.aborted\) routeReady\(\)/);
+  assert.match(network, /setAvailabilityStatus\("ready"\);\s*routeReady\(\)/);
+  assert.match(network, /if \(!controller\.signal\.aborted\) setAvailabilityStatus\("error"\)/);
 });
 
 test("the retirement worker removes the legacy offline shell", async () => {

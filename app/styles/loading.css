@@ -26,6 +26,10 @@ html[data-ling-ready="true"] .loading-shell-boot {
   display: none;
 }
 
+.network-load-error {
+  z-index: 300;
+}
+
 .loading-shell[data-station="kana"] {
   --loading-accent: linear-gradient(90deg, var(--sound), var(--writing));
 }
@@ -67,6 +71,35 @@ html[data-ling-ready="true"] .loading-shell-boot {
   font-weight: 500;
   letter-spacing: -0.065em;
   line-height: 0.95;
+}
+
+.network-load-error-message {
+  max-width: 24rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.network-load-retry {
+  min-height: 2.75rem;
+  margin-top: 1.5rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.network-load-retry:hover {
+  border-color: rgb(242 241 235 / 0.24);
+}
+
+.network-load-retry:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
 }
 
 .loading-track {

@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
   type ComponentProps,
   type MouseEvent,
@@ -46,6 +47,12 @@ export function NavigationFeedbackProvider({ children }: { children: ReactNode }
 
 function NavigationCompletion({ onComplete }: { onComplete: () => void }) {
   const pathname = usePathname();
+
+  useLayoutEffect(() => {
+    if (pathname === "/") {
+      document.documentElement.removeAttribute("data-ling-ready");
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (pathname !== "/") onComplete();

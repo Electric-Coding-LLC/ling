@@ -29,6 +29,8 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(navigationFeedback, /<NavigationFeedbackContext value=\{beginNavigation\}>/);
   assert.match(navigationFeedback, /<RouteReadyContext value=\{completeNavigation\}>/);
   assert.match(navigationFeedback, /<NavigationCompletion onComplete=\{completeNavigation\} \/>/);
+  assert.match(navigationFeedback, /useLayoutEffect\(\(\) => \{/);
+  assert.match(navigationFeedback, /if \(pathname === "\/"\)[\s\S]*removeAttribute\("data-ling-ready"\)/);
   assert.match(navigationFeedback, /if \(pathname !== "\/"\) onComplete\(\)/);
   assert.match(navigationFeedback, /document\.documentElement\.dataset\.lingReady = "true"/);
   assert.match(navigationFeedback, /flushSync\(\(\) => startNavigation\(loadingStation\)\)/);

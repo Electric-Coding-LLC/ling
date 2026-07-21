@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
+import { LingWordmark } from "./brand";
 import { NavigationLink, useRouteReady } from "./navigation-feedback";
 
 type MobileFocus = "kana" | "hiragana" | "katakana" | "mora";
 export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
+type AvailabilityStatus = "error" | "loading" | "ready";
 
 // A station-to-station edge uses one visual unit unless its meaning requires otherwise.
 const NETWORK_SEGMENT_LENGTH = 180;
@@ -51,6 +53,27 @@ const STATION_NEIGHBORS: Record<
   katakana: { ArrowUp: "hiragana" },
   mora: { ArrowLeft: "kana" },
 };
+
+function NetworkLoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div
+      aria-live="assertive"
+      className="loading-shell loading-shell-overlay network-load-error"
+      role="alert"
+    >
+      <div className="loading-lockup">
+        <LingWordmark className="loading-wordmark" />
+        <p className="loading-kicker">Network unavailable</p>
+        <p className="network-load-error-message">
+          Ling couldn&apos;t load your network.
+        </p>
+        <button className="network-load-retry" onClick={onRetry} type="button">
+          Try again
+        </button>
+      </div>
+    </div>
+  );
+}
 
 type NetworkViewProps = {
   mobile?: boolean;
@@ -426,6 +449,9 @@ export function NetworkMap({
     katakana: initialKatakanaAvailable,
     mora: initialMoraTimingAvailable,
   }));
+  const [availabilityAttempt, setAvailabilityAttempt] = useState(0);
+  const [availabilityStatus, setAvailabilityStatus] =
+    useState<AvailabilityStatus>("loading");
   const hiraganaAvailable = availability.hiragana;
   const katakanaAvailable = availability.katakana;
   const moraTimingAvailable = availability.mora;
@@ -481,14 +507,15 @@ export function NetworkMap({
           katakana: payload.available.includes("katakana"),
           mora: payload.available.includes("mora-timing"),
         });
+        setAvailabilityStatus("ready");
+        routeReady();
       })
-      .catch(() => undefined)
-      .finally(() => {
-        if (!controller.signal.aborted) routeReady();
+      .catch(() => {
+        if (!controller.signal.aborted) setAvailabilityStatus("error");
       });
 
     return () => controller.abort();
-  }, [routeReady]);
+  }, [availabilityAttempt, routeReady]);
 
   useEffect(() => {
     if (document.activeElement !== document.body) return;
@@ -502,6 +529,11 @@ export function NetworkMap({
   function selectStation(focus: StationFocus) {
     setSelectedStationFocus(focus);
     storeStationFocus(focus);
+  }
+
+  function retryAvailability() {
+    setAvailabilityStatus("loading");
+    setAvailabilityAttempt((current) => current + 1);
   }
 
   const stationAnnouncement = `${STATION_LABELS[stationFocus]} selected`;
@@ -649,6 +681,9 @@ export function NetworkMap({
 
   return (
     <div className="network-views">
+      {availabilityStatus === "error" ? (
+        <NetworkLoadError onRetry={retryAvailability} />
+      ) : null}
       <div
         aria-label="Explore the network with the arrow keys"
         className="network-desktop-viewport"

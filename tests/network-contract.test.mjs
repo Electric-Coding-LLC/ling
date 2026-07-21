@@ -205,7 +205,11 @@ test("the Writing stations reveal in order from an account-scoped Kana introduct
   assert.match(page, /<NetworkMap \/>/);
   assert.doesNotMatch(page, /Promise\.all|isStationAvailableToCurrentUser|getStationAvailabilityForCurrentUser/);
   assert.match(source, /fetch\("\/api\/stations\/availability"/);
-  assert.match(source, /if \(!controller\.signal\.aborted\) routeReady\(\)/);
+  assert.match(source, /setAvailabilityStatus\("ready"\);\s*routeReady\(\)/);
+  assert.match(source, /if \(!controller\.signal\.aborted\) setAvailabilityStatus\("error"\)/);
+  assert.doesNotMatch(source, /\.catch\(\(\) => undefined\)/);
+  assert.match(source, /<NetworkLoadError onRetry=\{retryAvailability\} \/>/);
+  assert.match(source, />\s*Try again\s*</);
   assert.match(source, /new URLSearchParams\(window\.location\.search\)/);
   assert.match(availabilityApi, /getStationAvailabilityForCurrentUser\(\)/);
   assert.match(availabilityApi, /STATION_IDS\.filter/);

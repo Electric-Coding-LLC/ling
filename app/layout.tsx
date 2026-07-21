@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { BootReady } from "./boot-ready";
+import { LoadingScreen } from "./loading-screen";
 import { PwaCleanup } from "./pwa-cleanup";
 import "./globals.css";
 
@@ -50,7 +52,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <LoadingScreen boot overlay />
         {children}
+        <BootReady />
         <PwaCleanup />
       </body>
     </html>

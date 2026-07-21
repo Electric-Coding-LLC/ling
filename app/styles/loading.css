@@ -18,6 +18,14 @@
   inset: 0;
 }
 
+.loading-shell-boot {
+  z-index: 200;
+}
+
+html[data-ling-ready="true"] .loading-shell-boot {
+  display: none;
+}
+
 .loading-shell[data-station="kana"] {
   --loading-accent: linear-gradient(90deg, var(--sound), var(--writing));
 }

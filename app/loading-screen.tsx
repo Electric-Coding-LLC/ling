@@ -1,16 +1,26 @@
 import { LingMark } from "./brand";
 
 export function LoadingScreen({
+  boot = false,
   overlay = false,
   station,
 }: {
+  boot?: boolean;
   overlay?: boolean;
   station?: string;
 }) {
+  const className = [
+    "loading-shell",
+    overlay ? "loading-shell-overlay" : "",
+    boot ? "loading-shell-boot" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div
       aria-busy="true"
-      className={`loading-shell${overlay ? " loading-shell-overlay" : ""}`}
+      className={className}
       data-station={station?.toLowerCase().replaceAll(" ", "-")}
     >
       <div aria-live="polite" className="loading-lockup" role="status">

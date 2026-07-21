@@ -118,6 +118,20 @@ test("the app shell is fullscreen at every viewport", async () => {
   assert.doesNotMatch(shell, /border(?:-radius)?:/);
 });
 
+test("the server-rendered boot screen remains until React is responsive", async () => {
+  const [layout, loading, ready] = await Promise.all([
+    readFile(new URL("app/layout.tsx", root), "utf8"),
+    readFile(new URL("app/styles/loading.css", root), "utf8"),
+    readFile(new URL("app/boot-ready.tsx", root), "utf8"),
+  ]);
+
+  assert.match(layout, /<LoadingScreen boot overlay \/>/);
+  assert.match(layout, /<BootReady \/>/);
+  assert.match(loading, /html\[data-ling-ready="true"\] \.loading-shell-boot\s*\{[^}]*display:\s*none/s);
+  assert.match(ready, /performance\.mark\(HYDRATION_MARK\)/);
+  assert.match(ready, /document\.documentElement\.dataset\.lingReady = "true"/);
+});
+
 test("the retirement worker removes the legacy offline shell", async () => {
   const worker = await readFile(new URL("public/sw.js", root), "utf8");
   assert.match(worker, /self\.skipWaiting\(\)/);

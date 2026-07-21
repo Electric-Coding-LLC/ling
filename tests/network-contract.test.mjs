@@ -350,7 +350,9 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /title: "The M row"/);
   assert.match(source, /title: "The Y row"/);
   assert.match(source, /title: "The R row"/);
-  assert.match(source, /title: "The W row and ん"/);
+  assert.match(source, /id: "hiragana-w-row"[\s\S]*title: "The W row"/);
+  assert.match(source, /id: "hiragana-final-n"[\s\S]*title: "ん"/);
+  assert.doesNotMatch(source, /title: "The W row and ん"/);
   assert.doesNotMatch(source, /The next five sounds|Start with the first ten/);
   assert.match(source, /English spellings are approximate; follow the audio/);
   assert.match(source, /english: "ah".*english: "ee".*english: "oo".*english: "eh".*english: "oh"/s);

@@ -186,14 +186,21 @@ const HIRAGANA_STUDY_GROUPS = [
     title: "The R row",
   },
   {
-    description: "The W row keeps わ and を. を sounds like お and usually marks an object. ん closes a beat without a following vowel.",
+    description: "The W row keeps わ and を. を sounds like お and usually marks an object.",
     entries: [
       { english: "wah", example: "わに", exampleAudio: "/audio/ja-wani.wav", kana: "わ", kanaAudio: "/audio/ja-wa.wav", translation: "crocodile" },
       { english: "oh", example: "これを", exampleAudio: "/audio/ja-kore-o.wav", kana: "を", kanaAudio: "/audio/ja-wo.wav", translation: "this (object)" },
-      { english: "nn", example: "ほん", exampleAudio: "/audio/ja-hon.wav", kana: "ん", kanaAudio: "/audio/ja-n.wav", translation: "book" },
     ],
     id: "hiragana-w-row",
-    title: "The W row and ん",
+    title: "The W row",
+  },
+  {
+    description: "ん is the only basic Hiragana without a following vowel and takes its own beat.",
+    entries: [
+      { english: "nn", example: "ほん", exampleAudio: "/audio/ja-hon.wav", kana: "ん", kanaAudio: "/audio/ja-n.wav", translation: "book" },
+    ],
+    id: "hiragana-final-n",
+    title: "ん",
   },
 ] as const;
 

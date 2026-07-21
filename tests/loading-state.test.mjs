@@ -10,16 +10,32 @@ test("the root route has a branded, accessible loading state", async () => {
   const loadingStyles = await readFile(new URL("app/styles/loading.css", root), "utf8");
   const globalStyles = await readFile(new URL("app/globals.css", root), "utf8");
   const kanaLoading = await readFile(new URL("app/stations/kana/loading.tsx", root), "utf8");
+  const navigationFeedback = await readFile(
+    new URL("app/navigation-feedback.tsx", root),
+    "utf8",
+  );
 
   assert.match(source, /<LoadingScreen \/>/);
   assert.match(screen, /aria-busy="true"/);
   assert.match(screen, /aria-live="polite"/);
   assert.match(screen, /role="status"/);
-  assert.match(screen, /Opening station/);
+  assert.match(screen, /<LingWordmark className="loading-wordmark" \/>/);
+  assert.match(screen, /Entering station/);
+  assert.match(screen, /"Loading"/);
   assert.match(screen, /loading-title/);
   assert.match(screen, /loading-track/);
   assert.doesNotMatch(screen, /<svg|loading-network|spinner/i);
   assert.match(kanaLoading, /<LoadingScreen station="Kana" \/>/);
+  assert.match(navigationFeedback, /<NavigationFeedbackContext value=\{beginNavigation\}>/);
+  assert.match(navigationFeedback, /<RouteReadyContext value=\{completeNavigation\}>/);
+  assert.match(navigationFeedback, /<NavigationCompletion onComplete=\{completeNavigation\} \/>/);
+  assert.match(navigationFeedback, /useLayoutEffect\(\(\) => \{/);
+  assert.match(navigationFeedback, /if \(pathname === "\/"\)[\s\S]*removeAttribute\("data-ling-ready"\)/);
+  assert.match(navigationFeedback, /if \(pathname !== "\/"\) onComplete\(\)/);
+  assert.match(navigationFeedback, /document\.documentElement\.dataset\.lingReady = "true"/);
+  assert.match(navigationFeedback, /flushSync\(\(\) => startNavigation\(loadingStation\)\)/);
+  assert.match(navigationFeedback, /event\.metaKey[\s\S]*event\.ctrlKey[\s\S]*event\.shiftKey[\s\S]*event\.altKey/);
+  assert.match(navigationFeedback, /pending \? <LoadingScreen overlay station=\{pending\.station\} \/> : null/);
 
   assert.match(loadingStyles, /\.loading-shell\s*\{[^}]*min-height:\s*100dvh/s);
   assert.match(loadingStyles, /\.loading-shell-overlay\s*\{[^}]*position:\s*fixed/s);

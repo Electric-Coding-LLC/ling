@@ -290,6 +290,21 @@ export function HiraganaGuide() {
     );
   }
 
+  function renderStudyKana(entry: HiraganaTestEntry) {
+    const isKnown = knownHiragana.has(entry.kana);
+    return (
+      <button
+        aria-label={`Play ${entry.kana}${isKnown ? ", marked known" : ""}`}
+        className={`kana-study-button kana-study-kana-button${isKnown ? " kana-study-button-known" : ""}`}
+        data-known={isKnown ? "true" : undefined}
+        onClick={() => playAudio(entry.kanaAudio)}
+        type="button"
+      >
+        <span lang="ja">{entry.kana}</span>
+      </button>
+    );
+  }
+
   function openTest(title: string, entries: readonly HiraganaTestEntry[]) {
     setKnowledgeError(false);
     setTestIndex(0);
@@ -447,16 +462,7 @@ export function HiraganaGuide() {
               <tbody>
                 {group.entries.map((entry) => (
                   <tr key={entry.kana}>
-                    <td>
-                      <button
-                        aria-label={`Play ${entry.kana}`}
-                        className="kana-study-button kana-study-kana-button"
-                        onClick={() => playAudio(entry.kanaAudio)}
-                        type="button"
-                      >
-                        <span lang="ja">{entry.kana}</span>
-                      </button>
-                    </td>
+                    <td>{renderStudyKana(entry)}</td>
                     <td className="kana-study-cue">{entry.english}</td>
                     <td>
                       <button
@@ -496,17 +502,14 @@ export function HiraganaGuide() {
         >
           <div className="hiragana-test-modal">
             <header className="hiragana-test-modal-heading">
-              <div>
-                <p>Test</p>
-                <h2 id="hiragana-test-title">{activeTest.title}</h2>
-              </div>
+              <h2 id="hiragana-test-title">{activeTest.title}</h2>
               <button
                 aria-label="Close test"
                 className="hiragana-test-close"
                 onClick={closeTest}
                 type="button"
               >
-                Close
+                <span aria-hidden="true">×</span>
               </button>
             </header>
 

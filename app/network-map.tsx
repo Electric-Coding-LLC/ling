@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
-import { LoadingScreen } from "./loading-screen";
+import { LingWordmark } from "./brand";
+import { NavigationLink, useRouteReady } from "./navigation-feedback";
 
 type MobileFocus = "kana" | "hiragana" | "katakana" | "mora";
 export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
+type AvailabilityStatus = "error" | "loading" | "ready";
 
 // A station-to-station edge uses one visual unit unless its meaning requires otherwise.
 const NETWORK_SEGMENT_LENGTH = 180;
@@ -54,6 +54,27 @@ const STATION_NEIGHBORS: Record<
   mora: { ArrowLeft: "kana" },
 };
 
+function NetworkLoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div
+      aria-live="assertive"
+      className="loading-shell loading-shell-overlay network-load-error"
+      role="alert"
+    >
+      <div className="loading-lockup">
+        <LingWordmark className="loading-wordmark" />
+        <p className="loading-kicker">Network unavailable</p>
+        <p className="network-load-error-message">
+          Ling couldn&apos;t load your network.
+        </p>
+        <button className="network-load-retry" onClick={onRetry} type="button">
+          Try again
+        </button>
+      </div>
+    </div>
+  );
+}
+
 type NetworkViewProps = {
   mobile?: boolean;
   mobileFocus?: MobileFocus;
@@ -62,7 +83,6 @@ type NetworkViewProps = {
   moraTimingAvailable: boolean;
   onLinePointerLeave: () => void;
   onStationFocus: (focus: StationFocus) => void;
-  onStationOpen: (focus: StationFocus) => void;
   onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
 };
 
@@ -114,7 +134,6 @@ function LinkedStation({
   labelPlacement = "above",
   href,
   onFocus,
-  onOpen,
   onPointerLeave,
   slug,
   x,
@@ -126,7 +145,6 @@ function LinkedStation({
   labelPlacement?: "above" | "right";
   href: string;
   onFocus: () => void;
-  onOpen: () => void;
   onPointerLeave: () => void;
   slug: string;
   x: number;
@@ -171,17 +189,17 @@ function LinkedStation({
   );
 
   return (
-    <Link
+    <NavigationLink
       aria-label={`Open ${label}`}
       className="network-station-link"
       href={href}
-      onClick={onOpen}
+      loadingStation={label}
       onFocus={onFocus}
       onPointerLeave={onPointerLeave}
       prefetch
     >
       {station}
-    </Link>
+    </NavigationLink>
   );
 }
 
@@ -193,7 +211,6 @@ function NetworkView({
   moraTimingAvailable,
   onLinePointerLeave,
   onStationFocus,
-  onStationOpen,
   onTooltipPointerMove,
 }: NetworkViewProps) {
   const width = mobile ? MOBILE_VIEW_WIDTH : 1000;
@@ -313,7 +330,7 @@ function NetworkView({
           ) : null}
         </>
       ) : null}
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Kana" onFocus={() => onStationFocus("kana")} onOpen={() => onStationOpen("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
+      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Kana" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
       {hiraganaAvailable ? (
         <LinkedStation
           backlightId={backlightId}
@@ -322,7 +339,6 @@ function NetworkView({
           label="Hiragana"
           labelPlacement="right"
           onFocus={() => onStationFocus("hiragana")}
-          onOpen={() => onStationOpen("hiragana")}
           onPointerLeave={onLinePointerLeave}
           slug="hiragana"
           x={kanaX}
@@ -337,7 +353,6 @@ function NetworkView({
           label="Katakana"
           labelPlacement="right"
           onFocus={() => onStationFocus("katakana")}
-          onOpen={() => onStationOpen("katakana")}
           onPointerLeave={onLinePointerLeave}
           slug="katakana"
           x={kanaX}
@@ -351,7 +366,6 @@ function NetworkView({
           kind="sound"
           label="Mora timing"
           onFocus={() => onStationFocus("mora")}
-          onOpen={() => onStationOpen("mora")}
           onPointerLeave={onLinePointerLeave}
           slug="mora-timing"
           x={moraX}
@@ -420,7 +434,7 @@ export function NetworkMap({
   katakanaAvailable?: boolean;
   moraTimingAvailable?: boolean;
 }) {
-  const router = useRouter();
+  const routeReady = useRouteReady();
   const storedStationFocus = useSyncExternalStore(
     subscribeToStoredStationFocus,
     getStoredStationFocus,
@@ -435,6 +449,9 @@ export function NetworkMap({
     katakana: initialKatakanaAvailable,
     mora: initialMoraTimingAvailable,
   }));
+  const [availabilityAttempt, setAvailabilityAttempt] = useState(0);
+  const [availabilityStatus, setAvailabilityStatus] =
+    useState<AvailabilityStatus>("loading");
   const hiraganaAvailable = availability.hiragana;
   const katakanaAvailable = availability.katakana;
   const moraTimingAvailable = availability.mora;
@@ -449,7 +466,6 @@ export function NetworkMap({
     : "kana";
   const mobileFocus: MobileFocus = stationFocus;
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
-  const [openingStation, setOpeningStation] = useState<StationFocus | null>(null);
   const desktopViewport = useRef<HTMLDivElement>(null);
   const mobileViewport = useRef<HTMLDivElement>(null);
   const pointerStart = useRef<{ id: number; x: number } | null>(null);
@@ -491,11 +507,15 @@ export function NetworkMap({
           katakana: payload.available.includes("katakana"),
           mora: payload.available.includes("mora-timing"),
         });
+        setAvailabilityStatus("ready");
+        routeReady();
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (!controller.signal.aborted) setAvailabilityStatus("error");
+      });
 
     return () => controller.abort();
-  }, []);
+  }, [availabilityAttempt, routeReady]);
 
   useEffect(() => {
     if (document.activeElement !== document.body) return;
@@ -511,9 +531,9 @@ export function NetworkMap({
     storeStationFocus(focus);
   }
 
-  function openStation(focus: StationFocus) {
-    setOpeningStation(focus);
-    router.push(ROUTABLE_STATION_HREFS[focus]);
+  function retryAvailability() {
+    setAvailabilityStatus("loading");
+    setAvailabilityAttempt((current) => current + 1);
   }
 
   const stationAnnouncement = `${STATION_LABELS[stationFocus]} selected`;
@@ -609,7 +629,7 @@ export function NetworkMap({
     if (event.key !== "Enter" && event.key !== " ") return;
 
     event.preventDefault();
-    openStation(stationFocus);
+    activateStationLink(getStationTarget(event.currentTarget, stationFocus));
   }
 
   function onDesktopPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -649,17 +669,21 @@ export function NetworkMap({
       const stationLink =
         focusedStationLink ?? getStationTarget(event.currentTarget, stationFocus);
       if (!(stationLink instanceof SVGAElement)) return;
-      setOpeningStation(stationFocus);
-      router.push(stationLink.href.baseVal);
+      activateStationLink(stationLink);
     }
   }
 
+  function activateStationLink(stationLink: SVGElement) {
+    stationLink.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, view: window }),
+    );
+  }
+
   return (
-    <>
-      {openingStation ? (
-        <LoadingScreen overlay station={STATION_LABELS[openingStation]} />
+    <div className="network-views">
+      {availabilityStatus === "error" ? (
+        <NetworkLoadError onRetry={retryAvailability} />
       ) : null}
-      <div className="network-views">
       <div
         aria-label="Explore the network with the arrow keys"
         className="network-desktop-viewport"
@@ -676,7 +700,6 @@ export function NetworkMap({
           moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
-          onStationOpen={setOpeningStation}
           onTooltipPointerMove={onTooltipPointerMove}
         />
         <span aria-live="polite" className="sr-only">
@@ -711,7 +734,6 @@ export function NetworkMap({
           moraTimingAvailable={moraTimingAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
-          onStationOpen={setOpeningStation}
           onTooltipPointerMove={onTooltipPointerMove}
         />
         <span aria-live="polite" className="sr-only">
@@ -723,7 +745,6 @@ export function NetworkMap({
           {tooltip.label}
         </span>
       ) : null}
-      </div>
-    </>
+    </div>
   );
 }

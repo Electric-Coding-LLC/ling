@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { LingWordmark } from "../brand";
+import { NavigationLink } from "../navigation-feedback";
 
 type NetworkPosition = "kana" | "hiragana" | "katakana" | "mora-timing";
 
@@ -67,23 +67,23 @@ export function StationTopbar({
 }) {
   return (
     <header className="topbar station-topbar">
-      <Link
+      <NavigationLink
         aria-label="Return to the Ling network map"
         className="brand-link"
         href="/"
         title="Network map"
       >
         <LingWordmark className="wordmark" />
-      </Link>
+      </NavigationLink>
       <nav aria-label="Station navigation" className="station-nav">
-        <Link
+        <NavigationLink
           aria-label={`Return to network map from ${current}`}
           className="station-map-link"
           href={`/?focus=${mapPosition}`}
           title="Network map"
         >
           <NetworkGlyph position={mapPosition} />
-        </Link>
+        </NavigationLink>
       </nav>
     </header>
   );

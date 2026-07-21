@@ -24,8 +24,9 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(screen, /loading-track/);
   assert.doesNotMatch(screen, /<svg|loading-network|spinner/i);
   assert.match(kanaLoading, /<LoadingScreen station="Kana" \/>/);
-  assert.match(navigationFeedback, /<NavigationFeedbackBoundary key=\{pathname\}>/);
   assert.match(navigationFeedback, /<NavigationFeedbackContext value=\{beginNavigation\}>/);
+  assert.match(navigationFeedback, /<NavigationCompletion onComplete=\{completeNavigation\} \/>/);
+  assert.match(navigationFeedback, /useEffect\(\(\) => onComplete\(\), \[onComplete, pathname\]\)/);
   assert.match(navigationFeedback, /flushSync\(\(\) => startNavigation\(loadingStation\)\)/);
   assert.match(navigationFeedback, /event\.metaKey[\s\S]*event\.ctrlKey[\s\S]*event\.shiftKey[\s\S]*event\.altKey/);
   assert.match(navigationFeedback, /pending \? <LoadingScreen overlay station=\{pending\.station\} \/> : null/);

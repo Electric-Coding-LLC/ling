@@ -6,6 +6,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ComponentProps,
   type MouseEvent,
@@ -21,28 +22,28 @@ const NavigationFeedbackContext = createContext<
 >(null);
 
 export function NavigationFeedbackProvider({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-
-  return (
-    <NavigationFeedbackBoundary key={pathname}>
-      {children}
-    </NavigationFeedbackBoundary>
-  );
-}
-
-function NavigationFeedbackBoundary({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState<PendingNavigation>(null);
   const beginNavigation = useCallback(
     (station?: string) => setPending({ station }),
     [],
   );
+  const completeNavigation = useCallback(() => setPending(null), []);
 
   return (
     <NavigationFeedbackContext value={beginNavigation}>
       {children}
       {pending ? <LoadingScreen overlay station={pending.station} /> : null}
+      <NavigationCompletion onComplete={completeNavigation} />
     </NavigationFeedbackContext>
   );
+}
+
+function NavigationCompletion({ onComplete }: { onComplete: () => void }) {
+  const pathname = usePathname();
+
+  useEffect(() => onComplete(), [onComplete, pathname]);
+
+  return null;
 }
 
 export function NavigationLink({

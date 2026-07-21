@@ -64,7 +64,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /label="Katakana"\s*labelPlacement="right"/);
   assert.doesNotMatch(source, /import Link from "next\/link"/);
   assert.doesNotMatch(source, /import \{ useRouter \} from "next\/navigation"/);
-  assert.match(source, /import \{ NavigationLink \} from "\.\/navigation-feedback"/);
+  assert.match(source, /import \{ NavigationLink, useRouteReady \} from "\.\/navigation-feedback"/);
   assert.doesNotMatch(source, /import \{ LoadingScreen \} from "\.\/loading-screen"/);
   assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*loadingStation=\{label\}[\s\S]*prefetch/);
   assert.doesNotMatch(source, /onClick=\{onOpen\}/);
@@ -205,6 +205,7 @@ test("the Writing stations reveal in order from an account-scoped Kana introduct
   assert.match(page, /<NetworkMap \/>/);
   assert.doesNotMatch(page, /Promise\.all|isStationAvailableToCurrentUser|getStationAvailabilityForCurrentUser/);
   assert.match(source, /fetch\("\/api\/stations\/availability"/);
+  assert.match(source, /if \(!controller\.signal\.aborted\) routeReady\(\)/);
   assert.match(source, /new URLSearchParams\(window\.location\.search\)/);
   assert.match(availabilityApi, /getStationAvailabilityForCurrentUser\(\)/);
   assert.match(availabilityApi, /STATION_IDS\.filter/);

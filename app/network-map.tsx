@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
-import { NavigationLink } from "./navigation-feedback";
+import { NavigationLink, useRouteReady } from "./navigation-feedback";
 
 type MobileFocus = "kana" | "hiragana" | "katakana" | "mora";
 export type StationFocus = MobileFocus;
@@ -411,6 +411,7 @@ export function NetworkMap({
   katakanaAvailable?: boolean;
   moraTimingAvailable?: boolean;
 }) {
+  const routeReady = useRouteReady();
   const storedStationFocus = useSyncExternalStore(
     subscribeToStoredStationFocus,
     getStoredStationFocus,
@@ -481,10 +482,13 @@ export function NetworkMap({
           mora: payload.available.includes("mora-timing"),
         });
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (!controller.signal.aborted) routeReady();
+      });
 
     return () => controller.abort();
-  }, []);
+  }, [routeReady]);
 
   useEffect(() => {
     if (document.activeElement !== document.body) return;

@@ -20,6 +20,7 @@ type PendingNavigation = { station?: string } | null;
 const NavigationFeedbackContext = createContext<
   ((station?: string) => void) | null
 >(null);
+const RouteReadyContext = createContext<(() => void) | null>(null);
 
 export function NavigationFeedbackProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState<PendingNavigation>(null);
@@ -27,13 +28,18 @@ export function NavigationFeedbackProvider({ children }: { children: ReactNode }
     (station?: string) => setPending({ station }),
     [],
   );
-  const completeNavigation = useCallback(() => setPending(null), []);
+  const completeNavigation = useCallback(() => {
+    document.documentElement.dataset.lingReady = "true";
+    setPending(null);
+  }, []);
 
   return (
     <NavigationFeedbackContext value={beginNavigation}>
-      {children}
-      {pending ? <LoadingScreen overlay station={pending.station} /> : null}
-      <NavigationCompletion onComplete={completeNavigation} />
+      <RouteReadyContext value={completeNavigation}>
+        {children}
+        {pending ? <LoadingScreen overlay station={pending.station} /> : null}
+        <NavigationCompletion onComplete={completeNavigation} />
+      </RouteReadyContext>
     </NavigationFeedbackContext>
   );
 }
@@ -41,9 +47,20 @@ export function NavigationFeedbackProvider({ children }: { children: ReactNode }
 function NavigationCompletion({ onComplete }: { onComplete: () => void }) {
   const pathname = usePathname();
 
-  useEffect(() => onComplete(), [onComplete, pathname]);
+  useEffect(() => {
+    if (pathname !== "/") onComplete();
+  }, [onComplete, pathname]);
 
   return null;
+}
+
+export function useRouteReady() {
+  const routeReady = useContext(RouteReadyContext);
+  if (!routeReady) {
+    throw new Error("useRouteReady must be used inside NavigationFeedbackProvider");
+  }
+
+  return routeReady;
 }
 
 export function NavigationLink({

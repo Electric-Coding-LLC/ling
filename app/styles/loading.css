@@ -45,10 +45,11 @@ html[data-ling-ready="true"] .loading-shell-boot {
   justify-items: start;
 }
 
-.loading-brand-mark {
-  width: 2.75rem;
-  height: 2.75rem;
-  fill: currentColor;
+.loading-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: clamp(2.5rem, 10vw, 4rem);
 }
 
 .loading-kicker {

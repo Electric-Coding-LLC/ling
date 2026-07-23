@@ -407,49 +407,113 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   }
 });
 
-test("the Mora timing station teaches equal beats with bundled audio", async () => {
+test("the Mora timing station teaches and reviews equal beats with bundled audio", async () => {
   const source = await readFile(new URL("app/stations/mora-timing/mora-timing-guide.tsx", root), "utf8");
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
-  const wordAudioPaths = [...source.matchAll(/wordAudio: "(\/audio\/ja-[^"]+\.wav)"/g)].map((match) => match[1]);
-  const moraAudioPaths = [...source.matchAll(/\{ audio: "(\/audio\/ja-[^"]+\.wav)", text: "[^"]+" \}/g)].map((match) => match[1]);
+  const schema = await readFile(new URL("db/schema.ts", root), "utf8");
+  const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
+  const domain = await readFile(new URL("src/modules/learning/mora-timing.ts", root), "utf8");
+  const introductionApi = await readFile(
+    new URL("app/api/stations/mora-timing/introduction/route.ts", root),
+    "utf8",
+  );
+  const knowledgeApi = await readFile(
+    new URL("app/api/stations/mora-timing/knowledge/route.ts", root),
+    "utf8",
+  );
+  const teachingSource = source.slice(
+    source.indexOf("const MORA_CONCEPTS"),
+    source.indexOf("const MORA_REVIEW_CARDS"),
+  );
+  const reviewSource = source.slice(
+    source.indexOf("const MORA_REVIEW_CARDS"),
+    source.indexOf("export function MoraTimingGuide"),
+  );
+  const teachingWords = [...teachingSource.matchAll(/word: "([^"]+)"/g)].map((match) => match[1]);
+  const reviewWords = [...reviewSource.matchAll(/word: "([^"]+)"/g)].map((match) => match[1]);
+  const reviewIds = [...reviewSource.matchAll(/id: "([^"]+)"/g)].map((match) => match[1]);
+  const reviewMeanings = [...reviewSource.matchAll(/meaning: "([^"]+)"/g)].map((match) => match[1]);
+  const domainIds = [...domain.matchAll(/^  "([a-z-]+)",$/gm)].map((match) => match[1]);
+  const teachingAudioPaths = [...teachingSource.matchAll(/wordAudio: "(\/audio\/ja-[^"]+\.wav)"/g)].map((match) => match[1]);
+  const reviewAudioPaths = [...reviewSource.matchAll(/wordAudio: "(\/audio\/ja-[^"]+\.wav)"/g)].map((match) => match[1]);
 
-  assert.deepEqual(wordAudioPaths, [
+  assert.deepEqual(teachingAudioPaths, [
     "/audio/ja-inu.wav",
     "/audio/ja-asa.wav",
-    "/audio/ja-okaasan.wav",
+    "/audio/ja-hon.wav",
+    "/audio/ja-yoon-hiragana-kyo.wav",
     "/audio/ja-kitte.wav",
     "/audio/ja-keeki.wav",
-    "/audio/ja-hon.wav",
   ]);
-  assert.equal(moraAudioPaths.length, 15);
-  assert.match(source, /text: "い"/);
-  assert.match(source, /text: "さ"/);
-  assert.match(source, /text: "お"/);
-  assert.match(source, /text: "ん"/);
-  assert.match(source, /aria-label=\{`Play timing unit \$\{mora\.text\}`\}/);
-  assert.match(source, /onClick=\{\(\) => playAudio\(mora\.audio as string\)\}/);
-  assert.match(source, /Japanese words are spoken in even rhythmic beats/);
-  assert.match(source, /Linguists call each beat a mora/);
-  assert.match(source, /It is not exactly the same as an English syllable/);
-  assert.match(source, /Small[\s\S]*っ・ッ[\s\S]*add a short pause/);
-  assert.match(source, /Katakana mark[\s\S]*ー[\s\S]*makes the sound before it longer/);
-  assert.match(source, /word: "きって"/);
-  assert.match(source, /word: "ケーキ"/);
-  assert.match(source, /className="mora-part-sign"/);
-  assert.match(source, /Why the count matters/);
-  assert.match(styles, /\.mora-rows\s*\{[^}]*border-top:\s*1px solid var\(--line\)/s);
-  assert.match(styles, /\.mora-row-heading,[\s\S]*\.mora-row-timing\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*space-between/s);
-  assert.match(styles, /\.mora-word-button\s*\{[^}]*white-space:\s*nowrap/s);
-  assert.match(styles, /\.mora-divider\s*\{[^}]*color:\s*var\(--muted\)/s);
-  assert.match(styles, /\.mora-part-sign\s*\{[^}]*color:\s*var\(--foreground\)/s);
-  assert.doesNotMatch(styles, /\.mora-part-button\s*\{[^}]*border-bottom|\.mora-part-button:hover\s*\{[^}]*border-bottom/s);
-  assert.doesNotMatch(source, /<table|<thead|<th|<td/);
-  assert.doesNotMatch(source, /box|mora-beat/);
-  assert.doesNotMatch(styles, /\.mora-beat|rgb\(219 78 58/);
-  assert.doesNotMatch(source, /[ゃゅょ]|gakkou|kyo|がっこう|きょう/);
-  assert.doesNotMatch(source, /score|streak|timer|progress/i);
+  assert.equal(reviewWords.length, 10);
+  assert.equal(reviewMeanings.length, 10);
+  assert.equal(reviewAudioPaths.length, 10);
+  assert.equal(new Set([...teachingWords, ...reviewWords]).size, 16);
+  assert.match(teachingSource, /title: "One Kana, one beat"/);
+  assert.match(teachingSource, /title: "ん has its own beat"/);
+  assert.match(teachingSource, /title: "Yōon is one beat"/);
+  assert.match(teachingSource, /title: "Small っ holds a silent beat"/);
+  assert.match(teachingSource, /title: "ー extends the sound"/);
+  assert.ok(source.indexOf('className="mora-concept-heading"') < source.indexOf('className="mora-example-list"'));
+  assert.match(teachingSource, /morae: \["きょ", "う"\]/);
+  assert.match(teachingSource, /Small っ or ッ holds a silent beat/);
+  assert.match(teachingSource, /prolonged sound mark ー, used mainly in Katakana/);
+  assert.match(source, /Count the beats\. The answer appears after five seconds/);
+  assert.match(source, /The test checks recognition, not pronunciation/);
+  assert.doesNotMatch(source, /className="mora-review-(?:prompt|rule|meaning)"/);
+  assert.doesNotMatch(source, /className="mora-review-count"/);
+  assert.doesNotMatch(reviewSource, /\brule:/);
+  assert.match(source, /className="mora-review-card-content"[\s\S]*?aria-hidden=\{!breakdownRevealed\}[\s\S]*?className="mora-review-translation"[\s\S]*?data-revealed=\{breakdownRevealed \? "true" : undefined\}[\s\S]*?\{activeCard\.meaning\}[\s\S]*?className="mora-review-word"[\s\S]*?className="mora-review-answer-slot"/);
+  assert.match(styles, /\.mora-review-translation:not\(\[data-revealed="true"\]\)\s*\{[^}]*visibility:\s*hidden/s);
+  assert.match(source, /<MoraBeats[\s\S]*?morae=\{activeCard\.morae\}[\s\S]*?word=\{activeCard\.word\}[\s\S]*?\/>/);
+  assert.match(source, /<FlashcardReview/);
+  assert.match(source, /REVIEW_REVEAL_DELAY_SECONDS = 5/);
+  assert.match(source, /window\.setTimeout\(\(\) => \{[\s\S]*?setBreakdownRevealed\(true\);[\s\S]*?\}, REVIEW_REVEAL_DELAY_MS\)/);
+  assert.match(source, /role="timer"[\s\S]*?mora-review-countdown-progress[\s\S]*?\{revealSecondsRemaining\}/);
+  assert.doesNotMatch(source, /Show timing for \$\{activeCard\.word\}|>\s*Answer\s*</);
+  assert.match(styles, /\.mora-review-countdown\s*\{[^}]*width:\s*2\.5rem[^}]*height:\s*2\.5rem[^}]*color:\s*var\(--muted\)/s);
+  assert.match(styles, /\.mora-review-countdown-progress\s*\{[^}]*animation:\s*mora-review-countdown-fill var\(--mora-review-countdown-duration\) linear forwards[^}]*stroke:\s*var\(--known\)[^}]*stroke-dashoffset:\s*1/s);
+  assert.match(source, /Did you count it correctly|mark whether your count was right/);
+  assert.match(source, /className="hiragana-test-trigger"/);
+  assert.match(source, /Test Mora timing\. \$\{remainingCount\} remaining\./);
+  assert.match(source, /fetch\("\/api\/stations\/mora-timing\/introduction"/);
+  assert.match(source, /fetch\("\/api\/stations\/mora-timing\/knowledge"/);
+  assert.match(source, /audio\.currentTime \/ audio\.duration/);
+  assert.match(source, /window\.requestAnimationFrame\(updateActiveBeat\)/);
+  assert.match(source, /data-active=\{activeBeatIndex === index \? "true" : undefined\}/);
+  assert.match(source, /<MoraAudioIndicator \/>/);
+  assert.match(source, /<span className="mora-example-timing">[\s\S]*?<button[\s\S]*?className="mora-beats-button"[\s\S]*?<MoraBeats[\s\S]*?<MoraAudioIndicator \/>[\s\S]*?<span className="mora-meaning">/);
+  assert.doesNotMatch(source, /className="mora-word"/);
+  assert.doesNotMatch(source.slice(source.indexOf('className="mora-example-list"'), source.indexOf("{audioError ?")), /className="mora-count"/);
+  assert.match(source, /widestMoraLength > 1 \? "3\.75rem" : "3rem"/);
+  assert.match(styles, /\.mora-concepts\s*\{[^}]*width:\s*min\(100%, 38rem\)/s);
+  assert.match(styles, /\.mora-example-list\s*\{[^}]*display:\s*grid[^}]*\}/s);
+  assert.doesNotMatch(styles, /\.mora-example-list\s*\{[^}]*(?:border|border-radius):/s);
+  assert.doesNotMatch(styles, /\.mora-example \+ \.mora-example\s*\{[^}]*border-top:/s);
+  assert.match(styles, /\.mora-meaning\s*\{[^}]*margin-left:\s*0\.35rem/s);
+  assert.match(styles, /\.mora-example-timing\s*\{[^}]*display:\s*inline-flex[^}]*align-items:\s*center[^}]*gap:\s*0\.5rem/s);
+  assert.match(styles, /\.mora-beats\s*\{[^}]*grid-auto-columns:\s*var\(--mora-beat-width, 3rem\)[^}]*grid-auto-flow:\s*column/s);
+  assert.doesNotMatch(styles, /\.mora-beats\s*\{[^}]*justify-self:/s);
+  assert.match(styles, /\.mora-beat\s*\{[^}]*height:\s*3rem[^}]*border:\s*1px solid var\(--line\)[^}]*border-radius:\s*0/s);
+  assert.match(styles, /\.mora-beat \+ \.mora-beat\s*\{[^}]*margin-left:\s*-1px/s);
+  assert.match(styles, /\.mora-beat:first-child\s*\{[^}]*border-radius:\s*0\.55rem 0 0 0\.55rem/s);
+  assert.match(styles, /\.mora-beat:last-child\s*\{[^}]*border-radius:\s*0 0\.55rem 0\.55rem 0/s);
+  assert.match(styles, /\.mora-beat\[data-active="true"\]\s*\{[^}]*color:\s*var\(--foreground\)[^}]*background:\s*var\(--sound\)/s);
+  assert.doesNotMatch(styles, /\.mora-beat\[data-active="true"\]\s*\{[^}]*(?:border-color|box-shadow|transform):/s);
+  assert.match(styles, /\.mora-beats-button:hover \.mora-beat:not\(\[data-active="true"\]\)/);
+  assert.match(styles, /\.mora-example\[data-playing="true"\] \.mora-audio-indicator span\s*\{[^}]*animation:\s*hiragana-test-sound-pulse/s);
+  assert.match(schema, /moraTimingKnowledge = sqliteTable\(\s*"mora_timing_knowledge"/s);
+  assert.match(repository, /listKnownMoraTimingReviews/);
+  assert.match(repository, /setMoraTimingReviewKnown/);
+  assert.match(repository, /MORA_TIMING_REVIEW_IDS\.every\(\(reviewId\) =>/);
+  assert.match(domain, /MORA_TIMING_REVIEW_IDS/);
+  assert.deepEqual(reviewIds, domainIds);
+  assert.match(introductionApi, /recordStationIntroduction\(user\.id, "mora-timing"\)/);
+  assert.match(knowledgeApi, /isMoraTimingReviewId\(candidate\.reviewId\)/);
+  assert.match(knowledgeApi, /private, no-store/);
+  assert.doesNotMatch(source, /microphone|speech evaluation|score|streak/i);
 
-  for (const audioPath of new Set([...wordAudioPaths, ...moraAudioPaths])) {
+  for (const audioPath of new Set([...teachingAudioPaths, ...reviewAudioPaths])) {
     const audio = await readFile(new URL(`public${audioPath}`, root));
     assert.equal(audio.subarray(0, 4).toString("ascii"), "RIFF");
     assert.equal(audio.subarray(8, 12).toString("ascii"), "WAVE");

@@ -8,6 +8,7 @@ const flashcardGuides = [
   "app/stations/hiragana/hiragana-guide.tsx",
   "app/stations/katakana/katakana-guide.tsx",
   "app/stations/kana-extensions/kana-extensions-guide.tsx",
+  "app/stations/mora-timing/mora-timing-guide.tsx",
 ];
 
 test("flashcard audio feedback starts before playback is ready", async () => {

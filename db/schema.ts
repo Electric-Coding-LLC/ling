@@ -72,3 +72,15 @@ export const kanaExtensionKnowledge = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.patternId] })],
 );
+
+export const moraTimingKnowledge = sqliteTable(
+  "mora_timing_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reviewId: text("review_id").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.reviewId] })],
+);

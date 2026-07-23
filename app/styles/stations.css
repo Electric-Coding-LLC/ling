@@ -443,17 +443,46 @@
 }
 
 .mora-concepts {
+  display: grid;
   width: min(100%, 38rem);
-  border-top: 1px solid var(--line);
+  gap: 2rem;
 }
 
-.mora-concept {
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--line);
+.mora-practice {
+  width: min(100%, 38rem);
+  margin-top: 2rem;
 }
 
-.mora-concept:last-child {
-  border-bottom: 0;
+.mora-practice-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0.75rem;
+  row-gap: 0.25rem;
+}
+
+.mora-practice-word {
+  min-height: 3.75rem;
+  padding: 0.5rem;
+  border: 0;
+  color: var(--foreground);
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.35rem;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.mora-practice-word[data-known="true"] {
+  color: var(--known);
+}
+
+.mora-practice-word:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: -2px;
 }
 
 .mora-concept-heading {
@@ -625,6 +654,10 @@
     border-color: rgb(242 241 235 / 0.22);
     background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
   }
+
+  .mora-practice-word:hover {
+    background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
+  }
 }
 
 .mora-review-card-content {
@@ -640,14 +673,17 @@
   line-height: 1.1;
 }
 
-.mora-review-translation {
-  margin-bottom: 0.35rem;
-  color: var(--muted);
-  font-size: 0.8rem;
+.mora-review-word-beat {
+  transition: color 120ms ease;
 }
 
-.mora-review-translation:not([data-revealed="true"]) {
-  visibility: hidden;
+.mora-review-word-beat[data-active="true"] {
+  color: var(--sound);
+}
+
+.mora-review-translation {
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 
 .mora-review-answer-slot {
@@ -656,6 +692,13 @@
   min-height: 3.5rem;
   place-items: center;
   margin-top: 0.75rem;
+}
+
+.mora-review-answer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .flashcard-countdown {
@@ -1544,10 +1587,6 @@
   .kana-table-intro {
     margin-bottom: 0.75rem;
     font-size: 0.875rem;
-  }
-
-  .mora-concept {
-    padding: 1.25rem 0;
   }
 
   .mora-concept-heading p {

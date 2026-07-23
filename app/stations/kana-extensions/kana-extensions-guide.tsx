@@ -246,7 +246,7 @@ export function CombinedSoundsGuide() {
           <p>For example, <strong lang="ja">き</strong> is kee. With a small <strong lang="ja">ゃ</strong>, <strong lang="ja">きゃ</strong> is kyah—not kee-yah. Katakana follows the same pattern with <strong lang="ja">ャ</strong>, <strong lang="ja">ュ</strong>, and <strong lang="ja">ョ</strong>.</p>
         </>
       )}
-      nextStation="Mora timing"
+      nextStation="Mora Timing"
       stationName="Yōon"
       stationSlug="combined-sounds"
     />

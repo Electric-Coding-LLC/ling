@@ -14,6 +14,7 @@ import {
   splitJapaneseMorae,
 } from "@/src/modules/learning/japanese-sound-cues";
 import { FlashcardCountdown, FlashcardReview } from "../flashcard-review";
+import { StationOptions } from "../station-options";
 
 type MoraExample = {
   readonly meaning: string;
@@ -99,7 +100,7 @@ const MORA_REVIEW_CARDS: readonly MoraReviewCard[] = [
   { id: "small-tsu-zakku", meaning: "backpack", morae: ["ザ", "ッ", "ク"], word: "ザック", wordAudio: "/audio/ja-marks-zakku.wav" },
   { id: "small-tsu-shop", meaning: "shop", morae: ["ショ", "ッ", "プ"], word: "ショップ", wordAudio: "/audio/ja-yoon-katakana-sho.wav" },
   { id: "long-mark-soup", meaning: "soup", morae: ["ス", "ー", "プ"], word: "スープ", wordAudio: "/audio/ja-katakana-suupu.wav" },
-  { id: "long-mark-guitar", meaning: "guitar", morae: ["ギ", "ー", "タ", "ー"], word: "ギター", wordAudio: "/audio/ja-marks-gitaa.wav" },
+  { id: "long-mark-guitar", meaning: "guitar", morae: ["ギ", "タ", "ー"], word: "ギター", wordAudio: "/audio/ja-marks-gitaa.wav" },
 ];
 
 export function MoraTimingGuide() {
@@ -117,6 +118,9 @@ export function MoraTimingGuide() {
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [reviewIndex, setReviewIndex] = useState(0);
   const activeCard = activeReview?.cards[reviewIndex] ?? null;
+  const activeReviewBeatIndex = audioPlaying && playingWord === activeCard?.word
+    ? activeBeatIndex
+    : null;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -229,12 +233,12 @@ export function MoraTimingGuide() {
     });
   }
 
-  function openReview() {
+  function openReview(cards: readonly MoraReviewCard[]) {
     stopAudio();
     resetReviewReveal();
     setKnowledgeError(false);
     setReviewIndex(0);
-    setActiveReview({ cards: shuffle(MORA_REVIEW_CARDS), title: "Mora timing" });
+    setActiveReview({ cards: shuffle(cards), title: "Mora Timing" });
   }
 
   function closeReview() {
@@ -283,11 +287,27 @@ export function MoraTimingGuide() {
     });
   }
 
+  async function setAllKnowledge(known: boolean) {
+    setKnowledgeError(false);
+    const response = await fetch("/api/stations/mora-timing/knowledge", {
+      body: JSON.stringify({ known }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    });
+    if (!response.ok) throw new Error("Knowledge could not save");
+
+    const payload = await response.json() as { known?: unknown };
+    if (!Array.isArray(payload.known)) throw new Error("Knowledge is invalid");
+    const nextKnown = payload.known.filter(isMoraTimingReviewId);
+    if (nextKnown.length !== payload.known.length) throw new Error("Knowledge is invalid");
+    setKnownReviews(new Set(nextKnown));
+  }
+
   const knownCount = MORA_REVIEW_CARDS.filter((card) => knownReviews.has(card.id)).length;
   const remainingCount = MORA_REVIEW_CARDS.length - knownCount;
   const reviewLabel = remainingCount === 0
-    ? "Test Mora timing. Complete."
-    : `Test Mora timing. ${remainingCount} remaining.`;
+    ? "Test Mora Timing. Complete."
+    : `Test Mora Timing. ${remainingCount} remaining.`;
 
   return (
     <>
@@ -297,12 +317,22 @@ export function MoraTimingGuide() {
             <span className="station-membership station-membership-sound" data-line="sound">Speech</span>
           </div>
           <div className="station-heading-actions">
+            <StationOptions
+              allComplete={remainingCount === 0}
+              completeDescription="This marks all 10 Mora Timing words as complete."
+              hasProgress={knownCount > 0}
+              onError={() => setKnowledgeError(true)}
+              onSetComplete={setAllKnowledge}
+              resetDescription="This marks all 10 Mora Timing words as incomplete. Later stations will stay hidden until Mora Timing is complete again."
+              stationId="mora-timing"
+              stationName="Mora Timing"
+            />
             <span className="hiragana-test-trigger-wrap">
               <button
                 aria-label={reviewLabel}
                 className="hiragana-test-trigger"
                 data-complete={remainingCount === 0 ? "true" : undefined}
-                onClick={openReview}
+                onClick={() => openReview(MORA_REVIEW_CARDS)}
                 style={{ "--hiragana-test-progress": `${knownCount / MORA_TIMING_REVIEW_IDS.length}turn` } as CSSProperties}
                 type="button"
               >
@@ -318,7 +348,7 @@ export function MoraTimingGuide() {
             </span>
           </div>
         </div>
-        <h1>Mora timing</h1>
+        <h1>Mora Timing</h1>
       </header>
 
       <section className="mora-guide">
@@ -378,8 +408,32 @@ export function MoraTimingGuide() {
           ))}
         </div>
 
+        <section aria-labelledby="mora-practice-title" className="mora-practice">
+          <header className="mora-concept-heading">
+            <h2 id="mora-practice-title">Practice words</h2>
+          </header>
+          <div className="mora-practice-list">
+            {MORA_REVIEW_CARDS.map((card) => {
+              const isKnown = knownReviews.has(card.id);
+
+              return (
+                <button
+                  aria-label={`Study ${card.word}${isKnown ? ", marked known" : ""}`}
+                  className="mora-practice-word"
+                  data-known={isKnown ? "true" : undefined}
+                  key={card.id}
+                  onClick={() => openReview([card])}
+                  type="button"
+                >
+                  <span lang="ja">{card.word}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
         {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
-        {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Mora timing progress could not sync. Try again.</p> : null}
+        {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Mora Timing progress could not sync. Try again.</p> : null}
 
         {activeReview && activeCard ? (
           <dialog
@@ -404,7 +458,7 @@ export function MoraTimingGuide() {
                   ? `Replay ${activeCard.word}`
                   : `Reveal timing and play ${activeCard.word}`}
                 announcement={breakdownRevealed
-                  ? `${activeCard.word}: ${activeCard.morae.length} beats, ${activeCard.morae.join(", ")}. ${activeCard.meaning}.`
+                  ? `${activeCard.word}: ${getJapaneseWordSoundCue(activeCard.word)}. ${activeCard.morae.length} beats. ${activeCard.meaning}.`
                   : ""}
                 key={`${reviewIndex}-${activeCard.id}`}
                 onActivate={activateReviewCard}
@@ -412,23 +466,26 @@ export function MoraTimingGuide() {
                 playing={audioPlaying}
               >
                 <span className="mora-review-card-content">
-                  <span
-                    aria-hidden={!breakdownRevealed}
-                    className="mora-review-translation"
-                    data-revealed={breakdownRevealed ? "true" : undefined}
-                  >
-                    {activeCard.meaning}
-                  </span>
-                  <span className="mora-review-word">
-                    <span lang="ja">{activeCard.word}</span>
+                  <span aria-label={activeCard.word} className="mora-review-word" lang="ja">
+                    {activeCard.morae.map((mora, index) => (
+                      <span
+                        className="mora-review-word-beat"
+                        data-active={activeReviewBeatIndex === index ? "true" : undefined}
+                        key={`${activeCard.word}-${index}`}
+                      >
+                        {mora}
+                      </span>
+                    ))}
                   </span>
                   <span className="mora-review-answer-slot">
                     {breakdownRevealed ? (
-                      <MoraBeats
-                        activeBeatIndex={audioPlaying && playingWord === activeCard.word ? activeBeatIndex : null}
-                        morae={activeCard.morae}
-                        word={activeCard.word}
-                      />
+                      <span className="mora-review-answer">
+                        <MoraPronunciation
+                          activeBeatIndex={activeReviewBeatIndex}
+                          word={activeCard.word}
+                        />
+                        <span className="mora-review-translation">{activeCard.meaning}</span>
+                      </span>
                     ) : (
                       <FlashcardCountdown onComplete={activateReviewCard} />
                     )}

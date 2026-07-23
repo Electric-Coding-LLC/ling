@@ -286,6 +286,26 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(bulkKnowledgeUpdate.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await bulkKnowledgeUpdate.json(), { error: "unauthorized" });
 
+  for (const station of ["kana", "mora-timing"]) {
+    const bulkStationKnowledgeUpdate = await request(
+      `/api/stations/${station}/knowledge`,
+      {
+        body: JSON.stringify({ known: true }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      },
+    );
+    assert.equal(bulkStationKnowledgeUpdate.status, 401);
+    assert.equal(
+      bulkStationKnowledgeUpdate.headers.get("cache-control"),
+      "private, no-store",
+    );
+    assert.deepEqual(
+      await bulkStationKnowledgeUpdate.json(),
+      { error: "unauthorized" },
+    );
+  }
+
   const availability = await request("/api/stations/availability");
   assert.equal(availability.status, 401);
   assert.equal(availability.headers.get("cache-control"), "private, no-store");

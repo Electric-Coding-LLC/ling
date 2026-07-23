@@ -4,7 +4,7 @@ This file routes to the active execution map. Status and checkbox state live the
 
 ## Active Plan
 
-- None
+- [Pitch Accent](./plans/pitch-accent/EXECMAP.md)
 
 ## Completed Plans
 

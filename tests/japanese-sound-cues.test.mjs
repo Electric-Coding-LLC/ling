@@ -36,6 +36,7 @@ test("Japanese pronunciation uses simple sound cues across Kana families", () =>
 test("Japanese example words use readable sound units", () => {
   assert.equal(getJapaneseWordSoundCue("つき"), "tsoo kee");
   assert.equal(getJapaneseWordSoundCue("きょう"), "kyoh oo");
+  assert.equal(getJapaneseWordSoundCue("しゃしん"), "shah shee nn");
   assert.equal(getJapaneseWordSoundCue("きって"), "keet-teh");
   assert.equal(getJapaneseWordSoundCue("ロボット"), "roh boht-toh");
   assert.equal(getJapaneseWordSoundCue("ケーキ"), "keh— kee");
@@ -55,6 +56,7 @@ test("Japanese example words split into visible mora beats", () => {
 test("Japanese sound cues align with visible mora beats", () => {
   assert.deepEqual(getJapaneseMoraSoundCues("いぬ"), ["ee", "noo"]);
   assert.deepEqual(getJapaneseMoraSoundCues("きょう"), ["kyoh", "oo"]);
+  assert.deepEqual(getJapaneseMoraSoundCues("しゃしん"), ["shah", "shee", "nn"]);
   assert.deepEqual(getJapaneseMoraSoundCues("きって"), ["kee", "t-", "teh"]);
   assert.deepEqual(getJapaneseMoraSoundCues("ロボット"), ["roh", "boh", "t-", "toh"]);
   assert.deepEqual(getJapaneseMoraSoundCues("ケーキ"), ["keh", "—", "kee"]);

@@ -35,6 +35,10 @@ import {
   MORA_TIMING_REVIEW_IDS,
   type MoraTimingReviewId,
 } from "./mora-timing";
+import {
+  VOWEL_HIRAGANA,
+  VOWEL_KATAKANA,
+} from "./vowels";
 
 const HIRAGANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 const KANA_EXTENSION_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
@@ -281,6 +285,49 @@ export async function setAllKatakanaKnown(
   await db.batch([firstStatement, ...remainingStatements]);
 }
 
+export async function setAllVowelsKnown(
+  userId: string,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db.batch([
+      db
+        .delete(hiraganaKnowledge)
+        .where(and(
+          eq(hiraganaKnowledge.userId, userId),
+          inArray(hiraganaKnowledge.kana, VOWEL_HIRAGANA),
+        )),
+      db
+        .delete(katakanaKnowledge)
+        .where(and(
+          eq(katakanaKnowledge.userId, userId),
+          inArray(katakanaKnowledge.kana, VOWEL_KATAKANA),
+        )),
+    ]);
+    return;
+  }
+
+  const knownAt = new Date();
+  await db.batch([
+    db
+      .insert(hiraganaKnowledge)
+      .values(VOWEL_HIRAGANA.map((kana) => ({ userId, kana, knownAt })))
+      .onConflictDoUpdate({
+        target: [hiraganaKnowledge.userId, hiraganaKnowledge.kana],
+        set: { knownAt },
+      }),
+    db
+      .insert(katakanaKnowledge)
+      .values(VOWEL_KATAKANA.map((kana) => ({ userId, kana, knownAt })))
+      .onConflictDoUpdate({
+        target: [katakanaKnowledge.userId, katakanaKnowledge.kana],
+        set: { knownAt },
+      }),
+  ]);
+}
+
 export async function listKnownKanaExtensionPatterns(
   userId: string,
 ): Promise<KanaExtensionPatternId[]> {
@@ -413,5 +460,32 @@ export async function setMoraTimingReviewKnown(
     .onConflictDoUpdate({
       target: [moraTimingKnowledge.userId, moraTimingKnowledge.reviewId],
       set: { knownAt: new Date() },
+    });
+}
+
+export async function setAllMoraTimingReviewsKnown(
+  userId: string,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(moraTimingKnowledge)
+      .where(eq(moraTimingKnowledge.userId, userId));
+    return;
+  }
+
+  const knownAt = new Date();
+  await db
+    .insert(moraTimingKnowledge)
+    .values(MORA_TIMING_REVIEW_IDS.map((reviewId) => ({
+      userId,
+      reviewId,
+      knownAt,
+    })))
+    .onConflictDoUpdate({
+      target: [moraTimingKnowledge.userId, moraTimingKnowledge.reviewId],
+      set: { knownAt },
     });
 }

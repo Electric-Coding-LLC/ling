@@ -50,7 +50,7 @@ const STATION_LABELS: Record<StationFocus, string> = {
   katakana: "Katakana",
   marks: "Dakuten & Handakuten",
   combined: "Yōon",
-  mora: "Mora timing",
+  mora: "Mora Timing",
 };
 const STATION_NEIGHBORS: Record<
   StationFocus,
@@ -479,7 +479,7 @@ function NetworkView({
           backlightId={backlightId}
           href={ROUTABLE_STATION_HREFS.mora}
           kind="sound"
-          label="Mora timing"
+          label="Mora Timing"
           onFocus={() => onStationFocus("mora")}
           onPointerLeave={onLinePointerLeave}
           slug="mora-timing"

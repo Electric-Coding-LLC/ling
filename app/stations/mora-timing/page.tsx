@@ -12,7 +12,7 @@ export default async function MoraTimingPage() {
 
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Mora timing" mapPosition="mora-timing" />
+      <StationTopbar current="Mora Timing" mapPosition="mora-timing" />
       <div className="station-page station-page-mora">
         <MoraTimingGuide />
       </div>

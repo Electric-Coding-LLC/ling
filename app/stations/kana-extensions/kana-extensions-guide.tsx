@@ -3,11 +3,18 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KanaExtensionPatternId } from "@/src/modules/learning/kana-extensions";
+import {
+  getJapaneseSoundCue,
+  getJapaneseWordSoundCue,
+  JAPANESE_VOWEL_SOUND_CUES,
+  JAPANESE_YOON_VOWEL_SOUND_CUES,
+  splitJapaneseMorae,
+} from "@/src/modules/learning/japanese-sound-cues";
 import { FlashcardContent, FlashcardReview } from "../flashcard-review";
+import { useFlashcardAudio } from "../use-flashcard-audio";
 
 type PatternCard = {
   readonly audio: string;
-  readonly cue: string;
   readonly example: string;
   readonly exampleAudio: string;
   readonly id: KanaExtensionPatternId;
@@ -16,188 +23,185 @@ type PatternCard = {
 };
 
 type ExtensionChartCell = {
-  readonly cue: string;
   readonly hiragana: string;
   readonly katakana: string;
 };
 
-const MARKED_SOUND_COLUMNS = ["ah", "ee", "oo", "eh", "oh"] as const;
 const DUPLICATE_MARKED_KATAKANA = new Set(["ベ", "ペ"]);
 const MARKED_SOUND_ROWS: readonly (readonly ExtensionChartCell[])[] = [
   [
-    { cue: "gah", hiragana: "が", katakana: "ガ" },
-    { cue: "gee", hiragana: "ぎ", katakana: "ギ" },
-    { cue: "goo", hiragana: "ぐ", katakana: "グ" },
-    { cue: "geh", hiragana: "げ", katakana: "ゲ" },
-    { cue: "goh", hiragana: "ご", katakana: "ゴ" },
+    { hiragana: "が", katakana: "ガ" },
+    { hiragana: "ぎ", katakana: "ギ" },
+    { hiragana: "ぐ", katakana: "グ" },
+    { hiragana: "げ", katakana: "ゲ" },
+    { hiragana: "ご", katakana: "ゴ" },
   ],
   [
-    { cue: "zah", hiragana: "ざ", katakana: "ザ" },
-    { cue: "jee", hiragana: "じ", katakana: "ジ" },
-    { cue: "zoo", hiragana: "ず", katakana: "ズ" },
-    { cue: "zeh", hiragana: "ぜ", katakana: "ゼ" },
-    { cue: "zoh", hiragana: "ぞ", katakana: "ゾ" },
+    { hiragana: "ざ", katakana: "ザ" },
+    { hiragana: "じ", katakana: "ジ" },
+    { hiragana: "ず", katakana: "ズ" },
+    { hiragana: "ぜ", katakana: "ゼ" },
+    { hiragana: "ぞ", katakana: "ゾ" },
   ],
   [
-    { cue: "dah", hiragana: "だ", katakana: "ダ" },
-    { cue: "jee", hiragana: "ぢ", katakana: "ヂ" },
-    { cue: "zoo", hiragana: "づ", katakana: "ヅ" },
-    { cue: "deh", hiragana: "で", katakana: "デ" },
-    { cue: "doh", hiragana: "ど", katakana: "ド" },
+    { hiragana: "だ", katakana: "ダ" },
+    { hiragana: "ぢ", katakana: "ヂ" },
+    { hiragana: "づ", katakana: "ヅ" },
+    { hiragana: "で", katakana: "デ" },
+    { hiragana: "ど", katakana: "ド" },
   ],
   [
-    { cue: "bah", hiragana: "ば", katakana: "バ" },
-    { cue: "bee", hiragana: "び", katakana: "ビ" },
-    { cue: "boo", hiragana: "ぶ", katakana: "ブ" },
-    { cue: "beh", hiragana: "べ", katakana: "ベ" },
-    { cue: "boh", hiragana: "ぼ", katakana: "ボ" },
+    { hiragana: "ば", katakana: "バ" },
+    { hiragana: "び", katakana: "ビ" },
+    { hiragana: "ぶ", katakana: "ブ" },
+    { hiragana: "べ", katakana: "ベ" },
+    { hiragana: "ぼ", katakana: "ボ" },
   ],
   [
-    { cue: "pah", hiragana: "ぱ", katakana: "パ" },
-    { cue: "pee", hiragana: "ぴ", katakana: "ピ" },
-    { cue: "poo", hiragana: "ぷ", katakana: "プ" },
-    { cue: "peh", hiragana: "ぺ", katakana: "ペ" },
-    { cue: "poh", hiragana: "ぽ", katakana: "ポ" },
+    { hiragana: "ぱ", katakana: "パ" },
+    { hiragana: "ぴ", katakana: "ピ" },
+    { hiragana: "ぷ", katakana: "プ" },
+    { hiragana: "ぺ", katakana: "ペ" },
+    { hiragana: "ぽ", katakana: "ポ" },
   ],
 ];
 
 const SOUND_MARK_FLASHCARDS: readonly PatternCard[] = [
-  { audio: "/audio/ja-ga.wav", cue: "gah", example: "がくせい", exampleAudio: "/audio/ja-gakusei.wav", id: "dakuten-k", kana: "が", translation: "student" },
-  { audio: "/audio/ja-marks-gi.wav", cue: "gee", example: "ぎんこう", exampleAudio: "/audio/ja-marks-ginkou.wav", id: "sound-hiragana-gi", kana: "ぎ", translation: "bank" },
-  { audio: "/audio/ja-marks-gu.wav", cue: "goo", example: "ぐあい", exampleAudio: "/audio/ja-marks-guai.wav", id: "sound-hiragana-gu", kana: "ぐ", translation: "condition" },
-  { audio: "/audio/ja-marks-ge.wav", cue: "geh", example: "げんき", exampleAudio: "/audio/ja-marks-genki.wav", id: "sound-hiragana-ge", kana: "げ", translation: "well" },
-  { audio: "/audio/ja-marks-go.wav", cue: "goh", example: "ごはん", exampleAudio: "/audio/ja-marks-gohan.wav", id: "sound-hiragana-go", kana: "ご", translation: "rice" },
-  { audio: "/audio/ja-za.wav", cue: "zah", example: "かざん", exampleAudio: "/audio/ja-kazan.wav", id: "dakuten-s", kana: "ざ", translation: "volcano" },
-  { audio: "/audio/ja-marks-ji.wav", cue: "jee", example: "じかん", exampleAudio: "/audio/ja-marks-jikan.wav", id: "sound-hiragana-ji", kana: "じ", translation: "time" },
-  { audio: "/audio/ja-marks-zu.wav", cue: "zoo", example: "ずぼん", exampleAudio: "/audio/ja-marks-zubon.wav", id: "sound-hiragana-zu", kana: "ず", translation: "trousers" },
-  { audio: "/audio/ja-marks-ze.wav", cue: "zeh", example: "ぜんぶ", exampleAudio: "/audio/ja-marks-zenbu.wav", id: "sound-hiragana-ze", kana: "ぜ", translation: "all" },
-  { audio: "/audio/ja-marks-zo.wav", cue: "zoh", example: "ぞう", exampleAudio: "/audio/ja-marks-zou.wav", id: "sound-hiragana-zo", kana: "ぞ", translation: "elephant" },
-  { audio: "/audio/ja-da.wav", cue: "dah", example: "くだもの", exampleAudio: "/audio/ja-kudamono.wav", id: "dakuten-t", kana: "だ", translation: "fruit" },
-  { audio: "/audio/ja-marks-di.wav", cue: "jee", example: "はなぢ", exampleAudio: "/audio/ja-marks-hanadi.wav", id: "sound-hiragana-di", kana: "ぢ", translation: "nosebleed" },
-  { audio: "/audio/ja-marks-du.wav", cue: "zoo", example: "つづく", exampleAudio: "/audio/ja-marks-tsuzuku.wav", id: "sound-hiragana-du", kana: "づ", translation: "to continue" },
-  { audio: "/audio/ja-marks-de.wav", cue: "deh", example: "でんしゃ", exampleAudio: "/audio/ja-marks-densha.wav", id: "sound-hiragana-de", kana: "で", translation: "train" },
-  { audio: "/audio/ja-marks-do.wav", cue: "doh", example: "どうぶつ", exampleAudio: "/audio/ja-marks-doubutsu.wav", id: "sound-hiragana-do", kana: "ど", translation: "animal" },
-  { audio: "/audio/ja-ba.wav", cue: "bah", example: "かばん", exampleAudio: "/audio/ja-kaban.wav", id: "dakuten-h", kana: "ば", translation: "bag" },
-  { audio: "/audio/ja-marks-bi.wav", cue: "bee", example: "びょういん", exampleAudio: "/audio/ja-marks-byouin.wav", id: "sound-hiragana-bi", kana: "び", translation: "hospital" },
-  { audio: "/audio/ja-marks-bu.wav", cue: "boo", example: "ぶた", exampleAudio: "/audio/ja-marks-buta.wav", id: "sound-hiragana-bu", kana: "ぶ", translation: "pig" },
-  { audio: "/audio/ja-marks-be.wav", cue: "beh", example: "べんとう", exampleAudio: "/audio/ja-marks-bentou.wav", id: "sound-hiragana-be", kana: "べ", translation: "boxed lunch" },
-  { audio: "/audio/ja-marks-bo.wav", cue: "boh", example: "ぼうし", exampleAudio: "/audio/ja-marks-boushi.wav", id: "sound-hiragana-bo", kana: "ぼ", translation: "hat" },
-  { audio: "/audio/ja-pa.wav", cue: "pah", example: "ぱん", exampleAudio: "/audio/ja-pan.wav", id: "handakuten-h", kana: "ぱ", translation: "bread" },
-  { audio: "/audio/ja-marks-pi.wav", cue: "pee", example: "ぴかぴか", exampleAudio: "/audio/ja-marks-pikapika.wav", id: "sound-hiragana-pi", kana: "ぴ", translation: "sparkling" },
-  { audio: "/audio/ja-marks-pu.wav", cue: "poo", example: "ぷりん", exampleAudio: "/audio/ja-marks-purin.wav", id: "sound-hiragana-pu", kana: "ぷ", translation: "pudding" },
-  { audio: "/audio/ja-marks-pe.wav", cue: "peh", example: "ぺん", exampleAudio: "/audio/ja-marks-pen-hiragana.wav", id: "sound-hiragana-pe", kana: "ぺ", translation: "pen" },
-  { audio: "/audio/ja-marks-po.wav", cue: "poh", example: "ぽすと", exampleAudio: "/audio/ja-marks-posuto-hiragana.wav", id: "sound-hiragana-po", kana: "ぽ", translation: "mailbox" },
-  { audio: "/audio/ja-ga.wav", cue: "gah", example: "ガラス", exampleAudio: "/audio/ja-marks-garasu.wav", id: "sound-katakana-ga", kana: "ガ", translation: "glass" },
-  { audio: "/audio/ja-marks-gi.wav", cue: "gee", example: "ギター", exampleAudio: "/audio/ja-marks-gitaa.wav", id: "sound-katakana-gi", kana: "ギ", translation: "guitar" },
-  { audio: "/audio/ja-marks-gu.wav", cue: "goo", example: "グラス", exampleAudio: "/audio/ja-marks-gurasu.wav", id: "sound-katakana-gu", kana: "グ", translation: "drinking glass" },
-  { audio: "/audio/ja-marks-ge.wav", cue: "geh", example: "ゲーム", exampleAudio: "/audio/ja-marks-geemu.wav", id: "sound-katakana-ge", kana: "ゲ", translation: "game" },
-  { audio: "/audio/ja-marks-go.wav", cue: "goh", example: "ゴルフ", exampleAudio: "/audio/ja-marks-gorufu.wav", id: "sound-katakana-go", kana: "ゴ", translation: "golf" },
-  { audio: "/audio/ja-za.wav", cue: "zah", example: "ザック", exampleAudio: "/audio/ja-marks-zakku.wav", id: "sound-katakana-za", kana: "ザ", translation: "backpack" },
-  { audio: "/audio/ja-marks-ji.wav", cue: "jee", example: "ジャム", exampleAudio: "/audio/ja-marks-jamu.wav", id: "sound-katakana-ji", kana: "ジ", translation: "jam" },
-  { audio: "/audio/ja-marks-zu.wav", cue: "zoo", example: "ズーム", exampleAudio: "/audio/ja-marks-zuumu.wav", id: "sound-katakana-zu", kana: "ズ", translation: "zoom" },
-  { audio: "/audio/ja-marks-ze.wav", cue: "zeh", example: "ゼリー", exampleAudio: "/audio/ja-marks-zerii.wav", id: "sound-katakana-ze", kana: "ゼ", translation: "jelly" },
-  { audio: "/audio/ja-marks-zo.wav", cue: "zoh", example: "ゾンビ", exampleAudio: "/audio/ja-marks-zonbi.wav", id: "sound-katakana-zo", kana: "ゾ", translation: "zombie" },
-  { audio: "/audio/ja-da.wav", cue: "dah", example: "ダンス", exampleAudio: "/audio/ja-marks-dansu.wav", id: "sound-katakana-da", kana: "ダ", translation: "dance" },
-  { audio: "/audio/ja-marks-di.wav", cue: "jee", example: "チヂミ", exampleAudio: "/audio/ja-marks-chijimi.wav", id: "sound-katakana-di", kana: "ヂ", translation: "Korean pancake" },
-  { audio: "/audio/ja-marks-du.wav", cue: "zoo", example: "ヅラ", exampleAudio: "/audio/ja-marks-zura.wav", id: "sound-katakana-du", kana: "ヅ", translation: "wig" },
-  { audio: "/audio/ja-marks-de.wav", cue: "deh", example: "デザート", exampleAudio: "/audio/ja-marks-dezaato.wav", id: "sound-katakana-de", kana: "デ", translation: "dessert" },
-  { audio: "/audio/ja-marks-do.wav", cue: "doh", example: "ドア", exampleAudio: "/audio/ja-marks-doa.wav", id: "sound-katakana-do", kana: "ド", translation: "door" },
-  { audio: "/audio/ja-ba.wav", cue: "bah", example: "バス", exampleAudio: "/audio/ja-marks-basu.wav", id: "sound-katakana-ba", kana: "バ", translation: "bus" },
-  { audio: "/audio/ja-marks-bi.wav", cue: "bee", example: "ビル", exampleAudio: "/audio/ja-marks-biru.wav", id: "sound-katakana-bi", kana: "ビ", translation: "building" },
-  { audio: "/audio/ja-marks-bu.wav", cue: "boo", example: "ブラシ", exampleAudio: "/audio/ja-marks-burashi.wav", id: "sound-katakana-bu", kana: "ブ", translation: "brush" },
-  { audio: "/audio/ja-marks-bo.wav", cue: "boh", example: "ボタン", exampleAudio: "/audio/ja-marks-botan.wav", id: "sound-katakana-bo", kana: "ボ", translation: "button" },
-  { audio: "/audio/ja-pa.wav", cue: "pah", example: "パン", exampleAudio: "/audio/ja-katakana-pan.wav", id: "sound-katakana-pa", kana: "パ", translation: "bread" },
-  { audio: "/audio/ja-marks-pi.wav", cue: "pee", example: "ピアノ", exampleAudio: "/audio/ja-marks-piano.wav", id: "sound-katakana-pi", kana: "ピ", translation: "piano" },
-  { audio: "/audio/ja-marks-pu.wav", cue: "poo", example: "プール", exampleAudio: "/audio/ja-marks-puuru.wav", id: "sound-katakana-pu", kana: "プ", translation: "pool" },
-  { audio: "/audio/ja-marks-po.wav", cue: "poh", example: "ポスト", exampleAudio: "/audio/ja-marks-posuto.wav", id: "sound-katakana-po", kana: "ポ", translation: "mailbox" },
+  { audio: "/audio/ja-ga.wav", example: "がくせい", exampleAudio: "/audio/ja-gakusei.wav", id: "dakuten-k", kana: "が", translation: "student" },
+  { audio: "/audio/ja-marks-gi.wav", example: "ぎんこう", exampleAudio: "/audio/ja-marks-ginkou.wav", id: "sound-hiragana-gi", kana: "ぎ", translation: "bank" },
+  { audio: "/audio/ja-marks-gu.wav", example: "ぐあい", exampleAudio: "/audio/ja-marks-guai.wav", id: "sound-hiragana-gu", kana: "ぐ", translation: "condition" },
+  { audio: "/audio/ja-marks-ge.wav", example: "げんき", exampleAudio: "/audio/ja-marks-genki.wav", id: "sound-hiragana-ge", kana: "げ", translation: "well" },
+  { audio: "/audio/ja-marks-go.wav", example: "ごはん", exampleAudio: "/audio/ja-marks-gohan.wav", id: "sound-hiragana-go", kana: "ご", translation: "rice" },
+  { audio: "/audio/ja-za.wav", example: "かざん", exampleAudio: "/audio/ja-kazan.wav", id: "dakuten-s", kana: "ざ", translation: "volcano" },
+  { audio: "/audio/ja-marks-ji.wav", example: "じかん", exampleAudio: "/audio/ja-marks-jikan.wav", id: "sound-hiragana-ji", kana: "じ", translation: "time" },
+  { audio: "/audio/ja-marks-zu.wav", example: "ずぼん", exampleAudio: "/audio/ja-marks-zubon.wav", id: "sound-hiragana-zu", kana: "ず", translation: "trousers" },
+  { audio: "/audio/ja-marks-ze.wav", example: "ぜんぶ", exampleAudio: "/audio/ja-marks-zenbu.wav", id: "sound-hiragana-ze", kana: "ぜ", translation: "all" },
+  { audio: "/audio/ja-marks-zo.wav", example: "ぞう", exampleAudio: "/audio/ja-marks-zou.wav", id: "sound-hiragana-zo", kana: "ぞ", translation: "elephant" },
+  { audio: "/audio/ja-da.wav", example: "くだもの", exampleAudio: "/audio/ja-kudamono.wav", id: "dakuten-t", kana: "だ", translation: "fruit" },
+  { audio: "/audio/ja-marks-di.wav", example: "はなぢ", exampleAudio: "/audio/ja-marks-hanadi.wav", id: "sound-hiragana-di", kana: "ぢ", translation: "nosebleed" },
+  { audio: "/audio/ja-marks-du.wav", example: "つづく", exampleAudio: "/audio/ja-marks-tsuzuku.wav", id: "sound-hiragana-du", kana: "づ", translation: "to continue" },
+  { audio: "/audio/ja-marks-de.wav", example: "でぐち", exampleAudio: "/audio/ja-marks-deguchi.wav", id: "sound-hiragana-de", kana: "で", translation: "exit" },
+  { audio: "/audio/ja-marks-do.wav", example: "どうぶつ", exampleAudio: "/audio/ja-marks-doubutsu.wav", id: "sound-hiragana-do", kana: "ど", translation: "animal" },
+  { audio: "/audio/ja-ba.wav", example: "かばん", exampleAudio: "/audio/ja-kaban.wav", id: "dakuten-h", kana: "ば", translation: "bag" },
+  { audio: "/audio/ja-marks-bi.wav", example: "びわ", exampleAudio: "/audio/ja-marks-biwa.wav", id: "sound-hiragana-bi", kana: "び", translation: "loquat" },
+  { audio: "/audio/ja-marks-bu.wav", example: "ぶた", exampleAudio: "/audio/ja-marks-buta.wav", id: "sound-hiragana-bu", kana: "ぶ", translation: "pig" },
+  { audio: "/audio/ja-marks-be.wav", example: "べんとう", exampleAudio: "/audio/ja-marks-bentou.wav", id: "sound-hiragana-be", kana: "べ", translation: "boxed lunch" },
+  { audio: "/audio/ja-marks-bo.wav", example: "ぼうし", exampleAudio: "/audio/ja-marks-boushi.wav", id: "sound-hiragana-bo", kana: "ぼ", translation: "hat" },
+  { audio: "/audio/ja-pa.wav", example: "ぱん", exampleAudio: "/audio/ja-pan.wav", id: "handakuten-h", kana: "ぱ", translation: "bread" },
+  { audio: "/audio/ja-marks-pi.wav", example: "ぴかぴか", exampleAudio: "/audio/ja-marks-pikapika.wav", id: "sound-hiragana-pi", kana: "ぴ", translation: "sparkling" },
+  { audio: "/audio/ja-marks-pu.wav", example: "ぷりん", exampleAudio: "/audio/ja-marks-purin.wav", id: "sound-hiragana-pu", kana: "ぷ", translation: "pudding" },
+  { audio: "/audio/ja-marks-pe.wav", example: "ぺん", exampleAudio: "/audio/ja-marks-pen-hiragana.wav", id: "sound-hiragana-pe", kana: "ぺ", translation: "pen" },
+  { audio: "/audio/ja-marks-po.wav", example: "ぽすと", exampleAudio: "/audio/ja-marks-posuto-hiragana.wav", id: "sound-hiragana-po", kana: "ぽ", translation: "mailbox" },
+  { audio: "/audio/ja-ga.wav", example: "ガラス", exampleAudio: "/audio/ja-marks-garasu.wav", id: "sound-katakana-ga", kana: "ガ", translation: "glass" },
+  { audio: "/audio/ja-marks-gi.wav", example: "ギフト", exampleAudio: "/audio/ja-marks-gifuto.wav", id: "sound-katakana-gi", kana: "ギ", translation: "gift" },
+  { audio: "/audio/ja-marks-gu.wav", example: "グラス", exampleAudio: "/audio/ja-marks-gurasu.wav", id: "sound-katakana-gu", kana: "グ", translation: "drinking glass" },
+  { audio: "/audio/ja-marks-ge.wav", example: "ゲスト", exampleAudio: "/audio/ja-marks-gesuto.wav", id: "sound-katakana-ge", kana: "ゲ", translation: "guest" },
+  { audio: "/audio/ja-marks-go.wav", example: "ゴルフ", exampleAudio: "/audio/ja-marks-gorufu.wav", id: "sound-katakana-go", kana: "ゴ", translation: "golf" },
+  { audio: "/audio/ja-za.wav", example: "ザリガニ", exampleAudio: "/audio/ja-marks-zarigani.wav", id: "sound-katakana-za", kana: "ザ", translation: "crayfish" },
+  { audio: "/audio/ja-marks-ji.wav", example: "ジム", exampleAudio: "/audio/ja-marks-jimu.wav", id: "sound-katakana-ji", kana: "ジ", translation: "gym" },
+  { audio: "/audio/ja-marks-zu.wav", example: "ズボン", exampleAudio: "/audio/ja-marks-zubon.wav", id: "sound-katakana-zu", kana: "ズ", translation: "trousers" },
+  { audio: "/audio/ja-marks-ze.wav", example: "ゼロ", exampleAudio: "/audio/ja-marks-zero.wav", id: "sound-katakana-ze", kana: "ゼ", translation: "zero" },
+  { audio: "/audio/ja-marks-zo.wav", example: "ゾンビ", exampleAudio: "/audio/ja-marks-zonbi.wav", id: "sound-katakana-zo", kana: "ゾ", translation: "zombie" },
+  { audio: "/audio/ja-da.wav", example: "ダンス", exampleAudio: "/audio/ja-marks-dansu.wav", id: "sound-katakana-da", kana: "ダ", translation: "dance" },
+  { audio: "/audio/ja-marks-di.wav", example: "チヂミ", exampleAudio: "/audio/ja-marks-chijimi.wav", id: "sound-katakana-di", kana: "ヂ", translation: "Korean pancake" },
+  { audio: "/audio/ja-marks-du.wav", example: "ヅラ", exampleAudio: "/audio/ja-marks-zura.wav", id: "sound-katakana-du", kana: "ヅ", translation: "wig" },
+  { audio: "/audio/ja-marks-de.wav", example: "デニム", exampleAudio: "/audio/ja-marks-denimu.wav", id: "sound-katakana-de", kana: "デ", translation: "denim" },
+  { audio: "/audio/ja-marks-do.wav", example: "ドア", exampleAudio: "/audio/ja-marks-doa.wav", id: "sound-katakana-do", kana: "ド", translation: "door" },
+  { audio: "/audio/ja-ba.wav", example: "バス", exampleAudio: "/audio/ja-marks-basu.wav", id: "sound-katakana-ba", kana: "バ", translation: "bus" },
+  { audio: "/audio/ja-marks-bi.wav", example: "ビル", exampleAudio: "/audio/ja-marks-biru.wav", id: "sound-katakana-bi", kana: "ビ", translation: "building" },
+  { audio: "/audio/ja-marks-bu.wav", example: "ブラシ", exampleAudio: "/audio/ja-marks-burashi.wav", id: "sound-katakana-bu", kana: "ブ", translation: "brush" },
+  { audio: "/audio/ja-marks-bo.wav", example: "ボタン", exampleAudio: "/audio/ja-marks-botan.wav", id: "sound-katakana-bo", kana: "ボ", translation: "button" },
+  { audio: "/audio/ja-pa.wav", example: "パン", exampleAudio: "/audio/ja-katakana-pan.wav", id: "sound-katakana-pa", kana: "パ", translation: "bread" },
+  { audio: "/audio/ja-marks-pi.wav", example: "ピアノ", exampleAudio: "/audio/ja-marks-piano.wav", id: "sound-katakana-pi", kana: "ピ", translation: "piano" },
+  { audio: "/audio/ja-marks-pu.wav", example: "プラス", exampleAudio: "/audio/ja-marks-purasu.wav", id: "sound-katakana-pu", kana: "プ", translation: "plus" },
+  { audio: "/audio/ja-marks-po.wav", example: "ポスト", exampleAudio: "/audio/ja-marks-posuto.wav", id: "sound-katakana-po", kana: "ポ", translation: "mailbox" },
 ];
 
 const SOUND_MARK_FLASHCARD_BY_KANA = new Map(
   SOUND_MARK_FLASHCARDS.map((entry) => [entry.kana, entry]),
 );
 
-const COMBINED_SOUND_COLUMNS = ["ah", "oo", "oh"] as const;
 const COMBINED_SOUND_ROWS: readonly (readonly ExtensionChartCell[])[] = [
-  [{ cue: "kyah", hiragana: "きゃ", katakana: "キャ" }, { cue: "kyoo", hiragana: "きゅ", katakana: "キュ" }, { cue: "kyoh", hiragana: "きょ", katakana: "キョ" }],
-  [{ cue: "shah", hiragana: "しゃ", katakana: "シャ" }, { cue: "shoo", hiragana: "しゅ", katakana: "シュ" }, { cue: "shoh", hiragana: "しょ", katakana: "ショ" }],
-  [{ cue: "chah", hiragana: "ちゃ", katakana: "チャ" }, { cue: "choo", hiragana: "ちゅ", katakana: "チュ" }, { cue: "choh", hiragana: "ちょ", katakana: "チョ" }],
-  [{ cue: "nyah", hiragana: "にゃ", katakana: "ニャ" }, { cue: "nyoo", hiragana: "にゅ", katakana: "ニュ" }, { cue: "nyoh", hiragana: "にょ", katakana: "ニョ" }],
-  [{ cue: "hyah", hiragana: "ひゃ", katakana: "ヒャ" }, { cue: "hyoo", hiragana: "ひゅ", katakana: "ヒュ" }, { cue: "hyoh", hiragana: "ひょ", katakana: "ヒョ" }],
-  [{ cue: "myah", hiragana: "みゃ", katakana: "ミャ" }, { cue: "myoo", hiragana: "みゅ", katakana: "ミュ" }, { cue: "myoh", hiragana: "みょ", katakana: "ミョ" }],
-  [{ cue: "ryah", hiragana: "りゃ", katakana: "リャ" }, { cue: "ryoo", hiragana: "りゅ", katakana: "リュ" }, { cue: "ryoh", hiragana: "りょ", katakana: "リョ" }],
-  [{ cue: "gyah", hiragana: "ぎゃ", katakana: "ギャ" }, { cue: "gyoo", hiragana: "ぎゅ", katakana: "ギュ" }, { cue: "gyoh", hiragana: "ぎょ", katakana: "ギョ" }],
-  [{ cue: "jah", hiragana: "じゃ", katakana: "ジャ" }, { cue: "joo", hiragana: "じゅ", katakana: "ジュ" }, { cue: "joh", hiragana: "じょ", katakana: "ジョ" }],
-  [{ cue: "byah", hiragana: "びゃ", katakana: "ビャ" }, { cue: "byoo", hiragana: "びゅ", katakana: "ビュ" }, { cue: "byoh", hiragana: "びょ", katakana: "ビョ" }],
-  [{ cue: "pyah", hiragana: "ぴゃ", katakana: "ピャ" }, { cue: "pyoo", hiragana: "ぴゅ", katakana: "ピュ" }, { cue: "pyoh", hiragana: "ぴょ", katakana: "ピョ" }],
+  [{ hiragana: "きゃ", katakana: "キャ" }, { hiragana: "きゅ", katakana: "キュ" }, { hiragana: "きょ", katakana: "キョ" }],
+  [{ hiragana: "しゃ", katakana: "シャ" }, { hiragana: "しゅ", katakana: "シュ" }, { hiragana: "しょ", katakana: "ショ" }],
+  [{ hiragana: "ちゃ", katakana: "チャ" }, { hiragana: "ちゅ", katakana: "チュ" }, { hiragana: "ちょ", katakana: "チョ" }],
+  [{ hiragana: "にゃ", katakana: "ニャ" }, { hiragana: "にゅ", katakana: "ニュ" }, { hiragana: "にょ", katakana: "ニョ" }],
+  [{ hiragana: "ひゃ", katakana: "ヒャ" }, { hiragana: "ひゅ", katakana: "ヒュ" }, { hiragana: "ひょ", katakana: "ヒョ" }],
+  [{ hiragana: "みゃ", katakana: "ミャ" }, { hiragana: "みゅ", katakana: "ミュ" }, { hiragana: "みょ", katakana: "ミョ" }],
+  [{ hiragana: "りゃ", katakana: "リャ" }, { hiragana: "りゅ", katakana: "リュ" }, { hiragana: "りょ", katakana: "リョ" }],
+  [{ hiragana: "ぎゃ", katakana: "ギャ" }, { hiragana: "ぎゅ", katakana: "ギュ" }, { hiragana: "ぎょ", katakana: "ギョ" }],
+  [{ hiragana: "じゃ", katakana: "ジャ" }, { hiragana: "じゅ", katakana: "ジュ" }, { hiragana: "じょ", katakana: "ジョ" }],
+  [{ hiragana: "びゃ", katakana: "ビャ" }, { hiragana: "びゅ", katakana: "ビュ" }, { hiragana: "びょ", katakana: "ビョ" }],
+  [{ hiragana: "ぴゃ", katakana: "ピャ" }, { hiragana: "ぴゅ", katakana: "ピュ" }, { hiragana: "ぴょ", katakana: "ピョ" }],
 ];
 
 const COMBINED_SOUND_FLASHCARDS: readonly PatternCard[] = [
-  { audio: "/audio/ja-yoon-kya.wav", cue: "kyah", example: "きゃく", exampleAudio: "/audio/ja-yoon-hiragana-kya.wav", id: "small-kya", kana: "きゃ", translation: "guest" },
-  { audio: "/audio/ja-yoon-kyu.wav", cue: "kyoo", example: "きゅう", exampleAudio: "/audio/ja-yoon-hiragana-kyu.wav", id: "yoon-hiragana-kyu", kana: "きゅ", translation: "nine" },
-  { audio: "/audio/ja-yoon-kyo.wav", cue: "kyoh", example: "きょう", exampleAudio: "/audio/ja-yoon-hiragana-kyo.wav", id: "yoon-hiragana-kyo", kana: "きょ", translation: "today" },
-  { audio: "/audio/ja-yoon-sha.wav", cue: "shah", example: "しゃしん", exampleAudio: "/audio/ja-yoon-hiragana-sha.wav", id: "yoon-hiragana-sha", kana: "しゃ", translation: "photograph" },
-  { audio: "/audio/ja-yoon-shu.wav", cue: "shoo", example: "しゅみ", exampleAudio: "/audio/ja-yoon-hiragana-shu.wav", id: "small-shu", kana: "しゅ", translation: "hobby" },
-  { audio: "/audio/ja-yoon-sho.wav", cue: "shoh", example: "しょくじ", exampleAudio: "/audio/ja-yoon-hiragana-sho.wav", id: "yoon-hiragana-sho", kana: "しょ", translation: "meal" },
-  { audio: "/audio/ja-yoon-cha.wav", cue: "chah", example: "おちゃ", exampleAudio: "/audio/ja-yoon-hiragana-cha.wav", id: "yoon-hiragana-cha", kana: "ちゃ", translation: "tea" },
-  { audio: "/audio/ja-yoon-chu.wav", cue: "choo", example: "ちゅうい", exampleAudio: "/audio/ja-yoon-hiragana-chu.wav", id: "yoon-hiragana-chu", kana: "ちゅ", translation: "caution" },
-  { audio: "/audio/ja-yoon-cho.wav", cue: "choh", example: "ちょきん", exampleAudio: "/audio/ja-yoon-hiragana-cho.wav", id: "small-cho", kana: "ちょ", translation: "savings" },
-  { audio: "/audio/ja-yoon-nya.wav", cue: "nyah", example: "にゃんこ", exampleAudio: "/audio/ja-yoon-hiragana-nya.wav", id: "yoon-hiragana-nya", kana: "にゃ", translation: "kitty" },
-  { audio: "/audio/ja-yoon-nyu.wav", cue: "nyoo", example: "にゅうがく", exampleAudio: "/audio/ja-yoon-hiragana-nyu.wav", id: "small-nyu", kana: "にゅ", translation: "school admission" },
-  { audio: "/audio/ja-yoon-nyo.wav", cue: "nyoh", example: "にょろにょろ", exampleAudio: "/audio/ja-yoon-hiragana-nyo.wav", id: "yoon-hiragana-nyo", kana: "にょ", translation: "slithering" },
-  { audio: "/audio/ja-yoon-hya.wav", cue: "hyah", example: "ひゃく", exampleAudio: "/audio/ja-yoon-hiragana-hya.wav", id: "yoon-hiragana-hya", kana: "ひゃ", translation: "hundred" },
-  { audio: "/audio/ja-yoon-hyu.wav", cue: "hyoo", example: "ひゅうひゅう", exampleAudio: "/audio/ja-yoon-hiragana-hyu.wav", id: "yoon-hiragana-hyu", kana: "ひゅ", translation: "whistling" },
-  { audio: "/audio/ja-yoon-hyo.wav", cue: "hyoh", example: "ひょう", exampleAudio: "/audio/ja-yoon-hiragana-hyo.wav", id: "yoon-hiragana-hyo", kana: "ひょ", translation: "leopard" },
-  { audio: "/audio/ja-yoon-mya.wav", cue: "myah", example: "みゃく", exampleAudio: "/audio/ja-yoon-hiragana-mya.wav", id: "yoon-hiragana-mya", kana: "みゃ", translation: "pulse" },
-  { audio: "/audio/ja-yoon-myu.wav", cue: "myoo", example: "みゅーじっく", exampleAudio: "/audio/ja-yoon-hiragana-myu.wav", id: "yoon-hiragana-myu", kana: "みゅ", translation: "music" },
-  { audio: "/audio/ja-yoon-myo.wav", cue: "myoh", example: "みょうじ", exampleAudio: "/audio/ja-yoon-hiragana-myo.wav", id: "yoon-hiragana-myo", kana: "みょ", translation: "surname" },
-  { audio: "/audio/ja-yoon-rya.wav", cue: "ryah", example: "りゃく", exampleAudio: "/audio/ja-yoon-hiragana-rya.wav", id: "yoon-hiragana-rya", kana: "りゃ", translation: "abbreviation" },
-  { audio: "/audio/ja-yoon-ryu.wav", cue: "ryoo", example: "りゅう", exampleAudio: "/audio/ja-yoon-hiragana-ryu.wav", id: "yoon-hiragana-ryu", kana: "りゅ", translation: "dragon" },
-  { audio: "/audio/ja-yoon-ryo.wav", cue: "ryoh", example: "りょこう", exampleAudio: "/audio/ja-yoon-hiragana-ryo.wav", id: "small-ryo", kana: "りょ", translation: "travel" },
-  { audio: "/audio/ja-yoon-gya.wav", cue: "gyah", example: "ぎゃく", exampleAudio: "/audio/ja-yoon-hiragana-gya.wav", id: "yoon-hiragana-gya", kana: "ぎゃ", translation: "opposite" },
-  { audio: "/audio/ja-yoon-gyu.wav", cue: "gyoo", example: "ぎゅうにゅう", exampleAudio: "/audio/ja-yoon-hiragana-gyu.wav", id: "yoon-hiragana-gyu", kana: "ぎゅ", translation: "milk" },
-  { audio: "/audio/ja-yoon-gyo.wav", cue: "gyoh", example: "ぎょかい", exampleAudio: "/audio/ja-yoon-hiragana-gyo.wav", id: "yoon-hiragana-gyo", kana: "ぎょ", translation: "fishing industry" },
-  { audio: "/audio/ja-yoon-ja.wav", cue: "jah", example: "じゃま", exampleAudio: "/audio/ja-yoon-hiragana-ja.wav", id: "yoon-hiragana-ja", kana: "じゃ", translation: "obstruction" },
-  { audio: "/audio/ja-yoon-ju.wav", cue: "joo", example: "じゅぎょう", exampleAudio: "/audio/ja-yoon-hiragana-ju.wav", id: "yoon-hiragana-ju", kana: "じゅ", translation: "class" },
-  { audio: "/audio/ja-yoon-jo.wav", cue: "joh", example: "じょせい", exampleAudio: "/audio/ja-yoon-hiragana-jo.wav", id: "yoon-hiragana-jo", kana: "じょ", translation: "woman" },
-  { audio: "/audio/ja-yoon-bya.wav", cue: "byah", example: "びゃくや", exampleAudio: "/audio/ja-yoon-hiragana-bya.wav", id: "yoon-hiragana-bya", kana: "びゃ", translation: "midnight sun" },
-  { audio: "/audio/ja-yoon-byu.wav", cue: "byoo", example: "びゅうびゅう", exampleAudio: "/audio/ja-yoon-hiragana-byu.wav", id: "yoon-hiragana-byu", kana: "びゅ", translation: "howling wind" },
-  { audio: "/audio/ja-yoon-byo.wav", cue: "byoh", example: "びょういん", exampleAudio: "/audio/ja-yoon-hiragana-byo.wav", id: "yoon-hiragana-byo", kana: "びょ", translation: "hospital" },
-  { audio: "/audio/ja-yoon-pya.wav", cue: "pyah", example: "ぴゃっと", exampleAudio: "/audio/ja-yoon-hiragana-pya.wav", id: "yoon-hiragana-pya", kana: "ぴゃ", translation: "in a flash" },
-  { audio: "/audio/ja-yoon-pyu.wav", cue: "pyoo", example: "ぴゅあ", exampleAudio: "/audio/ja-yoon-hiragana-pyu.wav", id: "yoon-hiragana-pyu", kana: "ぴゅ", translation: "pure" },
-  { audio: "/audio/ja-yoon-pyo.wav", cue: "pyoh", example: "ぴょん", exampleAudio: "/audio/ja-yoon-hiragana-pyo.wav", id: "yoon-hiragana-pyo", kana: "ぴょ", translation: "hop" },
-  { audio: "/audio/ja-yoon-kya.wav", cue: "kyah", example: "キャベツ", exampleAudio: "/audio/ja-yoon-katakana-kya.wav", id: "yoon-katakana-kya", kana: "キャ", translation: "cabbage" },
-  { audio: "/audio/ja-yoon-kyu.wav", cue: "kyoo", example: "キューブ", exampleAudio: "/audio/ja-yoon-katakana-kyu.wav", id: "yoon-katakana-kyu", kana: "キュ", translation: "cube" },
-  { audio: "/audio/ja-yoon-kyo.wav", cue: "kyoh", example: "キョロキョロ", exampleAudio: "/audio/ja-yoon-katakana-kyo.wav", id: "yoon-katakana-kyo", kana: "キョ", translation: "looking around" },
-  { audio: "/audio/ja-yoon-sha.wav", cue: "shah", example: "シャツ", exampleAudio: "/audio/ja-yoon-katakana-sha.wav", id: "yoon-katakana-sha", kana: "シャ", translation: "shirt" },
-  { audio: "/audio/ja-yoon-shu.wav", cue: "shoo", example: "シュート", exampleAudio: "/audio/ja-yoon-katakana-shu.wav", id: "yoon-katakana-shu", kana: "シュ", translation: "shot" },
-  { audio: "/audio/ja-yoon-sho.wav", cue: "shoh", example: "ショップ", exampleAudio: "/audio/ja-yoon-katakana-sho.wav", id: "yoon-katakana-sho", kana: "ショ", translation: "shop" },
-  { audio: "/audio/ja-yoon-cha.wav", cue: "chah", example: "チャンス", exampleAudio: "/audio/ja-yoon-katakana-cha.wav", id: "yoon-katakana-cha", kana: "チャ", translation: "chance" },
-  { audio: "/audio/ja-yoon-chu.wav", cue: "choo", example: "チューブ", exampleAudio: "/audio/ja-yoon-katakana-chu.wav", id: "yoon-katakana-chu", kana: "チュ", translation: "tube" },
-  { audio: "/audio/ja-yoon-cho.wav", cue: "choh", example: "チョコ", exampleAudio: "/audio/ja-yoon-katakana-cho.wav", id: "yoon-katakana-cho", kana: "チョ", translation: "chocolate" },
-  { audio: "/audio/ja-yoon-nya.wav", cue: "nyah", example: "ニャンコ", exampleAudio: "/audio/ja-yoon-katakana-nya.wav", id: "yoon-katakana-nya", kana: "ニャ", translation: "kitty" },
-  { audio: "/audio/ja-yoon-nyu.wav", cue: "nyoo", example: "ニュース", exampleAudio: "/audio/ja-yoon-katakana-nyu.wav", id: "yoon-katakana-nyu", kana: "ニュ", translation: "news" },
-  { audio: "/audio/ja-yoon-nyo.wav", cue: "nyoh", example: "ニョロニョロ", exampleAudio: "/audio/ja-yoon-katakana-nyo.wav", id: "yoon-katakana-nyo", kana: "ニョ", translation: "slithering" },
-  { audio: "/audio/ja-yoon-hya.wav", cue: "hyah", example: "ヒャッハー", exampleAudio: "/audio/ja-yoon-katakana-hya.wav", id: "yoon-katakana-hya", kana: "ヒャ", translation: "woo-hoo" },
-  { audio: "/audio/ja-yoon-hyu.wav", cue: "hyoo", example: "ヒューマン", exampleAudio: "/audio/ja-yoon-katakana-hyu.wav", id: "yoon-katakana-hyu", kana: "ヒュ", translation: "human" },
-  { audio: "/audio/ja-yoon-hyo.wav", cue: "hyoh", example: "ヒョウ", exampleAudio: "/audio/ja-yoon-katakana-hyo.wav", id: "yoon-katakana-hyo", kana: "ヒョ", translation: "leopard" },
-  { audio: "/audio/ja-yoon-mya.wav", cue: "myah", example: "ミャンマー", exampleAudio: "/audio/ja-yoon-katakana-mya.wav", id: "yoon-katakana-mya", kana: "ミャ", translation: "Myanmar" },
-  { audio: "/audio/ja-yoon-myu.wav", cue: "myoo", example: "ミュージック", exampleAudio: "/audio/ja-yoon-katakana-myu.wav", id: "yoon-katakana-myu", kana: "ミュ", translation: "music" },
-  { audio: "/audio/ja-yoon-myo.wav", cue: "myoh", example: "ミョウジ", exampleAudio: "/audio/ja-yoon-katakana-myo.wav", id: "yoon-katakana-myo", kana: "ミョ", translation: "surname" },
-  { audio: "/audio/ja-yoon-rya.wav", cue: "ryah", example: "リャク", exampleAudio: "/audio/ja-yoon-katakana-rya.wav", id: "yoon-katakana-rya", kana: "リャ", translation: "abbreviation" },
-  { audio: "/audio/ja-yoon-ryu.wav", cue: "ryoo", example: "リュック", exampleAudio: "/audio/ja-yoon-katakana-ryu.wav", id: "yoon-katakana-ryu", kana: "リュ", translation: "backpack" },
-  { audio: "/audio/ja-yoon-ryo.wav", cue: "ryoh", example: "リョウリ", exampleAudio: "/audio/ja-yoon-katakana-ryo.wav", id: "yoon-katakana-ryo", kana: "リョ", translation: "cooking" },
-  { audio: "/audio/ja-yoon-gya.wav", cue: "gyah", example: "ギャップ", exampleAudio: "/audio/ja-yoon-katakana-gya.wav", id: "yoon-katakana-gya", kana: "ギャ", translation: "gap" },
-  { audio: "/audio/ja-yoon-gyu.wav", cue: "gyoo", example: "ギュッ", exampleAudio: "/audio/ja-yoon-katakana-gyu.wav", id: "yoon-katakana-gyu", kana: "ギュ", translation: "squeeze" },
-  { audio: "/audio/ja-yoon-gyo.wav", cue: "gyoh", example: "ギョーザ", exampleAudio: "/audio/ja-yoon-katakana-gyo.wav", id: "yoon-katakana-gyo", kana: "ギョ", translation: "dumpling" },
-  { audio: "/audio/ja-yoon-ja.wav", cue: "jah", example: "ジャム", exampleAudio: "/audio/ja-yoon-katakana-ja.wav", id: "yoon-katakana-ja", kana: "ジャ", translation: "jam" },
-  { audio: "/audio/ja-yoon-ju.wav", cue: "joo", example: "ジュース", exampleAudio: "/audio/ja-yoon-katakana-ju.wav", id: "yoon-katakana-ju", kana: "ジュ", translation: "juice" },
-  { audio: "/audio/ja-yoon-jo.wav", cue: "joh", example: "ジョギング", exampleAudio: "/audio/ja-yoon-katakana-jo.wav", id: "yoon-katakana-jo", kana: "ジョ", translation: "jogging" },
-  { audio: "/audio/ja-yoon-bya.wav", cue: "byah", example: "ビャクヤ", exampleAudio: "/audio/ja-yoon-katakana-bya.wav", id: "yoon-katakana-bya", kana: "ビャ", translation: "midnight sun" },
-  { audio: "/audio/ja-yoon-byu.wav", cue: "byoo", example: "ビュッフェ", exampleAudio: "/audio/ja-yoon-katakana-byu.wav", id: "yoon-katakana-byu", kana: "ビュ", translation: "buffet" },
-  { audio: "/audio/ja-yoon-byo.wav", cue: "byoh", example: "ビョウイン", exampleAudio: "/audio/ja-yoon-katakana-byo.wav", id: "yoon-katakana-byo", kana: "ビョ", translation: "hospital" },
-  { audio: "/audio/ja-yoon-pya.wav", cue: "pyah", example: "ピャッ", exampleAudio: "/audio/ja-yoon-katakana-pya.wav", id: "yoon-katakana-pya", kana: "ピャ", translation: "in a flash" },
-  { audio: "/audio/ja-yoon-pyu.wav", cue: "pyoo", example: "ピュア", exampleAudio: "/audio/ja-yoon-katakana-pyu.wav", id: "yoon-katakana-pyu", kana: "ピュ", translation: "pure" },
-  { audio: "/audio/ja-yoon-pyo.wav", cue: "pyoh", example: "ピョン", exampleAudio: "/audio/ja-yoon-katakana-pyo.wav", id: "yoon-katakana-pyo", kana: "ピョ", translation: "hop" },
+  { audio: "/audio/ja-yoon-kya.wav", example: "きゃく", exampleAudio: "/audio/ja-yoon-hiragana-kya.wav", id: "small-kya", kana: "きゃ", translation: "guest" },
+  { audio: "/audio/ja-yoon-kyu.wav", example: "きゅう", exampleAudio: "/audio/ja-yoon-hiragana-kyu.wav", id: "yoon-hiragana-kyu", kana: "きゅ", translation: "nine" },
+  { audio: "/audio/ja-yoon-kyo.wav", example: "きょう", exampleAudio: "/audio/ja-yoon-hiragana-kyo.wav", id: "yoon-hiragana-kyo", kana: "きょ", translation: "today" },
+  { audio: "/audio/ja-yoon-sha.wav", example: "しゃしん", exampleAudio: "/audio/ja-yoon-hiragana-sha.wav", id: "yoon-hiragana-sha", kana: "しゃ", translation: "photograph" },
+  { audio: "/audio/ja-yoon-shu.wav", example: "しゅみ", exampleAudio: "/audio/ja-yoon-hiragana-shu.wav", id: "small-shu", kana: "しゅ", translation: "hobby" },
+  { audio: "/audio/ja-yoon-sho.wav", example: "しょくじ", exampleAudio: "/audio/ja-yoon-hiragana-sho.wav", id: "yoon-hiragana-sho", kana: "しょ", translation: "meal" },
+  { audio: "/audio/ja-yoon-cha.wav", example: "おちゃ", exampleAudio: "/audio/ja-yoon-hiragana-cha.wav", id: "yoon-hiragana-cha", kana: "ちゃ", translation: "tea" },
+  { audio: "/audio/ja-yoon-chu.wav", example: "ちゅうい", exampleAudio: "/audio/ja-yoon-hiragana-chu.wav", id: "yoon-hiragana-chu", kana: "ちゅ", translation: "caution" },
+  { audio: "/audio/ja-yoon-cho.wav", example: "ちょきん", exampleAudio: "/audio/ja-yoon-hiragana-cho.wav", id: "small-cho", kana: "ちょ", translation: "savings" },
+  { audio: "/audio/ja-yoon-nya.wav", example: "にゃんこ", exampleAudio: "/audio/ja-yoon-hiragana-nya.wav", id: "yoon-hiragana-nya", kana: "にゃ", translation: "kitty" },
+  { audio: "/audio/ja-yoon-nyu.wav", example: "にゅうがく", exampleAudio: "/audio/ja-yoon-hiragana-nyu.wav", id: "small-nyu", kana: "にゅ", translation: "school admission" },
+  { audio: "/audio/ja-yoon-nyo.wav", example: "にょろにょろ", exampleAudio: "/audio/ja-yoon-hiragana-nyo.wav", id: "yoon-hiragana-nyo", kana: "にょ", translation: "slithering" },
+  { audio: "/audio/ja-yoon-hya.wav", example: "ひゃく", exampleAudio: "/audio/ja-yoon-hiragana-hya.wav", id: "yoon-hiragana-hya", kana: "ひゃ", translation: "hundred" },
+  { audio: "/audio/ja-yoon-hyu.wav", example: "ひゅうひゅう", exampleAudio: "/audio/ja-yoon-hiragana-hyu.wav", id: "yoon-hiragana-hyu", kana: "ひゅ", translation: "whistling" },
+  { audio: "/audio/ja-yoon-hyo.wav", example: "ひょう", exampleAudio: "/audio/ja-yoon-hiragana-hyo.wav", id: "yoon-hiragana-hyo", kana: "ひょ", translation: "leopard" },
+  { audio: "/audio/ja-yoon-mya.wav", example: "みゃく", exampleAudio: "/audio/ja-yoon-hiragana-mya.wav", id: "yoon-hiragana-mya", kana: "みゃ", translation: "pulse" },
+  { audio: "/audio/ja-yoon-myu.wav", example: "みゅおん", exampleAudio: "/audio/ja-yoon-safe-myuon.wav", id: "yoon-hiragana-myu", kana: "みゅ", translation: "muon" },
+  { audio: "/audio/ja-yoon-myo.wav", example: "みょうじ", exampleAudio: "/audio/ja-yoon-hiragana-myo.wav", id: "yoon-hiragana-myo", kana: "みょ", translation: "surname" },
+  { audio: "/audio/ja-yoon-rya.wav", example: "りゃく", exampleAudio: "/audio/ja-yoon-hiragana-rya.wav", id: "yoon-hiragana-rya", kana: "りゃ", translation: "abbreviation" },
+  { audio: "/audio/ja-yoon-ryu.wav", example: "りゅう", exampleAudio: "/audio/ja-yoon-hiragana-ryu.wav", id: "yoon-hiragana-ryu", kana: "りゅ", translation: "dragon" },
+  { audio: "/audio/ja-yoon-ryo.wav", example: "りょこう", exampleAudio: "/audio/ja-yoon-hiragana-ryo.wav", id: "small-ryo", kana: "りょ", translation: "travel" },
+  { audio: "/audio/ja-yoon-gya.wav", example: "ぎゃく", exampleAudio: "/audio/ja-yoon-hiragana-gya.wav", id: "yoon-hiragana-gya", kana: "ぎゃ", translation: "opposite" },
+  { audio: "/audio/ja-yoon-gyu.wav", example: "ぎゅうにゅう", exampleAudio: "/audio/ja-yoon-hiragana-gyu.wav", id: "yoon-hiragana-gyu", kana: "ぎゅ", translation: "milk" },
+  { audio: "/audio/ja-yoon-gyo.wav", example: "ぎょかい", exampleAudio: "/audio/ja-yoon-hiragana-gyo.wav", id: "yoon-hiragana-gyo", kana: "ぎょ", translation: "fishing industry" },
+  { audio: "/audio/ja-yoon-ja.wav", example: "じゃま", exampleAudio: "/audio/ja-yoon-hiragana-ja.wav", id: "yoon-hiragana-ja", kana: "じゃ", translation: "obstruction" },
+  { audio: "/audio/ja-yoon-ju.wav", example: "じゅぎょう", exampleAudio: "/audio/ja-yoon-hiragana-ju.wav", id: "yoon-hiragana-ju", kana: "じゅ", translation: "class" },
+  { audio: "/audio/ja-yoon-jo.wav", example: "じょせい", exampleAudio: "/audio/ja-yoon-hiragana-jo.wav", id: "yoon-hiragana-jo", kana: "じょ", translation: "woman" },
+  { audio: "/audio/ja-yoon-bya.wav", example: "びゃくや", exampleAudio: "/audio/ja-yoon-hiragana-bya.wav", id: "yoon-hiragana-bya", kana: "びゃ", translation: "midnight sun" },
+  { audio: "/audio/ja-yoon-byu.wav", example: "びゅうびゅう", exampleAudio: "/audio/ja-yoon-hiragana-byu.wav", id: "yoon-hiragana-byu", kana: "びゅ", translation: "howling wind" },
+  { audio: "/audio/ja-yoon-byo.wav", example: "びょういん", exampleAudio: "/audio/ja-yoon-hiragana-byo.wav", id: "yoon-hiragana-byo", kana: "びょ", translation: "hospital" },
+  { audio: "/audio/ja-yoon-pya.wav", example: "ぴゃあ", exampleAudio: "/audio/ja-yoon-safe-pyaa.wav", id: "yoon-hiragana-pya", kana: "ぴゃ", translation: "squeal" },
+  { audio: "/audio/ja-yoon-pyu.wav", example: "ぴゅあ", exampleAudio: "/audio/ja-yoon-hiragana-pyu.wav", id: "yoon-hiragana-pyu", kana: "ぴゅ", translation: "pure" },
+  { audio: "/audio/ja-yoon-pyo.wav", example: "ぴょん", exampleAudio: "/audio/ja-yoon-hiragana-pyo.wav", id: "yoon-hiragana-pyo", kana: "ぴょ", translation: "hop" },
+  { audio: "/audio/ja-yoon-kya.wav", example: "キャベツ", exampleAudio: "/audio/ja-yoon-katakana-kya.wav", id: "yoon-katakana-kya", kana: "キャ", translation: "cabbage" },
+  { audio: "/audio/ja-yoon-kyu.wav", example: "キュウリ", exampleAudio: "/audio/ja-yoon-safe-kyuuri.wav", id: "yoon-katakana-kyu", kana: "キュ", translation: "cucumber" },
+  { audio: "/audio/ja-yoon-kyo.wav", example: "キョロキョロ", exampleAudio: "/audio/ja-yoon-katakana-kyo.wav", id: "yoon-katakana-kyo", kana: "キョ", translation: "looking around" },
+  { audio: "/audio/ja-yoon-sha.wav", example: "シャツ", exampleAudio: "/audio/ja-yoon-katakana-sha.wav", id: "yoon-katakana-sha", kana: "シャ", translation: "shirt" },
+  { audio: "/audio/ja-yoon-shu.wav", example: "シュウマイ", exampleAudio: "/audio/ja-yoon-safe-shuumai.wav", id: "yoon-katakana-shu", kana: "シュ", translation: "shumai" },
+  { audio: "/audio/ja-yoon-sho.wav", example: "ショコラ", exampleAudio: "/audio/ja-yoon-safe-shokora.wav", id: "yoon-katakana-sho", kana: "ショ", translation: "chocolate" },
+  { audio: "/audio/ja-yoon-cha.wav", example: "チャンス", exampleAudio: "/audio/ja-yoon-katakana-cha.wav", id: "yoon-katakana-cha", kana: "チャ", translation: "chance" },
+  { audio: "/audio/ja-yoon-chu.wav", example: "チュロス", exampleAudio: "/audio/ja-yoon-safe-churosu.wav", id: "yoon-katakana-chu", kana: "チュ", translation: "churros" },
+  { audio: "/audio/ja-yoon-cho.wav", example: "チョコ", exampleAudio: "/audio/ja-yoon-katakana-cho.wav", id: "yoon-katakana-cho", kana: "チョ", translation: "chocolate" },
+  { audio: "/audio/ja-yoon-nya.wav", example: "ニャンコ", exampleAudio: "/audio/ja-yoon-katakana-nya.wav", id: "yoon-katakana-nya", kana: "ニャ", translation: "kitty" },
+  { audio: "/audio/ja-yoon-nyu.wav", example: "ニュアンス", exampleAudio: "/audio/ja-yoon-safe-nyuansu.wav", id: "yoon-katakana-nyu", kana: "ニュ", translation: "nuance" },
+  { audio: "/audio/ja-yoon-nyo.wav", example: "ニョロニョロ", exampleAudio: "/audio/ja-yoon-katakana-nyo.wav", id: "yoon-katakana-nyo", kana: "ニョ", translation: "slithering" },
+  { audio: "/audio/ja-yoon-hya.wav", example: "ヒャク", exampleAudio: "/audio/ja-yoon-hiragana-hya.wav", id: "yoon-katakana-hya", kana: "ヒャ", translation: "hundred" },
+  { audio: "/audio/ja-yoon-hyu.wav", example: "ヒュウヒュウ", exampleAudio: "/audio/ja-yoon-hiragana-hyu.wav", id: "yoon-katakana-hyu", kana: "ヒュ", translation: "whistling" },
+  { audio: "/audio/ja-yoon-hyo.wav", example: "ヒョウ", exampleAudio: "/audio/ja-yoon-katakana-hyo.wav", id: "yoon-katakana-hyo", kana: "ヒョ", translation: "leopard" },
+  { audio: "/audio/ja-yoon-mya.wav", example: "ミャク", exampleAudio: "/audio/ja-yoon-hiragana-mya.wav", id: "yoon-katakana-mya", kana: "ミャ", translation: "pulse" },
+  { audio: "/audio/ja-yoon-myu.wav", example: "ミュオン", exampleAudio: "/audio/ja-yoon-safe-myuon.wav", id: "yoon-katakana-myu", kana: "ミュ", translation: "muon" },
+  { audio: "/audio/ja-yoon-myo.wav", example: "ミョウジ", exampleAudio: "/audio/ja-yoon-katakana-myo.wav", id: "yoon-katakana-myo", kana: "ミョ", translation: "surname" },
+  { audio: "/audio/ja-yoon-rya.wav", example: "リャク", exampleAudio: "/audio/ja-yoon-katakana-rya.wav", id: "yoon-katakana-rya", kana: "リャ", translation: "abbreviation" },
+  { audio: "/audio/ja-yoon-ryu.wav", example: "リュウ", exampleAudio: "/audio/ja-yoon-hiragana-ryu.wav", id: "yoon-katakana-ryu", kana: "リュ", translation: "dragon" },
+  { audio: "/audio/ja-yoon-ryo.wav", example: "リョウリ", exampleAudio: "/audio/ja-yoon-katakana-ryo.wav", id: "yoon-katakana-ryo", kana: "リョ", translation: "cooking" },
+  { audio: "/audio/ja-yoon-gya.wav", example: "ギャク", exampleAudio: "/audio/ja-yoon-hiragana-gya.wav", id: "yoon-katakana-gya", kana: "ギャ", translation: "opposite" },
+  { audio: "/audio/ja-yoon-gyu.wav", example: "ギュウニュウ", exampleAudio: "/audio/ja-yoon-hiragana-gyu.wav", id: "yoon-katakana-gyu", kana: "ギュ", translation: "milk" },
+  { audio: "/audio/ja-yoon-gyo.wav", example: "ギョカイ", exampleAudio: "/audio/ja-yoon-hiragana-gyo.wav", id: "yoon-katakana-gyo", kana: "ギョ", translation: "fishing industry" },
+  { audio: "/audio/ja-yoon-ja.wav", example: "ジャム", exampleAudio: "/audio/ja-yoon-katakana-ja.wav", id: "yoon-katakana-ja", kana: "ジャ", translation: "jam" },
+  { audio: "/audio/ja-yoon-ju.wav", example: "ジュギョウ", exampleAudio: "/audio/ja-yoon-hiragana-ju.wav", id: "yoon-katakana-ju", kana: "ジュ", translation: "class" },
+  { audio: "/audio/ja-yoon-jo.wav", example: "ジョギング", exampleAudio: "/audio/ja-yoon-katakana-jo.wav", id: "yoon-katakana-jo", kana: "ジョ", translation: "jogging" },
+  { audio: "/audio/ja-yoon-bya.wav", example: "ビャクヤ", exampleAudio: "/audio/ja-yoon-katakana-bya.wav", id: "yoon-katakana-bya", kana: "ビャ", translation: "midnight sun" },
+  { audio: "/audio/ja-yoon-byu.wav", example: "ビュウビュウ", exampleAudio: "/audio/ja-yoon-hiragana-byu.wav", id: "yoon-katakana-byu", kana: "ビュ", translation: "howling wind" },
+  { audio: "/audio/ja-yoon-byo.wav", example: "ビョウイン", exampleAudio: "/audio/ja-yoon-katakana-byo.wav", id: "yoon-katakana-byo", kana: "ビョ", translation: "hospital" },
+  { audio: "/audio/ja-yoon-pya.wav", example: "ピャア", exampleAudio: "/audio/ja-yoon-safe-pyaa.wav", id: "yoon-katakana-pya", kana: "ピャ", translation: "squeal" },
+  { audio: "/audio/ja-yoon-pyu.wav", example: "ピュア", exampleAudio: "/audio/ja-yoon-katakana-pyu.wav", id: "yoon-katakana-pyu", kana: "ピュ", translation: "pure" },
+  { audio: "/audio/ja-yoon-pyo.wav", example: "ピョン", exampleAudio: "/audio/ja-yoon-katakana-pyo.wav", id: "yoon-katakana-pyo", kana: "ピョ", translation: "hop" },
 ];
 
 const COMBINED_SOUND_FLASHCARD_BY_KANA = new Map(
@@ -263,14 +267,22 @@ function KanaPatternGuide({
     [allEntries],
   );
   const knowledgePath = `/api/stations/${stationSlug}/knowledge`;
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const {
+    activeAudioIndex,
+    activeBeatIndex,
+    audioError,
+    audioPlaying,
+    audioRef,
+    handleAudioEnded,
+    handleAudioError,
+    playAudio,
+    stopAudio,
+  } = useFlashcardAudio();
   const completeDialogRef = useRef<HTMLDialogElement | null>(null);
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const resetDialogRef = useRef<HTMLDialogElement | null>(null);
   const stationOptionsRef = useRef<HTMLDetailsElement | null>(null);
   const [activeTest, setActiveTest] = useState<ExtensionTest | null>(null);
-  const [audioError, setAudioError] = useState(false);
-  const [audioPlaying, setAudioPlaying] = useState(false);
   const [bulkKnowledgeAction, setBulkKnowledgeAction] = useState<"complete" | "reset" | null>(null);
   const [knowledgeError, setKnowledgeError] = useState(false);
   const [knownPatterns, setKnownPatterns] = useState<Set<KanaExtensionPatternId>>(() => new Set());
@@ -342,35 +354,6 @@ function KanaPatternGuide({
     };
   }, []);
 
-  async function playAudio(src: string) {
-    setAudioError(false);
-    const audio = audioRef.current;
-    if (!audio) {
-      setAudioError(true);
-      return;
-    }
-
-    audio.pause();
-    audio.src = src;
-    audio.currentTime = 0;
-    setAudioPlaying(true);
-    try {
-      await audio.play();
-    } catch {
-      setAudioError(true);
-      setAudioPlaying(false);
-    }
-  }
-
-  function stopAudio() {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-    setAudioPlaying(false);
-  }
-
   function openTest(title: string, entries: readonly PatternCard[]) {
     stopAudio();
     setKnowledgeError(false);
@@ -387,9 +370,19 @@ function KanaPatternGuide({
     setTestIndex(0);
   }
 
-  function playActiveKana() {
+  function activateCard() {
     if (!activeCard) return;
-    void playAudio(activeCard.audio);
+    setPronunciationRevealed(true);
+    playAudio({ index: 0, src: activeCard.audio });
+  }
+
+  function playExample() {
+    if (!activeCard) return;
+    playAudio({
+      beatCount: splitJapaneseMorae(activeCard.example).length,
+      index: 1,
+      src: activeCard.exampleAudio,
+    });
   }
 
   function answerCard(known: boolean) {
@@ -572,12 +565,8 @@ function KanaPatternGuide({
 
       <section className="kana-extensions-guide">
         <audio
-          onEnded={() => setAudioPlaying(false)}
-          onError={() => {
-            setAudioError(true);
-            setAudioPlaying(false);
-          }}
-          onPlaying={() => setAudioPlaying(true)}
+          onEnded={handleAudioEnded}
+          onError={handleAudioError}
           preload="none"
           ref={audioRef}
         />
@@ -607,20 +596,28 @@ function KanaPatternGuide({
                 <button aria-label="Close test" className="hiragana-test-close" onClick={closeTest} type="button"><span aria-hidden="true">×</span></button>
               </header>
               <FlashcardReview
+                activationLabel={pronunciationRevealed
+                  ? `Replay ${activeCard.kana}`
+                  : `Reveal and play ${activeCard.kana}`}
                 announcement={pronunciationRevealed
-                  ? `${activeCard.cue}. Example: ${activeCard.example}, ${activeCard.translation}`
+                  ? `${getJapaneseSoundCue(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordSoundCue(activeCard.example)}, ${activeCard.translation}`
                   : ""}
                 key={`${testIndex}-${activeCard.id}`}
+                onActivate={activateCard}
                 onAnswer={answerCard}
                 playing={audioPlaying}
               >
                 <FlashcardContent
+                  activeAudio={activeAudioIndex === 0
+                    ? "pronunciation"
+                    : activeAudioIndex === 1 ? "example" : null}
+                  activeExampleBeatIndex={activeBeatIndex}
                   example={activeCard.example}
+                  examplePronunciation={getJapaneseWordSoundCue(activeCard.example)}
                   kana={activeCard.kana}
-                  onPlayExample={() => void playAudio(activeCard.exampleAudio)}
-                  onPlayKana={playActiveKana}
-                  onReveal={() => setPronunciationRevealed(true)}
-                  pronunciation={activeCard.cue}
+                  onPlayExample={playExample}
+                  onReveal={activateCard}
+                  pronunciation={getJapaneseSoundCue(activeCard.kana)}
                   revealed={pronunciationRevealed}
                   translation={activeCard.translation}
                 />
@@ -688,7 +685,7 @@ function SoundMarksChart({ renderCard }: SoundMarksChartProps) {
         <table aria-label="All marked Hiragana and Katakana sounds" className="hiragana-table kana-extension-all-sounds-chart">
           <thead>
             <tr>
-              {MARKED_SOUND_COLUMNS.map((sound) => <th key={sound} scope="col">{sound}</th>)}
+              {JAPANESE_VOWEL_SOUND_CUES.map((sound) => <th key={sound} scope="col">{sound}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -735,7 +732,7 @@ function CombinedSoundsChart({ renderCard }: CombinedSoundsChartProps) {
         <table aria-label="All combined Hiragana and Katakana sounds" className="hiragana-table kana-extension-all-sounds-chart">
           <thead>
             <tr>
-              {COMBINED_SOUND_COLUMNS.map((sound) => <th key={sound} scope="col">{sound}</th>)}
+              {JAPANESE_YOON_VOWEL_SOUND_CUES.map((sound) => <th key={sound} scope="col">{sound}</th>)}
             </tr>
           </thead>
           <tbody>

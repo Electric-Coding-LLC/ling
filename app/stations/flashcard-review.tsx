@@ -7,8 +7,15 @@ import type {
   ReactNode,
 } from "react";
 import { useEffect, useRef, useState } from "react";
+import {
+  getJapaneseMoraSoundCueSeparator,
+  getJapaneseMoraSoundCues,
+  splitJapaneseMorae,
+} from "@/src/modules/learning/japanese-sound-cues";
 
 const DRAG_START_PX = 8;
+const FLASHCARD_REVEAL_DELAY_SECONDS = 4;
+const FLASHCARD_REVEAL_DELAY_MS = FLASHCARD_REVEAL_DELAY_SECONDS * 1_000;
 const SWIPE_THRESHOLD_PX = 64;
 const TRANSITION_DURATION_MS = 180;
 
@@ -22,51 +29,106 @@ type DragStart = {
 };
 
 type FlashcardReviewProps = {
+  readonly activationLabel: string;
   readonly announcement: string;
   readonly children: ReactNode;
+  readonly onActivate: () => void;
   readonly onAnswer: (known: boolean) => void;
   readonly playing: boolean;
 };
 
 type FlashcardContentProps = {
+  readonly activeAudio: "example" | "pronunciation" | null;
+  readonly activeExampleBeatIndex: number | null;
   readonly example: string;
+  readonly examplePronunciation: string;
   readonly kana: string;
   readonly onPlayExample: () => void;
-  readonly onPlayKana: () => void;
   readonly onReveal: () => void;
   readonly pronunciation: string;
   readonly revealed: boolean;
   readonly translation: string;
 };
 
+type FlashcardCountdownProps = {
+  readonly onComplete: () => void;
+};
+
+export function FlashcardCountdown({
+  onComplete,
+}: FlashcardCountdownProps) {
+  const onCompleteRef = useRef(onComplete);
+  const [secondsRemaining, setSecondsRemaining] = useState(FLASHCARD_REVEAL_DELAY_SECONDS);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    const countdownInterval = window.setInterval(() => {
+      setSecondsRemaining((current) => Math.max(1, current - 1));
+    }, 1_000);
+    const revealTimeout = window.setTimeout(() => {
+      onCompleteRef.current();
+    }, FLASHCARD_REVEAL_DELAY_MS);
+
+    return () => {
+      window.clearInterval(countdownInterval);
+      window.clearTimeout(revealTimeout);
+    };
+  }, []);
+
+  return (
+    <span
+      aria-label={`Answer appears in ${secondsRemaining} seconds`}
+      className="flashcard-countdown"
+      role="timer"
+      style={{ "--flashcard-countdown-duration": `${FLASHCARD_REVEAL_DELAY_MS}ms` } as CSSProperties}
+    >
+      <svg aria-hidden="true" viewBox="0 0 40 40">
+        <circle className="flashcard-countdown-track" cx="20" cy="20" r="16.5" />
+        <circle
+          className="flashcard-countdown-progress"
+          cx="20"
+          cy="20"
+          pathLength="1"
+          r="16.5"
+        />
+      </svg>
+      <span className="flashcard-countdown-number">{secondsRemaining}</span>
+    </span>
+  );
+}
+
 export function FlashcardContent({
+  activeAudio,
+  activeExampleBeatIndex,
   example,
+  examplePronunciation,
   kana,
   onPlayExample,
-  onPlayKana,
   onReveal,
   pronunciation,
   revealed,
   translation,
 }: FlashcardContentProps) {
+  const exampleMorae = splitJapaneseMorae(example);
+  const examplePronunciationUnits = getJapaneseMoraSoundCues(example);
+
   return (
     <>
-      <button
-        aria-label={`Play ${kana}`}
-        className="hiragana-test-reveal"
-        onClick={onPlayKana}
-        type="button"
-      >
+      <span className="hiragana-test-reveal">
         <span
           aria-hidden="true"
           className="hiragana-test-pronunciation"
+          data-playing={activeAudio === "pronunciation" ? "true" : undefined}
           data-revealed={revealed ? "true" : undefined}
         >
           {revealed ? pronunciation : "\u00a0"}
         </span>
         <span className="hiragana-test-card-kana" lang="ja">{kana}</span>
-      </button>
-      <div className="hiragana-test-answer-slot">
+      </span>
+      <span className="hiragana-test-answer-slot">
         {revealed ? (
           <button
             aria-label={`Play example word ${example}`}
@@ -74,27 +136,56 @@ export function FlashcardContent({
             onClick={onPlayExample}
             type="button"
           >
-            <span className="hiragana-test-example-word" lang="ja">{example}</span>
+            <span className="hiragana-test-example-word" lang="ja">
+              {exampleMorae.map((mora, index) => (
+                <span
+                  className="hiragana-test-example-beat"
+                  data-playing={activeAudio === "example" && activeExampleBeatIndex === index
+                    ? "true"
+                    : undefined}
+                  key={`${index}-${mora}`}
+                >
+                  {mora}
+                </span>
+              ))}
+            </span>
+            <span
+              aria-label={examplePronunciation}
+              className="hiragana-test-example-pronunciation"
+            >
+              {examplePronunciationUnits.map((unit, index) => {
+                const connected = index > 0
+                  && getJapaneseMoraSoundCueSeparator(exampleMorae, index) === "";
+
+                return (
+                  <span
+                    className="hiragana-test-example-pronunciation-beat"
+                    data-connected={connected ? "true" : undefined}
+                    data-playing={activeAudio === "example" && activeExampleBeatIndex === index
+                      ? "true"
+                      : undefined}
+                    key={`${index}-${unit}`}
+                  >
+                    {unit}
+                  </span>
+                );
+              })}
+            </span>
             <span className="hiragana-test-example-translation">{translation}</span>
           </button>
         ) : (
-          <button
-            aria-label={`Show answer for ${kana}`}
-            className="hiragana-test-example-reveal"
-            onClick={onReveal}
-            type="button"
-          >
-            Answer
-          </button>
+          <FlashcardCountdown onComplete={onReveal} />
         )}
-      </div>
+      </span>
     </>
   );
 }
 
 export function FlashcardReview({
+  activationLabel,
   announcement,
   children,
+  onActivate,
   onAnswer,
   playing,
 }: FlashcardReviewProps) {
@@ -182,11 +273,13 @@ export function FlashcardReview({
     resetDrag();
   }
 
-  function handleCardClick(event: React.MouseEvent<HTMLDivElement>) {
-    if (!suppressClickRef.current) return;
-    suppressClickRef.current = false;
-    event.preventDefault();
-    event.stopPropagation();
+  function handleCardClick(event: React.MouseEvent<HTMLButtonElement>) {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      event.preventDefault();
+      return;
+    }
+    onActivate();
   }
 
   function handleAnimationEnd(event: AnimationEvent<HTMLDivElement>) {
@@ -201,13 +294,18 @@ export function FlashcardReview({
         data-playing={playing ? "true" : undefined}
         data-swipe={swipeDirection}
         onAnimationEnd={handleAnimationEnd}
-        onClickCapture={handleCardClick}
         onPointerCancel={resetDrag}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         style={dragStyle}
       >
+        <button
+          aria-label={activationLabel}
+          className="hiragana-test-card-activation"
+          onClick={handleCardClick}
+          type="button"
+        />
         <span aria-hidden="true" className="hiragana-test-playing-indicator">
           <span />
           <span />
@@ -228,7 +326,7 @@ export function FlashcardReview({
           <svg aria-hidden="true" className="hiragana-test-swipe-icon" viewBox="0 0 16 16">
             <path d="M13 8H3m4-4L3 8l4 4" />
           </svg>
-          <span>Not Yet</span>
+          <span>Not yet</span>
         </button>
         <button
           className="hiragana-test-answer hiragana-test-answer-yes"
@@ -238,7 +336,7 @@ export function FlashcardReview({
           <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
             <path d="m3 8.5 3 3 7-7" />
           </svg>
-          <span>Good</span>
+          <span>Got it!</span>
           <svg aria-hidden="true" className="hiragana-test-swipe-icon" viewBox="0 0 16 16">
             <path d="M3 8h10m-4-4 4 4-4 4" />
           </svg>

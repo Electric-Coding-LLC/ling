@@ -437,8 +437,7 @@
 }
 
 .mora-intro strong,
-.mora-concept-heading h2,
-.mora-notes strong {
+.mora-concept-heading h2 {
   color: var(--foreground);
   font-weight: 600;
 }
@@ -449,13 +448,17 @@
 }
 
 .mora-concept {
-  padding: 1.5rem 0;
+  padding: 1.25rem 0;
   border-bottom: 1px solid var(--line);
+}
+
+.mora-concept:last-child {
+  border-bottom: 0;
 }
 
 .mora-concept-heading {
   max-width: 34rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.875rem;
 }
 
 .mora-concept-heading h2,
@@ -476,20 +479,38 @@
 
 .mora-example-list {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .mora-example {
   display: flex;
-  min-height: 5.25rem;
-  align-items: flex-start;
+  width: 100%;
+  min-height: 6.75rem;
+  align-items: center;
   flex-direction: column;
   justify-content: center;
-  gap: 0.2rem;
-  padding: 0.85rem 0;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  color: var(--foreground);
+  appearance: none;
+  background: var(--surface);
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
 }
 
-.mora-beats-button,
-.mora-review-word,
+.mora-example:only-child {
+  width: calc((100% - 0.75rem) / 2);
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
 .hiragana-button {
   margin: 0;
   padding: 0;
@@ -500,12 +521,14 @@
 }
 
 .mora-example-timing {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
 }
 
 .mora-audio-indicator {
+  position: absolute;
+  left: calc(100% + 0.5rem);
   display: inline-flex;
   height: 1rem;
   align-items: center;
@@ -540,69 +563,68 @@
   animation-delay: -200ms;
 }
 
-.mora-review-word:hover,
 .hiragana-button:hover {
   color: var(--muted);
 }
 
-.mora-beats-button:hover .mora-beat:not([data-active="true"]) {
-  border-color: var(--muted);
+.mora-example:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
 }
 
-.mora-beats-button:focus-visible,
-.mora-review-word:focus-visible,
 .hiragana-button:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
 }
 
 .mora-meaning {
-  margin-left: 0.35rem;
   color: var(--muted);
   font-size: 0.8rem;
 }
 
 .mora-beats {
-  display: inline-grid;
-  grid-auto-columns: var(--mora-beat-width, 3rem);
-  grid-auto-flow: column;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
 .mora-beat {
-  display: grid;
-  height: 3rem;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 0;
   color: var(--foreground);
-}
-
-.mora-beat + .mora-beat {
-  margin-left: -1px;
-}
-
-.mora-beat:first-child {
-  border-radius: 0.55rem 0 0 0.55rem;
-}
-
-.mora-beat:last-child {
-  border-radius: 0 0.55rem 0.55rem 0;
-}
-
-.mora-beat:only-child {
-  border-radius: 0.55rem;
+  transition: color 120ms ease;
 }
 
 .mora-beat[data-active="true"] {
-  color: var(--foreground);
-  background: var(--sound);
+  color: var(--sound);
 }
 
-.mora-notes {
-  margin-top: 1.5rem;
+.mora-pronunciation {
+  display: inline-flex;
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.mora-pronunciation-beat {
+  transition: color 120ms ease;
+}
+
+.mora-pronunciation-beat + .mora-pronunciation-beat:not([data-connected="true"]) {
+  margin-left: 0.35rem;
+}
+
+.mora-pronunciation-beat[data-active="true"] {
+  color: var(--sound);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mora-example:hover {
+    border-color: rgb(242 241 235 / 0.22);
+    background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
+  }
 }
 
 .mora-review-card-content {
@@ -631,12 +653,12 @@
 .mora-review-answer-slot {
   display: grid;
   width: 100%;
-  min-height: 5.5rem;
+  min-height: 3.5rem;
   place-items: center;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
-.mora-review-countdown {
+.flashcard-countdown {
   position: relative;
   display: inline-grid;
   width: 2.5rem;
@@ -645,7 +667,7 @@
   color: var(--muted);
 }
 
-.mora-review-countdown svg {
+.flashcard-countdown svg {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -653,23 +675,23 @@
   transform: rotate(-90deg);
 }
 
-.mora-review-countdown circle {
+.flashcard-countdown circle {
   fill: none;
   stroke-width: 3;
 }
 
-.mora-review-countdown-track {
+.flashcard-countdown-track {
   stroke: rgb(242 241 235 / 0.24);
 }
 
-.mora-review-countdown-progress {
-  animation: mora-review-countdown-fill var(--mora-review-countdown-duration) linear forwards;
+.flashcard-countdown-progress {
+  animation: flashcard-countdown-fill var(--flashcard-countdown-duration) linear forwards;
   stroke: var(--known);
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
 
-.mora-review-countdown-number {
+.flashcard-countdown-number {
   position: relative;
   font-size: 0.5625rem;
   font-variant-numeric: tabular-nums;
@@ -677,7 +699,7 @@
   line-height: 1;
 }
 
-@keyframes mora-review-countdown-fill {
+@keyframes flashcard-countdown-fill {
   to {
     stroke-dashoffset: 0;
   }
@@ -1008,11 +1030,27 @@
   color: var(--foreground);
   background: var(--background);
   cursor: pointer;
+  appearance: none;
+  font: inherit;
+  text-align: center;
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease,
     opacity 160ms ease-out,
     transform 160ms ease-out;
+}
+
+.hiragana-test-card-activation {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
 }
 
 .hiragana-test-card-gesture {
@@ -1082,7 +1120,6 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 0.75rem;
-  cursor: default;
 }
 
 .hiragana-test-card-with-example .hiragana-test-reveal {
@@ -1097,38 +1134,18 @@
   border: 0;
   color: inherit;
   background: transparent;
-  cursor: pointer;
 }
 
 .hiragana-test-answer-slot {
   display: grid;
   width: 100%;
-  min-height: 3.25rem;
+  height: 4.5rem;
   place-items: center;
 }
 
-.hiragana-test-example-reveal {
-  display: inline-flex;
-  min-height: 2.75rem;
-  min-width: 6.5rem;
-  align-self: center;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  color: var(--foreground);
-  background: var(--surface);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    border-color 120ms ease,
-    background 120ms ease;
-}
-
 .hiragana-test-example {
+  position: relative;
+  z-index: 2;
   display: flex;
   width: fit-content;
   min-width: 2.75rem;
@@ -1140,8 +1157,10 @@
   padding: 0;
   border: 0;
   color: var(--foreground);
+  appearance: none;
   background: transparent;
   cursor: pointer;
+  font: inherit;
   opacity: 1;
   transition: opacity 120ms ease;
 }
@@ -1152,29 +1171,31 @@
   transition: color 120ms ease;
 }
 
-.hiragana-test-reveal:focus-visible .hiragana-test-card-kana,
-.hiragana-test-example:focus-visible .hiragana-test-example-word {
+.hiragana-test-pronunciation[data-playing="true"],
+.hiragana-test-example-beat[data-playing="true"],
+.hiragana-test-example-pronunciation-beat[data-playing="true"] {
   color: var(--sound);
 }
 
-.hiragana-test-example-reveal:focus-visible {
-  border-color: rgb(242 241 235 / 0.28);
-  background: rgb(242 241 235 / 0.08);
+.hiragana-test-example-beat,
+.hiragana-test-example-pronunciation-beat {
+  transition: color 120ms ease;
+}
+
+.hiragana-test-example-pronunciation-beat
+  + .hiragana-test-example-pronunciation-beat:not([data-connected="true"]) {
+  margin-left: 0.25rem;
+}
+
+.hiragana-test-example-pronunciation {
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.015em;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .hiragana-test-card:hover {
     border-color: rgb(242 241 235 / 0.22);
-  }
-
-  .hiragana-test-reveal:hover .hiragana-test-card-kana,
-  .hiragana-test-example:hover .hiragana-test-example-word {
-    color: var(--sound);
-  }
-
-  .hiragana-test-example-reveal:hover {
-    border-color: rgb(242 241 235 / 0.28);
-    background: rgb(242 241 235 / 0.08);
   }
 }
 
@@ -1237,13 +1258,14 @@
   }
 }
 
-.hiragana-test-card:focus-visible,
-.hiragana-test-reveal:focus-visible,
-.hiragana-test-example-reveal:focus-visible,
-.hiragana-test-example:focus-visible,
+.hiragana-test-card:has(.hiragana-test-card-activation:focus-visible),
 .hiragana-test-answer:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
+}
+
+.hiragana-test-card-activation:focus-visible {
+  outline: none;
 }
 
 .hiragana-test-close:focus-visible {
@@ -1260,6 +1282,7 @@
   font-weight: 600;
   line-height: 1;
   text-align: center;
+  transition: color 120ms ease;
 }
 
 .hiragana-test-pronunciation:not([data-revealed="true"]) {
@@ -1274,7 +1297,7 @@
   .mora-audio-indicator,
   .mora-audio-indicator span,
   .mora-beat,
-  .mora-review-countdown-progress {
+  .flashcard-countdown-progress {
     animation: none;
     transition: none;
   }
@@ -1531,13 +1554,8 @@
     font-size: 0.85rem;
   }
 
-  .mora-example {
-    min-height: 0;
-    padding: 0.85rem 0;
-  }
-
   .mora-beats {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
   }
 
   .station-notes {

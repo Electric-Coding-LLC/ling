@@ -7,7 +7,13 @@ import {
   MORA_TIMING_REVIEW_IDS,
   type MoraTimingReviewId,
 } from "@/src/modules/learning/mora-timing";
-import { FlashcardReview } from "../flashcard-review";
+import {
+  getJapaneseMoraSoundCueSeparator,
+  getJapaneseMoraSoundCues,
+  getJapaneseWordSoundCue,
+  splitJapaneseMorae,
+} from "@/src/modules/learning/japanese-sound-cues";
+import { FlashcardCountdown, FlashcardReview } from "../flashcard-review";
 
 type MoraExample = {
   readonly meaning: string;
@@ -40,9 +46,6 @@ type MoraPlayback = {
   readonly word: string;
 };
 
-const REVIEW_REVEAL_DELAY_SECONDS = 5;
-const REVIEW_REVEAL_DELAY_MS = REVIEW_REVEAL_DELAY_SECONDS * 1_000;
-
 const MORA_CONCEPTS: readonly MoraConcept[] = [
   {
     description: "Most Kana take one beat each. Keep every beat the same length.",
@@ -56,6 +59,7 @@ const MORA_CONCEPTS: readonly MoraConcept[] = [
     description: "The final ん is a complete timing unit. Give it the same space as the Kana before it.",
     examples: [
       { meaning: "book", morae: ["ほ", "ん"], word: "ほん", wordAudio: "/audio/ja-hon.wav" },
+      { meaning: "wine", morae: ["ワ", "イ", "ン"], word: "ワイン", wordAudio: "/audio/ja-katakana-wain.wav" },
     ],
     title: "ん has its own beat",
   },
@@ -63,6 +67,7 @@ const MORA_CONCEPTS: readonly MoraConcept[] = [
     description: "The small ゃ, ゅ, or ょ combines with the Kana before it. The pair takes one beat, not two.",
     examples: [
       { meaning: "today", morae: ["きょ", "う"], word: "きょう", wordAudio: "/audio/ja-yoon-hiragana-kyo.wav" },
+      { meaning: "guest", morae: ["きゃ", "く"], word: "きゃく", wordAudio: "/audio/ja-kyaku.wav" },
     ],
     title: "Yōon is one beat",
   },
@@ -70,6 +75,7 @@ const MORA_CONCEPTS: readonly MoraConcept[] = [
     description: "Small っ or ッ holds a silent beat before the next sound. Do not skip over it.",
     examples: [
       { meaning: "stamp", morae: ["き", "っ", "て"], word: "きって", wordAudio: "/audio/ja-kitte.wav" },
+      { meaning: "robot", morae: ["ロ", "ボ", "ッ", "ト"], word: "ロボット", wordAudio: "/audio/ja-katakana-robotto.wav" },
     ],
     title: "Small っ holds a silent beat",
   },
@@ -77,6 +83,7 @@ const MORA_CONCEPTS: readonly MoraConcept[] = [
     description: "The prolonged sound mark ー, used mainly in Katakana, extends the sound before it for one more beat.",
     examples: [
       { meaning: "cake", morae: ["ケ", "ー", "キ"], word: "ケーキ", wordAudio: "/audio/ja-keeki.wav" },
+      { meaning: "cheese", morae: ["チ", "ー", "ズ"], word: "チーズ", wordAudio: "/audio/ja-katakana-chiizu.wav" },
     ],
     title: "ー extends the sound",
   },
@@ -108,10 +115,8 @@ export function MoraTimingGuide() {
   const [knowledgeError, setKnowledgeError] = useState(false);
   const [knownReviews, setKnownReviews] = useState<Set<MoraTimingReviewId>>(() => new Set());
   const [playingWord, setPlayingWord] = useState<string | null>(null);
-  const [revealSecondsRemaining, setRevealSecondsRemaining] = useState(REVIEW_REVEAL_DELAY_SECONDS);
   const [reviewIndex, setReviewIndex] = useState(0);
   const activeCard = activeReview?.cards[reviewIndex] ?? null;
-  const activeCardId = activeCard?.id;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -142,22 +147,6 @@ export function MoraTimingGuide() {
     const dialog = dialogRef.current;
     if (activeReview && dialog && !dialog.open) dialog.showModal();
   }, [activeReview]);
-
-  useEffect(() => {
-    if (!activeCardId || breakdownRevealed) return;
-
-    const countdownInterval = window.setInterval(() => {
-      setRevealSecondsRemaining((current) => Math.max(1, current - 1));
-    }, 1_000);
-    const revealTimeout = window.setTimeout(() => {
-      setBreakdownRevealed(true);
-    }, REVIEW_REVEAL_DELAY_MS);
-
-    return () => {
-      window.clearInterval(countdownInterval);
-      window.clearTimeout(revealTimeout);
-    };
-  }, [activeCardId, breakdownRevealed]);
 
   useEffect(() => () => cancelBeatAnimation(), []);
 
@@ -231,6 +220,15 @@ export function MoraTimingGuide() {
     startBeatAnimation();
   }
 
+  function activateReviewCard() {
+    if (!activeCard) return;
+    setBreakdownRevealed(true);
+    void playAudio(activeCard.wordAudio, {
+      moraCount: activeCard.morae.length,
+      word: activeCard.word,
+    });
+  }
+
   function openReview() {
     stopAudio();
     resetReviewReveal();
@@ -274,7 +272,6 @@ export function MoraTimingGuide() {
 
   function resetReviewReveal() {
     setBreakdownRevealed(false);
-    setRevealSecondsRemaining(REVIEW_REVEAL_DELAY_SECONDS);
   }
 
   function updateKnownState(reviewId: MoraTimingReviewId, known: boolean) {
@@ -350,31 +347,31 @@ export function MoraTimingGuide() {
               </header>
               <div className="mora-example-list">
                 {concept.examples.map((example) => (
-                  <article
+                  <button
+                    aria-label={`Play ${example.word}`}
                     className="mora-example"
                     data-playing={audioPlaying && playingWord === example.word ? "true" : undefined}
                     key={example.word}
+                    onClick={() => void playAudio(example.wordAudio, {
+                      moraCount: example.morae.length,
+                      word: example.word,
+                    })}
+                    type="button"
                   >
                     <span className="mora-example-timing">
-                      <button
-                        aria-label={`Play ${example.word}`}
-                        className="mora-beats-button"
-                        onClick={() => void playAudio(example.wordAudio, {
-                          moraCount: example.morae.length,
-                          word: example.word,
-                        })}
-                        type="button"
-                      >
-                        <MoraBeats
-                          activeBeatIndex={audioPlaying && playingWord === example.word ? activeBeatIndex : null}
-                          morae={example.morae}
-                          word={example.word}
-                        />
-                      </button>
+                      <MoraBeats
+                        activeBeatIndex={audioPlaying && playingWord === example.word ? activeBeatIndex : null}
+                        morae={example.morae}
+                        word={example.word}
+                      />
                       <MoraAudioIndicator />
                     </span>
+                    <MoraPronunciation
+                      activeBeatIndex={audioPlaying && playingWord === example.word ? activeBeatIndex : null}
+                      word={example.word}
+                    />
                     <span className="mora-meaning">{example.meaning}</span>
-                  </article>
+                  </button>
                 ))}
               </div>
             </section>
@@ -383,10 +380,6 @@ export function MoraTimingGuide() {
 
         {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
         {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Mora timing progress could not sync. Try again.</p> : null}
-
-        <div className="station-notes mora-notes">
-          <p><strong>The test checks recognition, not pronunciation.</strong> Count the beats. The answer appears after five seconds, then mark whether your count was right.</p>
-        </div>
 
         {activeReview && activeCard ? (
           <dialog
@@ -407,14 +400,18 @@ export function MoraTimingGuide() {
                 </button>
               </header>
               <FlashcardReview
+                activationLabel={breakdownRevealed
+                  ? `Replay ${activeCard.word}`
+                  : `Reveal timing and play ${activeCard.word}`}
                 announcement={breakdownRevealed
                   ? `${activeCard.word}: ${activeCard.morae.length} beats, ${activeCard.morae.join(", ")}. ${activeCard.meaning}.`
                   : ""}
                 key={`${reviewIndex}-${activeCard.id}`}
+                onActivate={activateReviewCard}
                 onAnswer={answerCard}
                 playing={audioPlaying}
               >
-                <div className="mora-review-card-content">
+                <span className="mora-review-card-content">
                   <span
                     aria-hidden={!breakdownRevealed}
                     className="mora-review-translation"
@@ -422,18 +419,10 @@ export function MoraTimingGuide() {
                   >
                     {activeCard.meaning}
                   </span>
-                  <button
-                    aria-label={`Play ${activeCard.word}`}
-                    className="mora-review-word"
-                    onClick={() => void playAudio(activeCard.wordAudio, {
-                      moraCount: activeCard.morae.length,
-                      word: activeCard.word,
-                    })}
-                    type="button"
-                  >
+                  <span className="mora-review-word">
                     <span lang="ja">{activeCard.word}</span>
-                  </button>
-                  <div className="mora-review-answer-slot">
+                  </span>
+                  <span className="mora-review-answer-slot">
                     {breakdownRevealed ? (
                       <MoraBeats
                         activeBeatIndex={audioPlaying && playingWord === activeCard.word ? activeBeatIndex : null}
@@ -441,28 +430,10 @@ export function MoraTimingGuide() {
                         word={activeCard.word}
                       />
                     ) : (
-                      <span
-                        aria-label={`Timing appears in ${revealSecondsRemaining} seconds`}
-                        className="mora-review-countdown"
-                        key={activeCard.id}
-                        role="timer"
-                        style={{ "--mora-review-countdown-duration": `${REVIEW_REVEAL_DELAY_MS}ms` } as CSSProperties}
-                      >
-                        <svg aria-hidden="true" viewBox="0 0 40 40">
-                          <circle className="mora-review-countdown-track" cx="20" cy="20" r="16.5" />
-                          <circle
-                            className="mora-review-countdown-progress"
-                            cx="20"
-                            cy="20"
-                            pathLength="1"
-                            r="16.5"
-                          />
-                        </svg>
-                        <span className="mora-review-countdown-number">{revealSecondsRemaining}</span>
-                      </span>
+                      <FlashcardCountdown onComplete={activateReviewCard} />
                     )}
-                  </div>
-                </div>
+                  </span>
+                </span>
               </FlashcardReview>
             </div>
           </dialog>
@@ -491,17 +462,8 @@ function MoraBeats({
   readonly morae: readonly string[];
   readonly word: string;
 }) {
-  const widestMoraLength = Math.max(...morae.map((mora) => Array.from(mora).length));
-  const style = {
-    "--mora-beat-width": widestMoraLength > 1 ? "3.75rem" : "3rem",
-  } as CSSProperties;
-
   return (
-    <span
-      aria-label={`${word}: ${morae.length} beats`}
-      className="mora-beats"
-      style={style}
-    >
+    <span aria-label={`${word}: ${morae.length} beats`} className="mora-beats">
       {morae.map((mora, index) => (
         <span
           className="mora-beat"
@@ -512,6 +474,40 @@ function MoraBeats({
           {mora}
         </span>
       ))}
+    </span>
+  );
+}
+
+function MoraPronunciation({
+  activeBeatIndex,
+  word,
+}: {
+  readonly activeBeatIndex: number | null;
+  readonly word: string;
+}) {
+  const morae = splitJapaneseMorae(word);
+  const soundCues = getJapaneseMoraSoundCues(word);
+
+  return (
+    <span
+      aria-label={getJapaneseWordSoundCue(word)}
+      className="mora-pronunciation"
+    >
+      {soundCues.map((soundCue, index) => {
+        const connected = index > 0
+          && getJapaneseMoraSoundCueSeparator(morae, index) === "";
+
+        return (
+          <span
+            className="mora-pronunciation-beat"
+            data-active={activeBeatIndex === index ? "true" : undefined}
+            data-connected={connected ? "true" : undefined}
+            key={`${word}-sound-${index}`}
+          >
+            {soundCue}
+          </span>
+        );
+      })}
     </span>
   );
 }

@@ -174,6 +174,7 @@ test("server-renders the Vowels introduction", async () => {
   assert.match(html, /Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects/i);
   assert.doesNotMatch(html, /<dl|<dt|<dd/i);
   assert.match(html, /Start with the five vowel sounds.*Tap any Kana to practice it/is);
+  assert.doesNotMatch(html, /International Phonetic Alphabet|\bIPA\b/i);
   assert.match(html, /aria-label="The five Japanese vowels in Hiragana and Katakana"/i);
   assert.match(html, /class="hiragana-table kana-vowels-chart"/i);
   assert.equal((html.match(/class="hiragana-button"/gi) ?? []).length, 10);

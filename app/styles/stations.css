@@ -427,49 +427,69 @@
   font-size: 0.95rem;
 }
 
-.mora-explanation {
-  width: min(100%, 34rem);
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+.mora-intro {
+  display: grid;
+  gap: 0.65rem;
 }
 
-.mora-explanation p {
+.mora-intro p {
   margin: 0;
 }
 
-.mora-explanation p + p {
-  margin-top: 0.65rem;
-}
-
-.mora-explanation strong,
-.mora-explanation h2 {
+.mora-intro strong,
+.mora-concept-heading h2,
+.mora-notes strong {
   color: var(--foreground);
   font-weight: 600;
 }
 
-.mora-rows {
-  width: min(100%, 34rem);
-  margin-top: 2rem;
+.mora-concepts {
+  width: min(100%, 38rem);
   border-top: 1px solid var(--line);
 }
 
-.mora-row {
-  padding: 1.1rem 0.25rem 1.2rem;
+.mora-concept {
+  padding: 1.5rem 0;
   border-bottom: 1px solid var(--line);
 }
 
-.mora-row-heading,
-.mora-row-timing {
-  display: flex;
-  min-width: 0;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
+.mora-concept-heading {
+  max-width: 34rem;
+  margin-bottom: 1rem;
 }
 
-.mora-word-button,
-.mora-part-button,
+.mora-concept-heading h2,
+.mora-concept-heading p {
+  margin: 0;
+}
+
+.mora-concept-heading h2 {
+  font-size: 1rem;
+}
+
+.mora-concept-heading p {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.mora-example-list {
+  display: grid;
+}
+
+.mora-example {
+  display: flex;
+  min-height: 5.25rem;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.85rem 0;
+}
+
+.mora-beats-button,
+.mora-review-word,
 .hiragana-button {
   margin: 0;
   padding: 0;
@@ -479,73 +499,188 @@
   cursor: pointer;
 }
 
-.mora-word-button {
-  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 1.65rem;
-  line-height: 1.2;
-  white-space: nowrap;
+.mora-example-timing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.mora-word-button:hover,
-.mora-part-button:hover,
+.mora-audio-indicator {
+  display: inline-flex;
+  height: 1rem;
+  align-items: center;
+  gap: 0.16rem;
+  color: var(--sound);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.mora-audio-indicator span {
+  width: 0.16rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  background: currentcolor;
+  transform: scaleY(0.35);
+  transform-origin: center;
+}
+
+.mora-example[data-playing="true"] .mora-audio-indicator {
+  opacity: 1;
+}
+
+.mora-example[data-playing="true"] .mora-audio-indicator span {
+  animation: hiragana-test-sound-pulse 600ms ease-in-out infinite;
+}
+
+.mora-example[data-playing="true"] .mora-audio-indicator span:nth-child(2) {
+  animation-delay: -400ms;
+}
+
+.mora-example[data-playing="true"] .mora-audio-indicator span:nth-child(3) {
+  animation-delay: -200ms;
+}
+
+.mora-review-word:hover,
 .hiragana-button:hover {
   color: var(--muted);
 }
 
-.mora-word-button:focus-visible,
-.mora-part-button:focus-visible,
+.mora-beats-button:hover .mora-beat:not([data-active="true"]) {
+  border-color: var(--muted);
+}
+
+.mora-beats-button:focus-visible,
+.mora-review-word:focus-visible,
 .hiragana-button:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
 }
 
 .mora-meaning {
+  margin-left: 0.35rem;
   color: var(--muted);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
-.mora-breakdown {
-  display: inline-flex;
-  min-width: 0;
-  align-items: baseline;
+.mora-beats {
+  display: inline-grid;
+  grid-auto-columns: var(--mora-beat-width, 3rem);
+  grid-auto-flow: column;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   white-space: nowrap;
 }
 
-.mora-part-button {
-  font-family: inherit;
-  font-size: inherit;
-}
-
-.mora-part-sign {
+.mora-beat {
+  display: grid;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0;
   color: var(--foreground);
 }
 
-.mora-divider {
-  margin-inline: 0.18rem;
+.mora-beat + .mora-beat {
+  margin-left: -1px;
+}
+
+.mora-beat:first-child {
+  border-radius: 0.55rem 0 0 0.55rem;
+}
+
+.mora-beat:last-child {
+  border-radius: 0 0.55rem 0.55rem 0;
+}
+
+.mora-beat:only-child {
+  border-radius: 0.55rem;
+}
+
+.mora-beat[data-active="true"] {
+  color: var(--foreground);
+  background: var(--sound);
+}
+
+.mora-notes {
+  margin-top: 1.5rem;
+}
+
+.mora-review-card-content {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  flex-direction: column;
+}
+
+.mora-review-word {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: clamp(3.25rem, 15vw, 5rem);
+  line-height: 1.1;
+}
+
+.mora-review-translation {
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.mora-review-translation:not([data-revealed="true"]) {
+  visibility: hidden;
+}
+
+.mora-review-answer-slot {
+  display: grid;
+  width: 100%;
+  min-height: 5.5rem;
+  place-items: center;
+  margin-top: 1rem;
+}
+
+.mora-review-countdown {
+  position: relative;
+  display: inline-grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
   color: var(--muted);
 }
 
-.mora-count {
-  flex: none;
-  color: var(--muted);
-  font-size: 0.75rem;
+.mora-review-countdown svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.mora-review-countdown circle {
+  fill: none;
+  stroke-width: 3;
+}
+
+.mora-review-countdown-track {
+  stroke: rgb(242 241 235 / 0.24);
+}
+
+.mora-review-countdown-progress {
+  animation: mora-review-countdown-fill var(--mora-review-countdown-duration) linear forwards;
+  stroke: var(--known);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.mora-review-countdown-number {
+  position: relative;
+  font-size: 0.5625rem;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  font-weight: 600;
+  line-height: 1;
 }
 
-.mora-row-timing {
-  margin-top: 0.7rem;
-}
-
-.mora-explanation-after {
-  margin-top: 2rem;
-}
-
-.mora-explanation h2 {
-  margin: 0 0 0.65rem;
-  font-size: 1rem;
+@keyframes mora-review-countdown-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .station-audio-error,
@@ -1135,12 +1270,17 @@
   .hiragana-test-card,
   .hiragana-test-example,
   .hiragana-test-playing-indicator,
-  .hiragana-test-playing-indicator span {
+  .hiragana-test-playing-indicator span,
+  .mora-audio-indicator,
+  .mora-audio-indicator span,
+  .mora-beat,
+  .mora-review-countdown-progress {
     animation: none;
     transition: none;
   }
 
-  .hiragana-test-card[data-playing="true"] .hiragana-test-playing-indicator span {
+  .hiragana-test-card[data-playing="true"] .hiragana-test-playing-indicator span,
+  .mora-example[data-playing="true"] .mora-audio-indicator span {
     animation: none;
     transform: scaleY(0.75);
   }
@@ -1383,34 +1523,21 @@
     font-size: 0.875rem;
   }
 
-  .mora-explanation {
-    font-size: 0.95rem;
-    line-height: 1.5;
+  .mora-concept {
+    padding: 1.25rem 0;
   }
 
-  .mora-rows {
-    margin-top: 1.5rem;
+  .mora-concept-heading p {
+    font-size: 0.85rem;
   }
 
-  .mora-row {
-    padding: 1rem 0.15rem 1.1rem;
+  .mora-example {
+    min-height: 0;
+    padding: 0.85rem 0;
   }
 
-  .mora-row-heading,
-  .mora-row-timing {
-    gap: 0.75rem;
-  }
-
-  .mora-word-button {
-    font-size: 1.5rem;
-  }
-
-  .mora-breakdown {
-    font-size: 1.05rem;
-  }
-
-  .mora-meaning {
-    font-size: 0.8rem;
+  .mora-beats {
+    font-size: 1.1rem;
   }
 
   .station-notes {

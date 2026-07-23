@@ -14,14 +14,6 @@ export default async function MoraTimingPage() {
     <main className="shell station-shell">
       <StationTopbar current="Mora timing" mapPosition="mora-timing" />
       <div className="station-page station-page-mora">
-        <header className="station-heading">
-          <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-sound" data-line="sound">
-              Speech
-            </span>
-          </div>
-          <h1>Mora timing</h1>
-        </header>
         <MoraTimingGuide />
       </div>
     </main>

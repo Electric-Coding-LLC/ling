@@ -4,6 +4,7 @@ import {
   hiraganaKnowledge,
   kanaExtensionKnowledge,
   katakanaKnowledge,
+  moraTimingKnowledge,
   stationIntroductions,
 } from "@/db/schema";
 import {
@@ -29,6 +30,11 @@ import {
   retainPrerequisiteCompleteStations,
   type StationId,
 } from "./stations";
+import {
+  isMoraTimingReviewId,
+  MORA_TIMING_REVIEW_IDS,
+  type MoraTimingReviewId,
+} from "./mora-timing";
 
 const HIRAGANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 const KANA_EXTENSION_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
@@ -68,12 +74,20 @@ export async function listCompletedStations(
   userId: string,
 ): Promise<StationId[]> {
   const introductions = await listStationIntroductions(userId);
-  const [knownHiragana, knownKatakana, knownKanaExtensionPatterns] = await Promise.all([
+  const [
+    knownHiragana,
+    knownKatakana,
+    knownKanaExtensionPatterns,
+    knownMoraTimingReviews,
+  ] = await Promise.all([
     introductions.includes("hiragana") ? listKnownHiragana(userId) : [],
     introductions.includes("katakana") ? listKnownKatakana(userId) : [],
     introductions.includes("sound-marks") || introductions.includes("combined-sounds")
       ? listKnownKanaExtensionPatterns(userId)
       : [] as KanaExtensionPatternId[],
+    introductions.includes("mora-timing")
+      ? listKnownMoraTimingReviews(userId)
+      : [] as MoraTimingReviewId[],
   ]);
   const independentlyCompleted = introductions.filter(
     (stationId) => (
@@ -89,6 +103,12 @@ export async function listCompletedStations(
         stationId !== "combined-sounds"
         || COMBINED_SOUND_PATTERN_IDS.every((patternId) =>
           knownKanaExtensionPatterns.includes(patternId),
+        )
+      )
+      && (
+        stationId !== "mora-timing"
+        || MORA_TIMING_REVIEW_IDS.every((reviewId) =>
+          knownMoraTimingReviews.includes(reviewId),
         )
       )
     ),
@@ -354,4 +374,44 @@ export async function setKanaExtensionPatternsKnown(
   if (!firstStatement) return;
 
   await db.batch([firstStatement, ...remainingStatements]);
+}
+
+export async function listKnownMoraTimingReviews(
+  userId: string,
+): Promise<MoraTimingReviewId[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ reviewId: moraTimingKnowledge.reviewId })
+    .from(moraTimingKnowledge)
+    .where(eq(moraTimingKnowledge.userId, userId));
+
+  return rows.map((row) => row.reviewId).filter(isMoraTimingReviewId);
+}
+
+export async function setMoraTimingReviewKnown(
+  userId: string,
+  reviewId: MoraTimingReviewId,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(moraTimingKnowledge)
+      .where(
+        and(
+          eq(moraTimingKnowledge.userId, userId),
+          eq(moraTimingKnowledge.reviewId, reviewId),
+        ),
+      );
+    return;
+  }
+
+  await db
+    .insert(moraTimingKnowledge)
+    .values({ userId, reviewId, knownAt: new Date() })
+    .onConflictDoUpdate({
+      target: [moraTimingKnowledge.userId, moraTimingKnowledge.reviewId],
+      set: { knownAt: new Date() },
+    });
 }

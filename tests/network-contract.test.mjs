@@ -316,17 +316,17 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   assert.match(source, /stationName="Dakuten & Handakuten"/);
   assert.match(source, /stationName="Yōon"/);
   assert.match(source, /flashcards=\{COMBINED_SOUND_FLASHCARDS\}/);
-  assert.match(source, /const MARKED_SOUND_COLUMNS = \["ah", "ee", "oo", "eh", "oh"\]/);
-  assert.match(source, /const COMBINED_SOUND_COLUMNS = \["ah", "oo", "oh"\]/);
+  assert.match(source, /JAPANESE_VOWEL_SOUND_CUES/);
+  assert.match(source, /JAPANESE_YOON_VOWEL_SOUND_CUES/);
   assert.doesNotMatch(source, /sound-marks-chart-title|All marked sounds/);
   assert.doesNotMatch(source, /The first four rows use dakuten|The last row uses handakuten/);
   assert.match(source, /aria-label="Dakuten and handakuten marks"/);
   assert.match(source, /<span className="sr-only" lang="ja">゛<\/span>[\s\S]*className="kana-extension-mark-glyph"/);
   assert.match(source, /<span className="sr-only" lang="ja">゜<\/span>[\s\S]*<circle cx="24" cy="22" r="9"/);
-  assert.match(source, /cue: "gah", hiragana: "が", katakana: "ガ"/);
-  assert.match(source, /cue: "jee", hiragana: "じ", katakana: "ジ"/);
-  assert.match(source, /cue: "zoo", hiragana: "づ", katakana: "ヅ"/);
-  assert.match(source, /cue: "poh", hiragana: "ぽ", katakana: "ポ"/);
+  assert.match(source, /hiragana: "が", katakana: "ガ"/);
+  assert.match(source, /hiragana: "じ", katakana: "ジ"/);
+  assert.match(source, /hiragana: "づ", katakana: "ヅ"/);
+  assert.match(source, /hiragana: "ぽ", katakana: "ポ"/);
   assert.match(source, /Yōon is a way of writing one sound with two Kana/);
   assert.match(source, /changes the sound of the Kana before it, and the pair is read together/);
   assert.match(source, /き<\/strong> is kee/);
@@ -353,10 +353,10 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   assert.match(source, /COMBINED_SOUND_FLASHCARD_BY_KANA\.get\(kana\)/);
   assert.match(source, /<CombinedSoundsChart renderCard=\{renderCard\} \/>/);
   assert.equal((source.match(/className="hiragana-table kana-extension-all-sounds-chart"/g) ?? []).length, 2);
-  assert.match(source, /cue: "kyah", hiragana: "きゃ", katakana: "キャ"/);
-  assert.match(source, /cue: "shoo", hiragana: "しゅ", katakana: "シュ"/);
-  assert.match(source, /cue: "choh", hiragana: "ちょ", katakana: "チョ"/);
-  assert.match(source, /cue: "pyoh", hiragana: "ぴょ", katakana: "ピョ"/);
+  assert.match(source, /hiragana: "きゃ", katakana: "キャ"/);
+  assert.match(source, /hiragana: "しゅ", katakana: "シュ"/);
+  assert.match(source, /hiragana: "ちょ", katakana: "チョ"/);
+  assert.match(source, /hiragana: "ぴょ", katakana: "ピョ"/);
   assert.doesNotMatch(source, /small-tsu|long-vowel|きって|ケーキ/);
   assert.doesNotMatch(source, /kana-extension-sign-card|kana-extension-sound-change|referenceRows/);
   assert.doesNotMatch(source, /voiced|vibration|vocal cords|consonant|I-column|half-voiced/i);
@@ -371,10 +371,12 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   assert.match(source, /<FlashcardReview/);
   assert.match(source, /<FlashcardContent/);
   assert.match(source, /example=\{activeCard\.example\}/);
-  assert.match(source, /onPlayExample=\{\(\) => void playAudio\(activeCard\.exampleAudio\)\}/);
-  assert.match(source, /onPlayKana=\{playActiveKana\}/);
-  assert.match(source, /onReveal=\{\(\) => setPronunciationRevealed\(true\)\}/);
-  assert.match(source, /pronunciation=\{activeCard\.cue\}/);
+  assert.match(source, /playAudio\(\{ index: 0, src: activeCard\.audio \}\)/);
+  assert.match(source, /function playExample\(\)[\s\S]*splitJapaneseMorae\(activeCard\.example\)\.length[\s\S]*index: 1[\s\S]*activeCard\.exampleAudio/);
+  assert.match(source, /onActivate=\{activateCard\}/);
+  assert.match(source, /onReveal=\{activateCard\}/);
+  assert.match(source, /pronunciation=\{getJapaneseSoundCue\(activeCard\.kana\)\}/);
+  assert.doesNotMatch(source, /\b(?:cue|sound|english): "/);
   assert.match(source, /translation=\{activeCard\.translation\}/);
   assert.doesNotMatch(source, /Say the sound|reveal the cue/);
   assert.match(schema, /kanaExtensionKnowledge = sqliteTable\(\s*"kana_extension_knowledge"/s);
@@ -396,7 +398,13 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   assert.match(styles, /\.kana-extension-mark-glyph\s*\{[^}]*width:\s*4\.5rem[^}]*height:\s*4\.5rem/s);
   assert.match(styles, /\.kana-extension-chart-character\s*\{[^}]*font-size:\s*1\.65rem/s);
   assert.match(styles, /@media \(max-width: 600px\)[\s\S]*\.kana-extension-all-sounds-chart \.kana-extension-chart-character\s*\{[^}]*font-size:\s*1\.45rem/s);
-  assert.equal(new Set(audioPaths).size, 172);
+  assert.equal(
+    audioPaths.length,
+    (
+      (soundMarkFlashcards.match(/\bid: "/g) ?? []).length
+      + (combinedSoundFlashcards.match(/\bid: "/g) ?? []).length
+    ) * 2,
+  );
   assert.doesNotMatch(source, /romaji|score|streak|timer|progress meter/i);
 
   for (const audioPath of new Set(audioPaths)) {
@@ -409,6 +417,7 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
 
 test("the Mora timing station teaches and reviews equal beats with bundled audio", async () => {
   const source = await readFile(new URL("app/stations/mora-timing/mora-timing-guide.tsx", root), "utf8");
+  const flashcardReview = await readFile(new URL("app/stations/flashcard-review.tsx", root), "utf8");
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
   const schema = await readFile(new URL("db/schema.ts", root), "utf8");
   const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
@@ -441,14 +450,19 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
     "/audio/ja-inu.wav",
     "/audio/ja-asa.wav",
     "/audio/ja-hon.wav",
+    "/audio/ja-katakana-wain.wav",
     "/audio/ja-yoon-hiragana-kyo.wav",
+    "/audio/ja-kyaku.wav",
     "/audio/ja-kitte.wav",
+    "/audio/ja-katakana-robotto.wav",
     "/audio/ja-keeki.wav",
+    "/audio/ja-katakana-chiizu.wav",
   ]);
   assert.equal(reviewWords.length, 10);
   assert.equal(reviewMeanings.length, 10);
   assert.equal(reviewAudioPaths.length, 10);
-  assert.equal(new Set([...teachingWords, ...reviewWords]).size, 16);
+  assert.equal(teachingWords.length, 10);
+  assert.equal(new Set([...teachingWords, ...reviewWords]).size, 20);
   assert.match(teachingSource, /title: "One Kana, one beat"/);
   assert.match(teachingSource, /title: "ん has its own beat"/);
   assert.match(teachingSource, /title: "Yōon is one beat"/);
@@ -458,8 +472,7 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.match(teachingSource, /morae: \["きょ", "う"\]/);
   assert.match(teachingSource, /Small っ or ッ holds a silent beat/);
   assert.match(teachingSource, /prolonged sound mark ー, used mainly in Katakana/);
-  assert.match(source, /Count the beats\. The answer appears after five seconds/);
-  assert.match(source, /The test checks recognition, not pronunciation/);
+  assert.doesNotMatch(source, /Count the beats\. The answer appears after four seconds|The test checks recognition, not pronunciation|Did you count it correctly|mark whether your count was right|mora-notes/);
   assert.doesNotMatch(source, /className="mora-review-(?:prompt|rule|meaning)"/);
   assert.doesNotMatch(source, /className="mora-review-count"/);
   assert.doesNotMatch(reviewSource, /\brule:/);
@@ -467,13 +480,16 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.match(styles, /\.mora-review-translation:not\(\[data-revealed="true"\]\)\s*\{[^}]*visibility:\s*hidden/s);
   assert.match(source, /<MoraBeats[\s\S]*?morae=\{activeCard\.morae\}[\s\S]*?word=\{activeCard\.word\}[\s\S]*?\/>/);
   assert.match(source, /<FlashcardReview/);
-  assert.match(source, /REVIEW_REVEAL_DELAY_SECONDS = 5/);
-  assert.match(source, /window\.setTimeout\(\(\) => \{[\s\S]*?setBreakdownRevealed\(true\);[\s\S]*?\}, REVIEW_REVEAL_DELAY_MS\)/);
-  assert.match(source, /role="timer"[\s\S]*?mora-review-countdown-progress[\s\S]*?\{revealSecondsRemaining\}/);
+  assert.match(source, /function activateReviewCard\(\)[\s\S]*setBreakdownRevealed\(true\)[\s\S]*playAudio\(activeCard\.wordAudio/);
+  assert.match(source, /onActivate=\{activateReviewCard\}/);
+  assert.match(source, /<FlashcardCountdown onComplete=\{activateReviewCard\} \/>/);
+  assert.doesNotMatch(source, /className="mora-review-word"[\s\S]{0,160}onClick=/);
+  assert.match(flashcardReview, /FLASHCARD_REVEAL_DELAY_SECONDS = 4/);
+  assert.match(flashcardReview, /window\.setTimeout\(\(\) => \{[\s\S]*?onCompleteRef\.current\(\);[\s\S]*?\}, FLASHCARD_REVEAL_DELAY_MS\)/);
+  assert.match(flashcardReview, /role="timer"[\s\S]*?flashcard-countdown-progress[\s\S]*?\{secondsRemaining\}/);
   assert.doesNotMatch(source, /Show timing for \$\{activeCard\.word\}|>\s*Answer\s*</);
-  assert.match(styles, /\.mora-review-countdown\s*\{[^}]*width:\s*2\.5rem[^}]*height:\s*2\.5rem[^}]*color:\s*var\(--muted\)/s);
-  assert.match(styles, /\.mora-review-countdown-progress\s*\{[^}]*animation:\s*mora-review-countdown-fill var\(--mora-review-countdown-duration\) linear forwards[^}]*stroke:\s*var\(--known\)[^}]*stroke-dashoffset:\s*1/s);
-  assert.match(source, /Did you count it correctly|mark whether your count was right/);
+  assert.match(styles, /\.flashcard-countdown\s*\{[^}]*width:\s*2\.5rem[^}]*height:\s*2\.5rem[^}]*color:\s*var\(--muted\)/s);
+  assert.match(styles, /\.flashcard-countdown-progress\s*\{[^}]*animation:\s*flashcard-countdown-fill var\(--flashcard-countdown-duration\) linear forwards[^}]*stroke:\s*var\(--known\)[^}]*stroke-dashoffset:\s*1/s);
   assert.match(source, /className="hiragana-test-trigger"/);
   assert.match(source, /Test Mora timing\. \$\{remainingCount\} remaining\./);
   assert.match(source, /fetch\("\/api\/stations\/mora-timing\/introduction"/);
@@ -482,26 +498,41 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.match(source, /window\.requestAnimationFrame\(updateActiveBeat\)/);
   assert.match(source, /data-active=\{activeBeatIndex === index \? "true" : undefined\}/);
   assert.match(source, /<MoraAudioIndicator \/>/);
-  assert.match(source, /<span className="mora-example-timing">[\s\S]*?<button[\s\S]*?className="mora-beats-button"[\s\S]*?<MoraBeats[\s\S]*?<MoraAudioIndicator \/>[\s\S]*?<span className="mora-meaning">/);
+  assert.match(source, /<button[\s\S]*?aria-label=\{`Play \$\{example\.word\}`\}[\s\S]*?className="mora-example"[\s\S]*?onClick=\{\(\) => void playAudio\(example\.wordAudio[\s\S]*?<span className="mora-example-timing">[\s\S]*?<MoraBeats[\s\S]*?<MoraAudioIndicator \/>[\s\S]*?<MoraPronunciation[\s\S]*?<span className="mora-meaning">/);
+  assert.doesNotMatch(source, /className="mora-beats-button"/);
   assert.doesNotMatch(source, /className="mora-word"/);
   assert.doesNotMatch(source.slice(source.indexOf('className="mora-example-list"'), source.indexOf("{audioError ?")), /className="mora-count"/);
-  assert.match(source, /widestMoraLength > 1 \? "3\.75rem" : "3rem"/);
+  assert.doesNotMatch(source, /widestMoraLength|--mora-beat-width/);
   assert.match(styles, /\.mora-concepts\s*\{[^}]*width:\s*min\(100%, 38rem\)/s);
-  assert.match(styles, /\.mora-example-list\s*\{[^}]*display:\s*grid[^}]*\}/s);
+  assert.match(styles, /\.mora-example-list\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)[^}]*gap:\s*0\.75rem/s);
   assert.doesNotMatch(styles, /\.mora-example-list\s*\{[^}]*(?:border|border-radius):/s);
   assert.doesNotMatch(styles, /\.mora-example \+ \.mora-example\s*\{[^}]*border-top:/s);
-  assert.match(styles, /\.mora-meaning\s*\{[^}]*margin-left:\s*0\.35rem/s);
-  assert.match(styles, /\.mora-example-timing\s*\{[^}]*display:\s*inline-flex[^}]*align-items:\s*center[^}]*gap:\s*0\.5rem/s);
-  assert.match(styles, /\.mora-beats\s*\{[^}]*grid-auto-columns:\s*var\(--mora-beat-width, 3rem\)[^}]*grid-auto-flow:\s*column/s);
+  assert.match(styles, /\.mora-concept\s*\{[^}]*padding:\s*1\.25rem 0/s);
+  assert.match(styles, /\.mora-concept:last-child\s*\{[^}]*border-bottom:\s*0/s);
+  assert.match(styles, /\.mora-concept-heading\s*\{[^}]*margin-bottom:\s*0\.875rem/s);
+  assert.match(styles, /\.mora-example\s*\{[^}]*width:\s*100%[^}]*min-height:\s*6\.75rem[^}]*align-items:\s*center[^}]*border:\s*1px solid var\(--line\)[^}]*border-radius:\s*1rem[^}]*cursor:\s*pointer[^}]*text-align:\s*center/s);
+  assert.match(styles, /\.mora-example:only-child\s*\{[^}]*width:\s*calc\(\(100% - 0\.75rem\) \/ 2\)[^}]*grid-column:\s*1 \/ -1[^}]*justify-self:\s*center/s);
+  assert.match(styles, /\.mora-example-timing\s*\{[^}]*position:\s*relative[^}]*display:\s*inline-grid[^}]*place-items:\s*center/s);
+  assert.match(styles, /\.mora-audio-indicator\s*\{[^}]*position:\s*absolute[^}]*left:\s*calc\(100% \+ 0\.5rem\)/s);
+  assert.match(styles, /\.mora-beats\s*\{[^}]*display:\s*inline-flex[^}]*align-items:\s*baseline[^}]*gap:\s*0\.35rem/s);
   assert.doesNotMatch(styles, /\.mora-beats\s*\{[^}]*justify-self:/s);
-  assert.match(styles, /\.mora-beat\s*\{[^}]*height:\s*3rem[^}]*border:\s*1px solid var\(--line\)[^}]*border-radius:\s*0/s);
-  assert.match(styles, /\.mora-beat \+ \.mora-beat\s*\{[^}]*margin-left:\s*-1px/s);
-  assert.match(styles, /\.mora-beat:first-child\s*\{[^}]*border-radius:\s*0\.55rem 0 0 0\.55rem/s);
-  assert.match(styles, /\.mora-beat:last-child\s*\{[^}]*border-radius:\s*0 0\.55rem 0\.55rem 0/s);
-  assert.match(styles, /\.mora-beat\[data-active="true"\]\s*\{[^}]*color:\s*var\(--foreground\)[^}]*background:\s*var\(--sound\)/s);
-  assert.doesNotMatch(styles, /\.mora-beat\[data-active="true"\]\s*\{[^}]*(?:border-color|box-shadow|transform):/s);
-  assert.match(styles, /\.mora-beats-button:hover \.mora-beat:not\(\[data-active="true"\]\)/);
+  assert.doesNotMatch(styles, /\.mora-beat\s*\{[^}]*(?:width|height|border|background):/s);
+  assert.doesNotMatch(styles, /\.mora-beat \+ \.mora-beat|\.mora-beat:(?:first|last|only)-child/);
+  assert.match(styles, /\.mora-beat\[data-active="true"\]\s*\{[^}]*color:\s*var\(--sound\)/s);
+  assert.doesNotMatch(styles, /\.mora-beat\[data-active="true"\]\s*\{[^}]*(?:background|border-color|box-shadow|transform):/s);
+  assert.match(source, /getJapaneseMoraSoundCues\(word\)/);
+  assert.match(source, /className="mora-pronunciation-beat"[\s\S]*data-active=\{activeBeatIndex === index \? "true" : undefined\}/);
+  assert.match(styles, /\.mora-pronunciation\s*\{[^}]*display:\s*inline-flex[^}]*font-size:\s*0\.75rem/s);
+  assert.doesNotMatch(styles, /\.mora-pronunciation\s*\{[^}]*gap:/s);
+  assert.match(source, /getJapaneseMoraSoundCueSeparator\(morae, index\) === ""/);
+  assert.match(source, /aria-label=\{getJapaneseWordSoundCue\(word\)\}/);
+  assert.match(source, /data-connected=\{connected \? "true" : undefined\}/);
+  assert.match(styles, /\.mora-pronunciation-beat \+ \.mora-pronunciation-beat:not\(\[data-connected="true"\]\)\s*\{[^}]*margin-left:\s*0\.35rem/s);
+  assert.match(styles, /\.mora-pronunciation-beat\[data-active="true"\]\s*\{[^}]*color:\s*var\(--sound\)/s);
+  assert.match(styles, /@media \(hover: hover\) and \(pointer: fine\)[\s\S]*\.mora-example:hover\s*\{[^}]*border-color:\s*rgb\(242 241 235 \/ 0\.22\)[^}]*background:\s*color-mix\(in srgb, var\(--surface\) 97%, var\(--foreground\)\)/s);
+  assert.match(styles, /\.mora-review-answer-slot\s*\{[^}]*min-height:\s*3\.5rem/s);
   assert.match(styles, /\.mora-example\[data-playing="true"\] \.mora-audio-indicator span\s*\{[^}]*animation:\s*hiragana-test-sound-pulse/s);
+  assert.doesNotMatch(styles, /@media \(max-width: 600px\)[\s\S]*\.mora-example-list\s*\{/s);
   assert.match(schema, /moraTimingKnowledge = sqliteTable\(\s*"mora_timing_knowledge"/s);
   assert.match(repository, /listKnownMoraTimingReviews/);
   assert.match(repository, /setMoraTimingReviewKnown/);
@@ -552,7 +583,8 @@ test("the Kana station introduces both writing systems through the five vowels",
   assert.match(source, /className="kana-table-intro"/);
   assert.doesNotMatch(source, /Kanji is different|Kanji primarily carries meaning/);
   assert.match(source, /aria-label="The five Japanese vowels in Hiragana and Katakana"/);
-  assert.match(source, /const VOWEL_SOUNDS = \["ah", "ee", "oo", "eh", "oh"\]/);
+  assert.match(source, /JAPANESE_VOWEL_SOUND_CUES\.map\(\(sound\) =>/);
+  assert.doesNotMatch(source, /International Phonetic Alphabet|\bIPA\b/);
   assert.match(source, /className="hiragana-table kana-vowels-chart"/);
   assert.match(source, /VOWEL_ROWS\.map\(\(row\) =>/);
   assert.match(source, /onClick=\{\(\) => openTest\("Vowels", \[entry\]\)\}/);
@@ -607,13 +639,12 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /Hiragana is the everyday Kana system/);
   assert.match(source, /five vowel sounds you already know/);
   assert.match(source, /Learning them lets you sound out written Japanese/);
-  assert.match(source, /HIRAGANA_VOWEL_SOUNDS = \["ah", "ee", "oo", "eh", "oh"\]/);
+  assert.match(source, /JAPANESE_VOWEL_SOUND_CUES\.map\(\(sound\) =>/);
   assert.match(source, /aria-label=\{`Column of sounds ending in \$\{sound\}`\}/);
   assert.doesNotMatch(source, /[あいうえお]段/);
   assert.doesNotMatch(source, /The next five sounds|Start with the first ten/);
   assert.doesNotMatch(source, /Hear them in words|hiragana-groups|hiragana-study-group/);
-  assert.match(source, /english: "ah".*english: "ee".*english: "oo".*english: "eh".*english: "oh"/s);
-  assert.match(source, /english: "kah".*english: "kee".*english: "koo".*english: "keh".*english: "koh"/s);
+  assert.doesNotMatch(source, /\benglish: "/);
   assert.match(source, /あさ.*いぬ.*うみ.*えき.*おと/s);
   assert.match(source, /かさ.*きく.*くち.*けさ.*こえ/s);
   assert.match(source, /preload="none"/);
@@ -622,7 +653,7 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.hiragana-button\s*\{[^}]*font-size:\s*1\.65rem/s);
   assert.match(source, /className="station-heading-row"/);
   assert.match(source, /data-line="writing"/);
-  assert.match(source, /renderTestButton\("All Hiragana", ALL_HIRAGANA_TEST_ENTRIES\)/);
+  assert.match(source, /renderTestButton\("Hiragana", ALL_HIRAGANA_TEST_ENTRIES\)/);
   assert.match(source, /const remainingCount = total - knownCount/);
   assert.match(source, /remainingCount === 0 \? \([\s\S]*className="hiragana-test-complete-icon"/);
   assert.match(source, /data-complete=\{remainingCount === 0 \? "true" : undefined\}/);
@@ -632,7 +663,7 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.doesNotMatch(source, /title=\{testLabel\}/);
   assert.doesNotMatch(source, /expandedGroups|toggleStudyGroup|renderStudyKana/);
   assert.match(source, /aria-label="Station options"/);
-  assert.match(source, /<div className="station-heading-actions">[\s\S]*<details className="station-options"[\s\S]*renderTestButton\("All Hiragana"/);
+  assert.match(source, /<div className="station-heading-actions">[\s\S]*<details className="station-options"[\s\S]*renderTestButton\("Hiragana"/);
   assert.match(source, /<circle cx="4" cy="10" r="1\.5" \/>/);
   assert.match(source, /document\.addEventListener\("pointerdown", dismissStationOptions\)/);
   assert.match(source, /event\.key !== "Escape"/);
@@ -689,8 +720,8 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.hiragana-test-close\s*\{[^}]*width:\s*2rem[^}]*height:\s*2rem[^}]*border-radius:\s*50%[^}]*appearance:\s*none/s);
   assert.match(styles, /\.hiragana-test-close::before\s*\{[^}]*inset:\s*-0\.375rem[^}]*content:\s*""/s);
   assert.match(styles, /\.hiragana-test-close:focus-visible\s*\{[^}]*outline:\s*none[^}]*box-shadow:/s);
-  assert.match(flashcardReview, /<span>Not Yet<\/span>/);
-  assert.match(flashcardReview, /<span>Good<\/span>/);
+  assert.match(flashcardReview, /<span>Not yet<\/span>/);
+  assert.match(flashcardReview, /<span>Got it!<\/span>/);
   assert.equal((source.match(/className="hiragana-test-answer-icon"/g) ?? []).length, 4);
   assert.equal((flashcardReview.match(/className="hiragana-test-answer-icon"/g) ?? []).length, 2);
   assert.match(styles, /\.hiragana-test-answer-icon\s*\{[^}]*stroke:\s*currentcolor/s);
@@ -702,18 +733,21 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.doesNotMatch(styles, /\.hiragana-test-instruction/);
   assert.match(source, /setPronunciationRevealed\(true\)/);
   assert.match(source, /<FlashcardContent/);
-  assert.match(source, /pronunciation=\{activeCard\.english\}/);
+  assert.match(source, /pronunciation=\{getJapaneseSoundCue\(activeCard\.kana\)\}/);
+  assert.match(source, /examplePronunciation=\{getJapaneseWordSoundCue\(activeCard\.example\)\}/);
   assert.match(source, /revealed=\{pronunciationRevealed\}/);
   assert.match(source, /activeCard\.exampleAudio/);
-  assert.match(flashcardReview, /revealed \? \([\s\S]*aria-label=\{`Play example word \$\{example\}`\}[\s\S]*className="hiragana-test-example-word"[\s\S]*\{example\}[\s\S]*className="hiragana-test-example-translation"[\s\S]*\{translation\}[\s\S]*\) : \(/);
-  assert.match(flashcardReview, /className="hiragana-test-answer-slot"[\s\S]*className="hiragana-test-example-reveal"[\s\S]*>\s*Answer\s*<\/button>/);
-  assert.match(flashcardReview, /aria-label=\{`Play \$\{kana\}`\}[\s\S]*onClick=\{onPlayKana\}/);
-  assert.doesNotMatch(flashcardReview, /and reveal its pronunciation/);
-  assert.match(source, /english: "nn"[^\n]*kana: "ん"/);
+  assert.match(flashcardReview, /revealed \? \([\s\S]*className="hiragana-test-example-word"[\s\S]*exampleMorae\.map[\s\S]*className="hiragana-test-example-beat"[\s\S]*className="hiragana-test-example-pronunciation"[\s\S]*examplePronunciationUnits\.map[\s\S]*className="hiragana-test-example-pronunciation-beat"[\s\S]*className="hiragana-test-example-translation"[\s\S]*\{translation\}[\s\S]*\) : \(/);
+  assert.match(flashcardReview, /className="hiragana-test-answer-slot"[\s\S]*<FlashcardCountdown onComplete=\{onReveal\} \/>/);
+  assert.match(flashcardReview, /aria-label=\{activationLabel\}[\s\S]*onClick=\{handleCardClick\}/);
+  assert.doesNotMatch(flashcardReview, /onPlayKana/);
+  assert.match(flashcardReview, /aria-label=\{`Play example word \$\{example\}`\}[\s\S]*onClick=\{onPlayExample\}/);
+  assert.match(source, /kana: "ん"[^\n]*kanaAudio: "\/audio\/ja-n\.wav"/);
   assert.doesNotMatch(source, />English sound</);
   assert.match(source, /playing=\{audioPlaying\}/);
   assert.match(flashcardReview, /data-playing=\{playing \? "true" : undefined\}/);
-  assert.match(source, /onPlaying=\{\(\) => setAudioPlaying\(true\)\}/);
+  assert.match(source, /onEnded=\{handleAudioEnded\}/);
+  assert.match(source, /onError=\{handleAudioError\}/);
   assert.match(styles, /\.hiragana-test-card\[data-playing="true"\][^}]*border-color:\s*var\(--sound\)/s);
   assert.match(styles, /@keyframes hiragana-test-sound-pulse/);
   assert.match(source, /data-known=\{isKnown \? "true" : undefined\}/);
@@ -726,11 +760,12 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.doesNotMatch(styles, /\.hiragana-test-card-with-example \.hiragana-test-reveal\s*\{[^}]*position:/s);
   assert.match(styles, /\.hiragana-test-card-with-example\s*\{[^}]*min-height:\s*16rem/s);
   assert.match(styles, /\.hiragana-test-example\s*\{[^}]*width:\s*fit-content[^}]*min-width:\s*2\.75rem[^}]*flex-direction:\s*column/s);
-  assert.match(styles, /\.hiragana-test-answer-slot\s*\{[^}]*min-height:\s*3\.25rem[^}]*place-items:\s*center/s);
-  assert.match(styles, /\.hiragana-test-example-reveal\s*\{[^}]*min-height:\s*2\.75rem[^}]*min-width:\s*6\.5rem[^}]*border:\s*1px solid var\(--line\)[^}]*background:\s*var\(--surface\)/s);
+  assert.match(styles, /\.hiragana-test-answer-slot\s*\{[^}]*height:\s*4\.5rem[^}]*place-items:\s*center/s);
+  assert.match(styles, /\.hiragana-test-example-pronunciation\s*\{[^}]*color:[^}]*font-size:\s*0\.75rem/s);
+  assert.doesNotMatch(styles, /\.hiragana-test-example-reveal/);
   assert.match(styles, /\.hiragana-test-card-with-example \.hiragana-test-reveal\s*\{[^}]*width:\s*fit-content[^}]*align-self:\s*center/s);
   assert.doesNotMatch(styles, /\.hiragana-test-example\s*\{[^}]*border-top:/s);
-  assert.match(styles, /\.hiragana-test-reveal:hover \.hiragana-test-card-kana,[\s\S]*\.hiragana-test-example:hover \.hiragana-test-example-word[\s\S]*color:\s*var\(--sound\)/s);
+  assert.doesNotMatch(styles, /\.hiragana-test-reveal:hover|\.hiragana-test-example:hover/);
   assert.match(styles, /\.hiragana-test-pronunciation:not\(\[data-revealed="true"\]\)\s*\{[^}]*visibility:\s*hidden/s);
   assert.doesNotMatch(styles, /\.hiragana-button-known::after|content:\s*"✓"/);
   assert.match(styles, /\.hiragana-test-dialog::backdrop/);
@@ -779,7 +814,7 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   const katakana = [...source.matchAll(/katakana: "([^"]+)"/g)].map((match) => match[1]);
   const hiragana = [...source.matchAll(/hiragana: "([^"]+)"/g)].map((match) => match[1]);
   const audioPaths = [...source.matchAll(/audio: "(\/audio\/ja-[^"]+\.wav)"/g)].map((match) => match[1]);
-  const exampleAudioPaths = [...source.matchAll(/exampleAudio: "(\/audio\/ja-katakana-[^"]+\.wav)"/g)].map((match) => match[1]);
+  const exampleAudioPaths = [...source.matchAll(/exampleAudio: "(\/audio\/ja-[^"]+\.wav)"/g)].map((match) => match[1]);
 
   assert.equal(katakana.length, 46);
   assert.equal(new Set(katakana).size, 46);
@@ -787,7 +822,6 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.equal(new Set(hiragana).size, 46);
   assert.equal(audioPaths.length, 46);
   assert.equal(exampleAudioPaths.length, 46);
-  assert.equal(new Set(exampleAudioPaths).size, 46);
   assert.match(page, /isStationAvailableToCurrentUser\("katakana"\)/);
   assert.match(source, /data-line="writing"/);
   assert.match(api, /recordStationIntroduction\(user\.id, "katakana"\)/);
@@ -807,13 +841,13 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.doesNotMatch(source, /station-notes/);
   assert.match(source, /aria-label="The 46 basic Katakana"/);
   assert.match(source, /fetch\("\/api\/stations\/katakana\/introduction"/);
-  assert.match(source, /KATAKANA_VOWEL_SOUNDS = \["ah", "ee", "oo", "eh", "oh"\]/);
+  assert.match(source, /JAPANESE_VOWEL_SOUND_CUES\.map\(\(sound\) =>/);
   assert.match(source, /aria-label=\{`Column of sounds ending in \$\{sound\}`\}/);
   assert.match(source, /className="hiragana-table katakana-table"/);
   assert.match(source, /className=\{`hiragana-button katakana-button/);
   assert.doesNotMatch(source, /katakana-character|katakana-match/);
   assert.doesNotMatch(source, /Its Hiragana match and approximate sound spelling appear underneath/);
-  assert.match(source, /renderTestButton\("All Katakana", ALL_KATAKANA_TEST_ENTRIES\)/);
+  assert.match(source, /renderTestButton\("Katakana", ALL_KATAKANA_TEST_ENTRIES\)/);
   assert.match(source, /KATAKANA_ROWS\.flatMap\(\(row\) => row\.filter\(isKanaEntry\)\)/);
   assert.doesNotMatch(source, /Connect the shapes|KATAKANA_STUDY_GROUPS|KATAKANA_GROUP_DEFINITIONS/);
   assert.doesNotMatch(source, /expandedGroups|toggleStudyGroup|renderStudyKatakana/);
@@ -823,15 +857,18 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.match(source, /<FlashcardReview/);
   assert.match(source, /<FlashcardContent/);
   assert.match(source, /example=\{activeCard\.example\}/);
-  assert.match(source, /onPlayExample=\{\(\) => void playAudio\(activeCard\.exampleAudio\)\}/);
-  assert.match(source, /onPlayKana=\{playActiveKana\}/);
-  assert.match(source, /onReveal=\{\(\) => setPronunciationRevealed\(true\)\}/);
-  assert.match(source, /pronunciation=\{activeCard\.sound\}/);
+  assert.match(source, /examplePronunciation=\{getJapaneseWordSoundCue\(activeCard\.example\)\}/);
+  assert.match(source, /playAudio\(\{ index: 0, src: activeCard\.audio \}\)/);
+  assert.match(source, /function playExample\(\)[\s\S]*splitJapaneseMorae\(activeCard\.example\)\.length[\s\S]*index: 1[\s\S]*activeCard\.exampleAudio/);
+  assert.match(source, /onActivate=\{activateCard\}/);
+  assert.match(source, /onReveal=\{activateCard\}/);
+  assert.match(source, /pronunciation=\{getJapaneseSoundCue\(activeCard\.katakana\)\}/);
+  assert.doesNotMatch(source, /\bsound: "/);
   assert.match(source, /translation=\{activeCard\.translation\}/);
-  assert.match(source, /Example: \$\{activeCard\.example\}, \$\{activeCard\.translation\}/);
+  assert.match(source, /Example: \$\{activeCard\.example\}, \$\{getJapaneseWordSoundCue\(activeCard\.example\)\}, \$\{activeCard\.translation\}/);
   assert.match(source, /example: "アニメ"[\s\S]*translation: "anime"/);
-  assert.match(source, /example: "ケーキ"[\s\S]*translation: "cake"/);
-  assert.match(source, /example: "パン"[\s\S]*translation: "bread"/);
+  assert.match(source, /example: "ケア"[\s\S]*translation: "care"/);
+  assert.match(source, /example: "ワイン"[\s\S]*translation: "wine"/);
   assert.match(source, /playing=\{audioPlaying\}/);
   assert.match(source, /aria-labelledby="katakana-complete-title"/);
   assert.match(source, /aria-labelledby="katakana-reset-title"/);

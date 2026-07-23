@@ -2,7 +2,14 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import {
+  getJapaneseSoundCue,
+  getJapaneseWordSoundCue,
+  JAPANESE_VOWEL_SOUND_CUES,
+  splitJapaneseMorae,
+} from "@/src/modules/learning/japanese-sound-cues";
 import { FlashcardContent, FlashcardReview } from "../flashcard-review";
+import { useFlashcardAudio } from "../use-flashcard-audio";
 
 type VowelCard = {
   readonly audio: string;
@@ -10,7 +17,6 @@ type VowelCard = {
   readonly exampleAudio: string;
   readonly kana: string;
   readonly script: "hiragana" | "katakana";
-  readonly sound: string;
   readonly translation: string;
 };
 
@@ -19,18 +25,17 @@ type VowelTest = {
   readonly title: string;
 };
 
-const VOWEL_SOUNDS = ["ah", "ee", "oo", "eh", "oh"] as const;
 const VOWEL_CARDS: readonly VowelCard[] = [
-  { audio: "/audio/ja-a.wav", example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ", script: "hiragana", sound: "ah", translation: "morning" },
-  { audio: "/audio/ja-i.wav", example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い", script: "hiragana", sound: "ee", translation: "dog" },
-  { audio: "/audio/ja-u.wav", example: "うみ", exampleAudio: "/audio/ja-umi.wav", kana: "う", script: "hiragana", sound: "oo", translation: "sea" },
-  { audio: "/audio/ja-e.wav", example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え", script: "hiragana", sound: "eh", translation: "station" },
-  { audio: "/audio/ja-o.wav", example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お", script: "hiragana", sound: "oh", translation: "sound" },
-  { audio: "/audio/ja-a.wav", example: "アニメ", exampleAudio: "/audio/ja-katakana-anime.wav", kana: "ア", script: "katakana", sound: "ah", translation: "animation" },
-  { audio: "/audio/ja-i.wav", example: "イメージ", exampleAudio: "/audio/ja-katakana-imeeji.wav", kana: "イ", script: "katakana", sound: "ee", translation: "image" },
-  { audio: "/audio/ja-u.wav", example: "ウール", exampleAudio: "/audio/ja-katakana-uuru.wav", kana: "ウ", script: "katakana", sound: "oo", translation: "wool" },
-  { audio: "/audio/ja-e.wav", example: "エアコン", exampleAudio: "/audio/ja-katakana-eakon.wav", kana: "エ", script: "katakana", sound: "eh", translation: "air conditioner" },
-  { audio: "/audio/ja-o.wav", example: "オレンジ", exampleAudio: "/audio/ja-katakana-orenji.wav", kana: "オ", script: "katakana", sound: "oh", translation: "orange" },
+  { audio: "/audio/ja-a.wav", example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ", script: "hiragana", translation: "morning" },
+  { audio: "/audio/ja-i.wav", example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い", script: "hiragana", translation: "dog" },
+  { audio: "/audio/ja-u.wav", example: "うみ", exampleAudio: "/audio/ja-umi.wav", kana: "う", script: "hiragana", translation: "sea" },
+  { audio: "/audio/ja-e.wav", example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え", script: "hiragana", translation: "station" },
+  { audio: "/audio/ja-o.wav", example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お", script: "hiragana", translation: "sound" },
+  { audio: "/audio/ja-a.wav", example: "アニメ", exampleAudio: "/audio/ja-katakana-anime.wav", kana: "ア", script: "katakana", translation: "animation" },
+  { audio: "/audio/ja-i.wav", example: "イカ", exampleAudio: "/audio/ja-katakana-ika.wav", kana: "イ", script: "katakana", translation: "squid" },
+  { audio: "/audio/ja-u.wav", example: "ウニ", exampleAudio: "/audio/ja-katakana-uni.wav", kana: "ウ", script: "katakana", translation: "sea urchin" },
+  { audio: "/audio/ja-e.wav", example: "エアコン", exampleAudio: "/audio/ja-katakana-eakon.wav", kana: "エ", script: "katakana", translation: "air conditioner" },
+  { audio: "/audio/ja-o.wav", example: "オセロ", exampleAudio: "/audio/ja-katakana-osero.wav", kana: "オ", script: "katakana", translation: "Othello" },
 ];
 const VOWEL_ROWS = [
   VOWEL_CARDS.filter((entry) => entry.script === "hiragana"),
@@ -39,11 +44,19 @@ const VOWEL_ROWS = [
 const VOWEL_KANA = new Set(VOWEL_CARDS.map((entry) => entry.kana));
 
 export function KanaGuide() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const {
+    activeAudioIndex,
+    activeBeatIndex,
+    audioError,
+    audioPlaying,
+    audioRef,
+    handleAudioEnded,
+    handleAudioError,
+    playAudio,
+    stopAudio,
+  } = useFlashcardAudio();
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const [activeTest, setActiveTest] = useState<VowelTest | null>(null);
-  const [audioError, setAudioError] = useState(false);
-  const [audioPlaying, setAudioPlaying] = useState(false);
   const [knowledgeError, setKnowledgeError] = useState(false);
   const [knownKana, setKnownKana] = useState<Set<string>>(() => new Set());
   const [pronunciationRevealed, setPronunciationRevealed] = useState(false);
@@ -84,35 +97,6 @@ export function KanaGuide() {
     if (activeTest && dialog && !dialog.open) dialog.showModal();
   }, [activeTest]);
 
-  async function playAudio(src: string) {
-    setAudioError(false);
-    const audio = audioRef.current;
-    if (!audio) {
-      setAudioError(true);
-      return;
-    }
-
-    audio.pause();
-    audio.src = src;
-    audio.currentTime = 0;
-    setAudioPlaying(true);
-    try {
-      await audio.play();
-    } catch {
-      setAudioError(true);
-      setAudioPlaying(false);
-    }
-  }
-
-  function stopAudio() {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-    setAudioPlaying(false);
-  }
-
   function openTest(title: string, entries: readonly VowelCard[]) {
     stopAudio();
     setKnowledgeError(false);
@@ -129,9 +113,19 @@ export function KanaGuide() {
     setTestIndex(0);
   }
 
-  function playActiveKana() {
+  function activateCard() {
     if (!activeCard) return;
-    void playAudio(activeCard.audio);
+    setPronunciationRevealed(true);
+    playAudio({ index: 0, src: activeCard.audio });
+  }
+
+  function playExample() {
+    if (!activeCard) return;
+    playAudio({
+      beatCount: splitJapaneseMorae(activeCard.example).length,
+      index: 1,
+      src: activeCard.exampleAudio,
+    });
   }
 
   function answerCard(known: boolean) {
@@ -228,12 +222,8 @@ export function KanaGuide() {
 
       <section className="kana-guide">
         <audio
-          onEnded={() => setAudioPlaying(false)}
-          onError={() => {
-            setAudioError(true);
-            setAudioPlaying(false);
-          }}
-          onPlaying={() => setAudioPlaying(true)}
+          onEnded={handleAudioEnded}
+          onError={handleAudioError}
           preload="none"
           ref={audioRef}
         />
@@ -248,7 +238,7 @@ export function KanaGuide() {
         <table aria-label="The five Japanese vowels in Hiragana and Katakana" className="hiragana-table kana-vowels-chart">
           <thead>
             <tr>
-              {VOWEL_SOUNDS.map((sound) => <th key={sound} scope="col">{sound}</th>)}
+              {JAPANESE_VOWEL_SOUND_CUES.map((sound) => <th key={sound} scope="col">{sound}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -287,18 +277,26 @@ export function KanaGuide() {
               </header>
 
               <FlashcardReview
-                announcement={pronunciationRevealed ? `${activeCard.sound}. Example: ${activeCard.example}, ${activeCard.translation}` : ""}
+                activationLabel={pronunciationRevealed
+                  ? `Replay ${activeCard.kana}`
+                  : `Reveal and play ${activeCard.kana}`}
+                announcement={pronunciationRevealed ? `${getJapaneseSoundCue(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordSoundCue(activeCard.example)}, ${activeCard.translation}` : ""}
                 key={`${testIndex}-${activeCard.kana}`}
+                onActivate={activateCard}
                 onAnswer={answerCard}
                 playing={audioPlaying}
               >
                 <FlashcardContent
+                  activeAudio={activeAudioIndex === 0
+                    ? "pronunciation"
+                    : activeAudioIndex === 1 ? "example" : null}
+                  activeExampleBeatIndex={activeBeatIndex}
                   example={activeCard.example}
+                  examplePronunciation={getJapaneseWordSoundCue(activeCard.example)}
                   kana={activeCard.kana}
-                  onPlayExample={() => void playAudio(activeCard.exampleAudio)}
-                  onPlayKana={playActiveKana}
-                  onReveal={() => setPronunciationRevealed(true)}
-                  pronunciation={activeCard.sound}
+                  onPlayExample={playExample}
+                  onReveal={activateCard}
+                  pronunciation={getJapaneseSoundCue(activeCard.kana)}
                   revealed={pronunciationRevealed}
                   translation={activeCard.translation}
                 />

@@ -24,6 +24,10 @@ html {
   background: var(--background);
 }
 
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 body {
   min-width: 320px;
   min-height: 100dvh;

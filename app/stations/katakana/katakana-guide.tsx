@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import { FlashcardContent, FlashcardReview } from "../flashcard-review";
 
 type KanaEntry = {
   readonly audio: string;
@@ -191,7 +192,6 @@ export function KatakanaGuide() {
 
   async function playAudio(src: string) {
     setAudioError(false);
-    setAudioPlaying(false);
     const audio = audioRef.current;
     if (!audio) {
       setAudioError(true);
@@ -201,6 +201,7 @@ export function KatakanaGuide() {
     audio.pause();
     audio.src = src;
     audio.currentTime = 0;
+    setAudioPlaying(true);
     try {
       await audio.play();
     } catch {
@@ -249,9 +250,8 @@ export function KatakanaGuide() {
     setTestIndex(0);
   }
 
-  function revealPronunciation() {
+  function playActiveKana() {
     if (!activeCard) return;
-    setPronunciationRevealed(true);
     void playAudio(activeCard.audio);
   }
 
@@ -430,7 +430,6 @@ export function KatakanaGuide() {
             setAudioError(true);
             setAudioPlaying(false);
           }}
-          onPause={() => setAudioPlaying(false)}
           onPlaying={() => setAudioPlaying(true)}
           preload="none"
           ref={audioRef}
@@ -490,67 +489,25 @@ export function KatakanaGuide() {
                 </button>
               </header>
 
-              <div
-                className="hiragana-test-card hiragana-test-card-with-example"
-                data-playing={audioPlaying ? "true" : undefined}
-              >
-                <span aria-hidden="true" className="hiragana-test-playing-indicator">
-                  <span />
-                  <span />
-                  <span />
-                </span>
-                <button
-                  aria-label={`Play ${activeCard.katakana} and reveal its pronunciation`}
-                  className="hiragana-test-reveal"
-                  onClick={revealPronunciation}
-                  type="button"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="hiragana-test-pronunciation"
-                    data-revealed={pronunciationRevealed ? "true" : undefined}
-                  >
-                    {pronunciationRevealed ? activeCard.sound : "\u00a0"}
-                  </span>
-                  <span className="hiragana-test-card-kana" lang="ja">{activeCard.katakana}</span>
-                </button>
-                <button
-                  aria-label={`Play example word ${activeCard.example}`}
-                  className="hiragana-test-example"
-                  onClick={() => void playAudio(activeCard.exampleAudio)}
-                  type="button"
-                >
-                  <span className="hiragana-test-example-word" lang="ja">{activeCard.example}</span>
-                  <span
-                    aria-hidden={!pronunciationRevealed}
-                    className="hiragana-test-example-translation"
-                    data-revealed={pronunciationRevealed ? "true" : undefined}
-                  >
-                    {activeCard.translation}
-                  </span>
-                </button>
-              </div>
-              <span aria-live="polite" className="sr-only">
-                {pronunciationRevealed
+              <FlashcardReview
+                announcement={pronunciationRevealed
                   ? `${activeCard.sound}. Example: ${activeCard.example}, ${activeCard.translation}`
                   : ""}
-              </span>
-              <p className="hiragana-test-instruction">Say the sound, then tap the Katakana to reveal the pronunciation and translation.</p>
-
-              <div className="hiragana-test-actions">
-                <button className="hiragana-test-answer hiragana-test-answer-no" onClick={() => answerCard(false)} type="button">
-                  <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
-                    <path d="m4 4 8 8M12 4l-8 8" />
-                  </svg>
-                  <span>No</span>
-                </button>
-                <button className="hiragana-test-answer hiragana-test-answer-yes" onClick={() => answerCard(true)} type="button">
-                  <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
-                    <path d="m3 8.5 3 3 7-7" />
-                  </svg>
-                  <span>Yes</span>
-                </button>
-              </div>
+                key={`${testIndex}-${activeCard.katakana}`}
+                onAnswer={answerCard}
+                playing={audioPlaying}
+              >
+                <FlashcardContent
+                  example={activeCard.example}
+                  kana={activeCard.katakana}
+                  onPlayExample={() => void playAudio(activeCard.exampleAudio)}
+                  onPlayKana={playActiveKana}
+                  onReveal={() => setPronunciationRevealed(true)}
+                  pronunciation={activeCard.sound}
+                  revealed={pronunciationRevealed}
+                  translation={activeCard.translation}
+                />
+              </FlashcardReview>
             </div>
           </dialog>
         ) : null}

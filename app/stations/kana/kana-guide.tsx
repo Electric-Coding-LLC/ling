@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import { FlashcardContent, FlashcardReview } from "../flashcard-review";
 
 type VowelCard = {
   readonly audio: string;
@@ -85,7 +86,6 @@ export function KanaGuide() {
 
   async function playAudio(src: string) {
     setAudioError(false);
-    setAudioPlaying(false);
     const audio = audioRef.current;
     if (!audio) {
       setAudioError(true);
@@ -95,6 +95,7 @@ export function KanaGuide() {
     audio.pause();
     audio.src = src;
     audio.currentTime = 0;
+    setAudioPlaying(true);
     try {
       await audio.play();
     } catch {
@@ -128,9 +129,8 @@ export function KanaGuide() {
     setTestIndex(0);
   }
 
-  function revealPronunciation() {
+  function playActiveKana() {
     if (!activeCard) return;
-    setPronunciationRevealed(true);
     void playAudio(activeCard.audio);
   }
 
@@ -233,7 +233,6 @@ export function KanaGuide() {
             setAudioError(true);
             setAudioPlaying(false);
           }}
-          onPause={() => setAudioPlaying(false)}
           onPlaying={() => setAudioPlaying(true)}
           preload="none"
           ref={audioRef}
@@ -287,41 +286,23 @@ export function KanaGuide() {
                 </button>
               </header>
 
-              <div className="hiragana-test-card hiragana-test-card-with-example" data-playing={audioPlaying ? "true" : undefined}>
-                <span aria-hidden="true" className="hiragana-test-playing-indicator"><span /><span /><span /></span>
-                <button
-                  aria-label={`Play ${activeCard.kana} and reveal its pronunciation`}
-                  className="hiragana-test-reveal"
-                  onClick={revealPronunciation}
-                  type="button"
-                >
-                  <span aria-hidden="true" className="hiragana-test-pronunciation" data-revealed={pronunciationRevealed ? "true" : undefined}>
-                    {pronunciationRevealed ? activeCard.sound : "\u00a0"}
-                  </span>
-                  <span className="hiragana-test-card-kana" lang="ja">{activeCard.kana}</span>
-                </button>
-                <button aria-label={`Play example word ${activeCard.example}`} className="hiragana-test-example" onClick={() => void playAudio(activeCard.exampleAudio)} type="button">
-                  <span className="hiragana-test-example-word" lang="ja">{activeCard.example}</span>
-                  <span aria-hidden={!pronunciationRevealed} className="hiragana-test-example-translation" data-revealed={pronunciationRevealed ? "true" : undefined}>
-                    {activeCard.translation}
-                  </span>
-                </button>
-              </div>
-              <span aria-live="polite" className="sr-only">
-                {pronunciationRevealed ? `${activeCard.sound}. Example: ${activeCard.example}, ${activeCard.translation}` : ""}
-              </span>
-              <p className="hiragana-test-instruction">Say the sound, then tap the Kana to reveal the pronunciation and translation.</p>
-
-              <div className="hiragana-test-actions">
-                <button className="hiragana-test-answer hiragana-test-answer-no" onClick={() => answerCard(false)} type="button">
-                  <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8" /></svg>
-                  <span>No</span>
-                </button>
-                <button className="hiragana-test-answer hiragana-test-answer-yes" onClick={() => answerCard(true)} type="button">
-                  <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16"><path d="m3 8.5 3 3 7-7" /></svg>
-                  <span>Yes</span>
-                </button>
-              </div>
+              <FlashcardReview
+                announcement={pronunciationRevealed ? `${activeCard.sound}. Example: ${activeCard.example}, ${activeCard.translation}` : ""}
+                key={`${testIndex}-${activeCard.kana}`}
+                onAnswer={answerCard}
+                playing={audioPlaying}
+              >
+                <FlashcardContent
+                  example={activeCard.example}
+                  kana={activeCard.kana}
+                  onPlayExample={() => void playAudio(activeCard.exampleAudio)}
+                  onPlayKana={playActiveKana}
+                  onReveal={() => setPronunciationRevealed(true)}
+                  pronunciation={activeCard.sound}
+                  revealed={pronunciationRevealed}
+                  translation={activeCard.translation}
+                />
+              </FlashcardReview>
             </div>
           </dialog>
         ) : null}

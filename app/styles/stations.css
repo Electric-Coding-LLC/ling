@@ -738,7 +738,8 @@
   max-height: calc(100dvh - 2rem);
   margin: auto;
   padding: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid var(--line);
   border-radius: 1.25rem;
   color: var(--foreground);
@@ -821,9 +822,10 @@
 }
 
 .hiragana-test-close {
+  position: relative;
   display: inline-grid;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2rem;
+  height: 2rem;
   flex: none;
   place-items: center;
   margin: 0;
@@ -837,8 +839,14 @@
   -webkit-appearance: none;
 }
 
+.hiragana-test-close::before {
+  position: absolute;
+  inset: -0.375rem;
+  content: "";
+}
+
 .hiragana-test-close span {
-  font-size: 1.35rem;
+  font-size: 1rem;
   font-weight: 300;
   line-height: 1;
   transform: translateY(-0.04em);
@@ -867,7 +875,62 @@
   cursor: pointer;
   transition:
     border-color 120ms ease,
-    box-shadow 120ms ease;
+    box-shadow 120ms ease,
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+.hiragana-test-card-gesture {
+  touch-action: pan-y;
+  user-select: none;
+  will-change: opacity, transform;
+}
+
+.hiragana-test-card-gesture[data-motion="dragging"] {
+  transition: none;
+}
+
+.hiragana-test-card-gesture[data-motion="exit-left"],
+.hiragana-test-card-gesture[data-motion="exit-right"] {
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease-in,
+    transform 180ms ease-in;
+}
+
+.hiragana-test-card-gesture[data-motion="exit-left"] {
+  transform: translate3d(calc(-100vw - 2rem), 0, 0) rotate(-8deg);
+}
+
+.hiragana-test-card-gesture[data-motion="exit-right"] {
+  transform: translate3d(calc(100vw + 2rem), 0, 0) rotate(8deg);
+}
+
+.hiragana-test-card-gesture[data-motion="enter"] {
+  animation: hiragana-test-card-enter 180ms ease-out;
+}
+
+.hiragana-test-card-gesture[data-swipe="no"] {
+  border-color: var(--sound);
+  box-shadow: inset 0 0 0 1px var(--sound);
+}
+
+.hiragana-test-card-gesture[data-swipe="yes"] {
+  border-color: var(--known);
+  box-shadow: inset 0 0 0 1px var(--known);
+}
+
+@keyframes hiragana-test-card-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.75rem, 0) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 .hiragana-test-card-kana {
@@ -875,10 +938,6 @@
   font-size: clamp(5rem, 24vw, 7rem);
   line-height: 1;
   transition: color 120ms ease;
-}
-
-.hiragana-test-card:hover {
-  border-color: rgb(242 241 235 / 0.22);
 }
 
 .hiragana-test-card-with-example {
@@ -906,6 +965,34 @@
   cursor: pointer;
 }
 
+.hiragana-test-answer-slot {
+  display: grid;
+  width: 100%;
+  min-height: 3.25rem;
+  place-items: center;
+}
+
+.hiragana-test-example-reveal {
+  display: inline-flex;
+  min-height: 2.75rem;
+  min-width: 6.5rem;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  color: var(--foreground);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
 .hiragana-test-example {
   display: flex;
   width: fit-content;
@@ -930,11 +1017,30 @@
   transition: color 120ms ease;
 }
 
-.hiragana-test-reveal:hover .hiragana-test-card-kana,
 .hiragana-test-reveal:focus-visible .hiragana-test-card-kana,
-.hiragana-test-example:hover .hiragana-test-example-word,
 .hiragana-test-example:focus-visible .hiragana-test-example-word {
   color: var(--sound);
+}
+
+.hiragana-test-example-reveal:focus-visible {
+  border-color: rgb(242 241 235 / 0.28);
+  background: rgb(242 241 235 / 0.08);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hiragana-test-card:hover {
+    border-color: rgb(242 241 235 / 0.22);
+  }
+
+  .hiragana-test-reveal:hover .hiragana-test-card-kana,
+  .hiragana-test-example:hover .hiragana-test-example-word {
+    color: var(--sound);
+  }
+
+  .hiragana-test-example-reveal:hover {
+    border-color: rgb(242 241 235 / 0.28);
+    background: rgb(242 241 235 / 0.08);
+  }
 }
 
 .hiragana-test-example-translation {
@@ -998,6 +1104,7 @@
 
 .hiragana-test-card:focus-visible,
 .hiragana-test-reveal:focus-visible,
+.hiragana-test-example-reveal:focus-visible,
 .hiragana-test-example:focus-visible,
 .hiragana-test-answer:focus-visible {
   outline: 2px solid var(--foreground);
@@ -1020,17 +1127,8 @@
   text-align: center;
 }
 
-.hiragana-test-pronunciation:not([data-revealed="true"]),
-.hiragana-test-example-translation:not([data-revealed="true"]) {
+.hiragana-test-pronunciation:not([data-revealed="true"]) {
   visibility: hidden;
-}
-
-.hiragana-test-instruction {
-  margin: 0.85rem 0 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-  line-height: 1.45;
-  text-align: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1082,6 +1180,17 @@
   stroke-width: 1.75;
 }
 
+.hiragana-test-swipe-icon {
+  display: none;
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+}
+
 .hiragana-test-answer-yes .hiragana-test-answer-icon {
   width: 1.125rem;
   height: 1.125rem;
@@ -1089,13 +1198,14 @@
 }
 
 .hiragana-test-answer-no {
+  border-color: var(--sound);
   color: var(--foreground);
   background: transparent;
 }
 
-.hiragana-test-answer-no:hover {
-  border-color: rgb(242 241 235 / 0.24);
-  background: rgb(242 241 235 / 0.06);
+.hiragana-test-answer-no .hiragana-test-answer-icon,
+.hiragana-test-answer-no .hiragana-test-swipe-icon {
+  color: var(--sound);
 }
 
 .hiragana-test-answer-yes {
@@ -1104,13 +1214,52 @@
   background: var(--known);
 }
 
-.hiragana-test-answer:hover {
-  filter: brightness(1.08);
+@media (hover: hover) and (pointer: fine) {
+  .hiragana-test-answer-no:hover {
+    border-color: var(--sound);
+    background: color-mix(in srgb, var(--sound) 8%, transparent);
+  }
+
+  .hiragana-test-answer:hover {
+    filter: brightness(1.08);
+  }
 }
 
 .hiragana-test-answer:disabled {
   cursor: wait;
   opacity: 0.55;
+}
+
+@media (max-width: 600px), (hover: none) and (pointer: coarse) {
+  .hiragana-test-actions {
+    gap: 0.5rem;
+    margin-top: 0.875rem;
+  }
+
+  .hiragana-test-answer {
+    min-height: 2.75rem;
+    gap: 0.35rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+  }
+
+  .hiragana-test-review-actions .hiragana-test-answer-icon {
+    display: none;
+  }
+
+  .hiragana-test-review-actions .hiragana-test-swipe-icon {
+    display: block;
+  }
+
+  .hiragana-test-answer-no {
+    color: var(--sound);
+  }
+
+  .hiragana-test-answer-yes {
+    color: var(--known);
+    background: transparent;
+  }
 }
 
 .katakana-intro {

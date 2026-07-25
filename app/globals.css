@@ -3,6 +3,7 @@
 @import "./styles/shell.css";
 @import "./styles/loading.css";
 @import "./styles/network.css";
+@import "./styles/welcome.css";
 @import "./styles/stations.css";
 
 @media (prefers-reduced-motion: reduce) {

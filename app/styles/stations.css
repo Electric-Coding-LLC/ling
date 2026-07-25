@@ -309,6 +309,84 @@
   margin: 0;
 }
 
+.japanese-orientation {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.japanese-orientation-lead {
+  color: var(--foreground);
+  font-size: 1.05rem;
+}
+
+.japanese-paths-list {
+  display: grid;
+  margin: -0.35rem 0 0;
+}
+
+.japanese-paths-list > div {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 1.25rem;
+  padding-block: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+
+.japanese-paths-list > div:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.japanese-paths-list dt {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.japanese-paths-list dd {
+  margin: 0;
+}
+
+.japanese-script-example {
+  white-space: nowrap;
+}
+
+.japan-orientation {
+  display: grid;
+  gap: 2rem;
+}
+
+.japan-orientation-lead {
+  display: grid;
+  gap: 1rem;
+  color: var(--muted);
+}
+
+.japan-orientation-lead p:first-child {
+  color: var(--foreground);
+  font-size: 1.05rem;
+}
+
+.japan-learning {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.japan-learning h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.station-page-japan .travel-reference {
+  --travel: var(--sound);
+
+  margin-top: 0;
+}
+
+.station-page-japan .travel-reference-list {
+  gap: 0.75rem;
+}
+
 .travel-reference {
   width: min(100%, 38rem);
   margin-top: 2rem;
@@ -336,6 +414,23 @@
   text-align: left;
 }
 
+.travel-reference-item[data-pronunciation="true"] {
+  min-height: 7rem;
+  padding: 1rem 2.75rem 1rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.travel-reference-item[data-pronunciation="true"][data-playing="true"] {
+  border-color: var(--travel);
+  box-shadow: inset 0 0 0 1px var(--travel);
+}
+
 .travel-reference-item:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
@@ -348,15 +443,50 @@
   transition: color 120ms ease;
 }
 
+.travel-reference-japanese-beat {
+  transition: color 120ms ease;
+}
+
+.travel-reference-japanese-beat[data-active="true"] {
+  color: var(--travel);
+}
+
 .travel-reference-meaning {
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.travel-reference-pronunciation {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 0.3rem;
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+
+.travel-reference-pronunciation-tail {
+  display: inline-flex;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.travel-reference-pronunciation-beat {
+  transition: color 120ms ease;
+}
+
+.travel-reference-pronunciation-beat[data-active="true"] {
+  color: var(--travel);
 }
 
 .travel-reference-note {
   color: color-mix(in srgb, var(--muted) 78%, transparent);
   font-size: 0.78rem;
   line-height: 1.4;
+}
+
+.travel-reference-item[data-pronunciation="true"] .travel-reference-note {
+  margin-top: 0.35rem;
 }
 
 .travel-audio-indicator {
@@ -758,6 +888,11 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .travel-reference-item[data-pronunciation="true"]:hover {
+    border-color: rgb(242 241 235 / 0.22);
+    background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
+  }
+
   .mora-example:hover {
     border-color: rgb(242 241 235 / 0.22);
     background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
@@ -767,7 +902,8 @@
     color: var(--sound);
   }
 
-  .travel-reference-item:hover .travel-reference-japanese {
+  .travel-reference-item:not([data-pronunciation="true"]):hover
+    .travel-reference-japanese {
     color: var(--travel);
   }
 }

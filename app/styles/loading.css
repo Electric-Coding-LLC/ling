@@ -47,6 +47,15 @@ html[data-ling-ready="true"] .loading-shell-boot {
   --loading-accent: var(--sound);
 }
 
+.loading-shell[data-station="japanese"],
+.loading-shell[data-station="japan"],
+.loading-shell[data-station="greetings"],
+.loading-shell[data-station="navigation"],
+.loading-shell[data-station="food"],
+.loading-shell[data-station="shopping"] {
+  --loading-accent: var(--travel);
+}
+
 .loading-lockup {
   display: grid;
   width: min(100%, 28rem);

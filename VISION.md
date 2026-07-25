@@ -55,7 +55,7 @@ Suggestions may quietly use prior evidence to direct attention, but they are an 
 
 - Build from real study needs, one useful increment at a time.
 - Pursue mastery through teaching, active recall, correction, and retesting.
-- Present Japanese through Japanese writing and sound; never use romaji.
+- Present Japanese through Japanese writing and sound. Do not use romaji as a pronunciation subtitle or global fallback; show it only when encountered Latin-letter writing is itself the subject.
 - Treat replayable pronunciation and concise linguistic insight as core learning material.
 - Prefer direct testing over passive lesson consumption.
 - Let the learner browse and test any mapped territory.
@@ -80,23 +80,33 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-The current mapped network has two lines and seven stations:
+The current mapped network has three lines, a Japanese entrance, and thirteen
+stations:
 
 ```text
-Speech              Vowels ───────── Mora Timing ───────── Pitch Accent
-                      │
-Kana                  │
-                      │
-                  Hiragana
-                      │
-                  Katakana
-                      │
-                 Dakuten & Handakuten
-                      │
-               Yōon
+Japanese ───────── Vowels ───────── Mora Timing ───────── Pitch Accent
+    │                 │
+  Japan            Hiragana
+    │                 │
+Greetings          Katakana
+    │                 │
+Navigation         Dakuten & Handakuten
+    │                 │
+  Food             Yōon
+    │
+Shopping
 ```
 
-`Vowels` is the starting station. It introduces Kana through Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
+`Japanese` is the starting interchange between the Travel and Speech lines. It
+introduces Ling and the network itself, then opens two kinds of territory: the
+always-available Travel line continues down the first column, while Speech
+continues right to `Vowels` and the existing Speech and Kana territory.
+
+Travel is a reference line rather than a progression chain. `Japan`,
+`Greetings`, `Navigation`, `Food`, and `Shopping` are always visible and
+directly accessible. They do not store completion or gate another station.
+
+`Vowels` introduces Kana through Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
 
 ```text
 あ / ア  い / イ  う / ウ  え / エ  お / オ
@@ -104,9 +114,32 @@ Kana                  │
 
 The chart places Hiragana and Katakana in separate rows beneath the same five sounds. Each Kana opens a flashcard with its pronunciation, a playable Japanese example word, and a translation.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Vowels` alone, reveals the Kana segment to `Hiragana` after the learner explores Vowels, extends to `Katakana` after Hiragana is known, then reaches `Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is completed. Completing Yōon reveals `Mora Timing` on the Speech line, and completing Mora Timing extends that line once more to `Pitch Accent`. Future stations and connecting segments stay hidden until their prerequisites are complete. Do not use faint or inactive geography, and add no line segments for speculative stations.
+This seed is a valid piece of the eventual network, not a disposable prototype.
+Travel remains visible as a stable reference. The learning territory still
+represents where the learner has traveled: Vowels reveals the Kana segment to
+`Hiragana`, extends to `Katakana` after Hiragana is known, then reaches
+`Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is
+completed. Completing Yōon reveals `Mora Timing` on the Speech line, and
+completing Mora Timing extends that line once more to `Pitch Accent`. Future
+learning stations and connecting segments stay hidden until their prerequisites
+are complete. Do not use faint or inactive geography, and add no line segments
+for speculative stations.
 
 ## Current Station Interiors
+
+`Japanese` introduces `日本語`, Ling, and the network in a compact orientation.
+It explains lines, stations, listening, and revisiting without imposing a
+course route.
+
+`Japan` introduces `日本` and frames Travel as a small visitor reference. It
+briefly acknowledges that real-world Japan uses kanji, kana, and romaji while
+keeping Japanese writing and sound primary in Ling.
+
+`Greetings`, `Navigation`, `Food`, and `Shopping` each present six
+source-checked practical phrases. Every row shows Japanese, a concise English
+meaning, an essential usage note only when needed, and immediate bundled audio.
+These stations have no review deck, score, progress, completion, scheduling, or
+persistence.
 
 `Vowels` provides the orientation needed before either Kana system is studied in full. It defines Kana, explains the different roles of Hiragana and Katakana, and introduces their five shared vowel sounds in one chart. Each of the ten Kana opens a flashcard with bundled pronunciation, a playable example, and a translation.
 
@@ -126,4 +159,8 @@ All pronunciation is bundled synthetic speech played at its authored speed. Stat
 
 ## Not Yet
 
-The complete Japanese network, final line taxonomy, exact topology and colors, generic graph infrastructure, automated recommendations or routing, deck management, automated scheduling, speech evaluation, content-management tooling, metrics, and a generic multilingual model wait until direct use demonstrates the need.
+The complete Japanese network, further Travel depth, a global romaji setting,
+generic graph infrastructure, automated recommendations or routing, deck
+management, automated scheduling, speech evaluation, content-management
+tooling, metrics, and a generic multilingual model wait until direct use
+demonstrates the need.

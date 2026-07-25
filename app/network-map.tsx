@@ -5,7 +5,20 @@ import type { KeyboardEvent, PointerEvent } from "react";
 import { LingWordmark } from "./brand";
 import { NavigationLink, useRouteReady } from "./navigation-feedback";
 
-type MobileFocus = "combined" | "hiragana" | "kana" | "katakana" | "marks" | "mora" | "pitch";
+type MobileFocus =
+  | "combined"
+  | "food"
+  | "greetings"
+  | "hiragana"
+  | "japan"
+  | "japanese"
+  | "kana"
+  | "katakana"
+  | "marks"
+  | "mora"
+  | "navigation"
+  | "pitch"
+  | "shopping";
 export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 type AvailabilityStatus = "error" | "loading" | "ready";
@@ -14,15 +27,22 @@ type AvailabilityStatus = "error" | "loading" | "ready";
 const NETWORK_SEGMENT_LENGTH = 180;
 const NETWORK_LINE_NODE_OFFSET = 18;
 const NETWORK_INTERCHANGE_NODE_OFFSET = 31;
-const DESKTOP_KANA_X = 250;
+const DESKTOP_JAPANESE_X = 250;
+const DESKTOP_KANA_X = DESKTOP_JAPANESE_X + NETWORK_SEGMENT_LENGTH;
 const DESKTOP_MORA_X = DESKTOP_KANA_X + NETWORK_SEGMENT_LENGTH;
 const DESKTOP_PITCH_X = DESKTOP_MORA_X + NETWORK_SEGMENT_LENGTH;
-const MOBILE_KANA_X = NETWORK_SEGMENT_LENGTH;
+const MOBILE_JAPANESE_X = NETWORK_SEGMENT_LENGTH;
+const MOBILE_KANA_X = MOBILE_JAPANESE_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_MORA_X = MOBILE_KANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_PITCH_X = MOBILE_MORA_X + NETWORK_SEGMENT_LENGTH;
-const MOBILE_VIEW_WIDTH = MOBILE_MORA_X;
-const NETWORK_VIEW_HEIGHT = 990;
+const MOBILE_VIEW_WIDTH = MOBILE_KANA_X;
+const NETWORK_VIEW_HEIGHT = 1170;
 const SOUND_Y = 180;
+const JAPAN_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
+const GREETINGS_Y = JAPAN_Y + NETWORK_SEGMENT_LENGTH;
+const NAVIGATION_Y = GREETINGS_Y + NETWORK_SEGMENT_LENGTH;
+const FOOD_Y = NAVIGATION_Y + NETWORK_SEGMENT_LENGTH;
+const SHOPPING_Y = FOOD_Y + NETWORK_SEGMENT_LENGTH;
 const HIRAGANA_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
 const KATAKANA_Y = HIRAGANA_Y + NETWORK_SEGMENT_LENGTH;
 const SOUND_MARKS_Y = KATAKANA_Y + NETWORK_SEGMENT_LENGTH;
@@ -40,6 +60,12 @@ const INITIAL_AVAILABILITY = {
   pitch: false,
 } as const;
 const ROUTABLE_STATION_HREFS = {
+  japanese: "/stations/japanese",
+  japan: "/stations/japan",
+  greetings: "/stations/greetings",
+  navigation: "/stations/navigation",
+  food: "/stations/food",
+  shopping: "/stations/shopping",
   kana: "/stations/kana",
   hiragana: "/stations/hiragana",
   katakana: "/stations/katakana",
@@ -49,6 +75,12 @@ const ROUTABLE_STATION_HREFS = {
   pitch: "/stations/pitch-accent",
 } as const;
 const STATION_LABELS: Record<StationFocus, string> = {
+  japanese: "Japanese",
+  japan: "Japan",
+  greetings: "Greetings",
+  navigation: "Navigation",
+  food: "Food",
+  shopping: "Shopping",
   kana: "Vowels",
   hiragana: "Hiragana",
   katakana: "Katakana",
@@ -61,7 +93,13 @@ const STATION_NEIGHBORS: Record<
   StationFocus,
   Partial<Record<StationDirection, StationFocus>>
 > = {
-  kana: { ArrowDown: "hiragana", ArrowRight: "mora" },
+  japanese: { ArrowDown: "japan", ArrowRight: "kana" },
+  japan: { ArrowDown: "greetings", ArrowUp: "japanese" },
+  greetings: { ArrowDown: "navigation", ArrowUp: "japan" },
+  navigation: { ArrowDown: "food", ArrowUp: "greetings" },
+  food: { ArrowDown: "shopping", ArrowUp: "navigation" },
+  shopping: { ArrowUp: "food" },
+  kana: { ArrowDown: "hiragana", ArrowLeft: "japanese", ArrowRight: "mora" },
   hiragana: { ArrowDown: "katakana", ArrowUp: "kana" },
   katakana: { ArrowDown: "marks", ArrowUp: "hiragana" },
   marks: { ArrowDown: "combined", ArrowUp: "katakana" },
@@ -107,17 +145,29 @@ type NetworkViewProps = {
 
 function readStoredStationFocus(): StationFocus | null {
   const storedFocus = localStorage.getItem(STATION_FOCUS_STORAGE_KEY);
-  return storedFocus === "pitch" || storedFocus === "mora" || storedFocus === "combined" || storedFocus === "marks" || storedFocus === "katakana" || storedFocus === "hiragana" || storedFocus === "kana"
+  return storedFocus === "shopping"
+    || storedFocus === "food"
+    || storedFocus === "navigation"
+    || storedFocus === "greetings"
+    || storedFocus === "japan"
+    || storedFocus === "japanese"
+    || storedFocus === "pitch"
+    || storedFocus === "mora"
+    || storedFocus === "combined"
+    || storedFocus === "marks"
+    || storedFocus === "katakana"
+    || storedFocus === "hiragana"
+    || storedFocus === "kana"
     ? storedFocus
     : null;
 }
 
 function getStoredStationFocus(): StationFocus {
-  return readStoredStationFocus() ?? "kana";
+  return readStoredStationFocus() ?? "japanese";
 }
 
 function getServerStationFocus(): StationFocus {
-  return "kana";
+  return "japanese";
 }
 
 function subscribeToStoredStationFocus(onStoreChange: () => void) {
@@ -143,13 +193,28 @@ function isStationVisible(
   moraTimingAvailable: boolean,
   pitchAccentAvailable: boolean,
 ) {
-  return focus === "kana"
+  return focus === "japanese"
+    || focus === "japan"
+    || focus === "greetings"
+    || focus === "navigation"
+    || focus === "food"
+    || focus === "shopping"
+    || focus === "kana"
     || (focus === "hiragana" && hiraganaAvailable)
     || (focus === "katakana" && katakanaAvailable)
     || (focus === "marks" && soundMarksAvailable)
     || (focus === "combined" && combinedSoundsAvailable)
     || (focus === "mora" && moraTimingAvailable)
     || (focus === "pitch" && pitchAccentAvailable);
+}
+
+function isTravelFocus(focus: StationFocus) {
+  return focus === "japanese"
+    || focus === "japan"
+    || focus === "greetings"
+    || focus === "navigation"
+    || focus === "food"
+    || focus === "shopping";
 }
 
 function LinkedStation({
@@ -166,7 +231,7 @@ function LinkedStation({
   y = SOUND_Y,
 }: {
   backlightId: string;
-  kind: "interchange" | "sound" | "writing";
+  kind: "interchange" | "sound" | "travel" | "travel-interchange" | "writing";
   label: string;
   labelLines?: readonly string[];
   labelPlacement?: "above" | "right";
@@ -177,7 +242,12 @@ function LinkedStation({
   x: number;
   y?: number;
 }) {
-  const interchange = kind === "interchange";
+  const interchange = kind === "interchange" || kind === "travel-interchange";
+  const backlightKind = kind === "travel-interchange"
+    ? "travel-junction"
+    : interchange
+      ? "junction"
+      : kind;
   const station = (
     <g
       className="network-station"
@@ -187,7 +257,7 @@ function LinkedStation({
     >
       <circle
         className="network-station-backlight"
-        fill={`url(#${backlightId}-${interchange ? "junction" : kind})`}
+        fill={`url(#${backlightId}-${backlightKind})`}
         mask={interchange ? `url(#${backlightId}-mask)` : undefined}
         r={interchange ? 76 : 58}
       />
@@ -242,7 +312,7 @@ function LinkedStation({
 
 function NetworkView({
   mobile = false,
-  mobileFocus = "kana",
+  mobileFocus = "japanese",
   hiraganaAvailable,
   katakanaAvailable,
   soundMarksAvailable,
@@ -254,6 +324,7 @@ function NetworkView({
   onTooltipPointerMove,
 }: NetworkViewProps) {
   const width = mobile ? MOBILE_VIEW_WIDTH : 1000;
+  const japaneseX = mobile ? MOBILE_JAPANESE_X : DESKTOP_JAPANESE_X;
   const kanaX = mobile ? MOBILE_KANA_X : DESKTOP_KANA_X;
   const moraX = mobile ? MOBILE_MORA_X : DESKTOP_MORA_X;
   const pitchX = mobile ? MOBILE_PITCH_X : DESKTOP_PITCH_X;
@@ -266,11 +337,81 @@ function NetworkView({
   const network = (
     <>
       <text
+        className="network-line-label network-line-label-travel"
+        data-line="travel"
+        dominantBaseline="middle"
+        textAnchor="end"
+        x={japaneseX - 20}
+        y={WRITING_LABEL_Y}
+      >
+        TRAVEL
+      </text>
+      <g className="network-line-target">
+        <line
+          aria-label="Speech line"
+          className="network-line-hit"
+          data-tooltip="Speech line"
+          onPointerEnter={(event) => onTooltipPointerMove(event, "Speech line")}
+          onPointerLeave={onLinePointerLeave}
+          onPointerMove={(event) => onTooltipPointerMove(event, "Speech line")}
+          pointerEvents="stroke"
+          stroke="transparent"
+          strokeWidth="24"
+          x1={japaneseX + NETWORK_INTERCHANGE_NODE_OFFSET}
+          x2={kanaX - kanaLineOffset}
+          y1={SOUND_Y}
+          y2={SOUND_Y}
+        />
+        <line
+          aria-hidden="true"
+          className="network-line network-line-sound"
+          pointerEvents="none"
+          x1={japaneseX + NETWORK_INTERCHANGE_NODE_OFFSET}
+          x2={kanaX - kanaLineOffset}
+          y1={SOUND_Y}
+          y2={SOUND_Y}
+        />
+      </g>
+      {[
+        [SOUND_Y, JAPAN_Y],
+        [JAPAN_Y, GREETINGS_Y],
+        [GREETINGS_Y, NAVIGATION_Y],
+        [NAVIGATION_Y, FOOD_Y],
+        [FOOD_Y, SHOPPING_Y],
+      ].map(([fromY, toY]) => (
+        <g className="network-line-target" key={`${fromY}-${toY}`}>
+          <line
+            aria-label="Travel line"
+            className="network-line-hit"
+            data-tooltip="Travel line"
+            onPointerEnter={(event) => onTooltipPointerMove(event, "Travel line")}
+            onPointerLeave={onLinePointerLeave}
+            onPointerMove={(event) => onTooltipPointerMove(event, "Travel line")}
+            pointerEvents="stroke"
+            stroke="transparent"
+            strokeWidth="24"
+            x1={japaneseX}
+            x2={japaneseX}
+            y1={fromY + NETWORK_LINE_NODE_OFFSET}
+            y2={toY - NETWORK_LINE_NODE_OFFSET}
+          />
+          <line
+            aria-hidden="true"
+            className="network-line network-line-travel"
+            pointerEvents="none"
+            x1={japaneseX}
+            x2={japaneseX}
+            y1={fromY + NETWORK_LINE_NODE_OFFSET}
+            y2={toY - NETWORK_LINE_NODE_OFFSET}
+          />
+        </g>
+      ))}
+      <text
         className="network-line-label network-line-label-sound"
         data-line="sound"
         dominantBaseline="middle"
         textAnchor="end"
-        x={kanaX - 48}
+        x={japaneseX - 48}
         y={SOUND_Y}
       >
         SPEECH
@@ -455,6 +596,76 @@ function NetworkView({
           ) : null}
         </>
       ) : null}
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.japanese}
+        kind="travel-interchange"
+        label="Japanese"
+        onFocus={() => onStationFocus("japanese")}
+        onPointerLeave={onLinePointerLeave}
+        slug="japanese"
+        x={japaneseX}
+      />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.japan}
+        kind="travel"
+        label="Japan"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("japan")}
+        onPointerLeave={onLinePointerLeave}
+        slug="japan"
+        x={japaneseX}
+        y={JAPAN_Y}
+      />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.greetings}
+        kind="travel"
+        label="Greetings"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("greetings")}
+        onPointerLeave={onLinePointerLeave}
+        slug="greetings"
+        x={japaneseX}
+        y={GREETINGS_Y}
+      />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.navigation}
+        kind="travel"
+        label="Navigation"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("navigation")}
+        onPointerLeave={onLinePointerLeave}
+        slug="navigation"
+        x={japaneseX}
+        y={NAVIGATION_Y}
+      />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.food}
+        kind="travel"
+        label="Food"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("food")}
+        onPointerLeave={onLinePointerLeave}
+        slug="food"
+        x={japaneseX}
+        y={FOOD_Y}
+      />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.shopping}
+        kind="travel"
+        label="Shopping"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("shopping")}
+        onPointerLeave={onLinePointerLeave}
+        slug="shopping"
+        x={japaneseX}
+        y={SHOPPING_Y}
+      />
       <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Vowels" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
       {hiraganaAvailable ? (
         <LinkedStation
@@ -543,7 +754,7 @@ function NetworkView({
   return (
     <svg
       aria-describedby={`${view}-network-description`}
-      aria-label={hiraganaAvailable ? "Speech and Kana network" : "Speech network"}
+      aria-label={hiraganaAvailable ? "Japanese, Travel, Speech, and Kana network" : "Japanese, Travel, and Speech network"}
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
@@ -556,11 +767,22 @@ function NetworkView({
           <stop offset="1" stopColor="#db4e3a" stopOpacity="0" />
         </radialGradient>
         <radialGradient id={`${backlightId}-writing`}>
+          <stop offset="0" stopColor="#d6aa36" stopOpacity="0.46" />
+          <stop offset="0.48" stopColor="#d6aa36" stopOpacity="0.22" />
+          <stop offset="1" stopColor="#d6aa36" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`${backlightId}-travel`}>
           <stop offset="0" stopColor="#4c689c" stopOpacity="0.46" />
           <stop offset="0.48" stopColor="#4c689c" stopOpacity="0.22" />
           <stop offset="1" stopColor="#4c689c" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={`${backlightId}-junction`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#db4e3a" stopOpacity="0.72" />
+          <stop offset="0.48" stopColor="#db4e3a" stopOpacity="0.64" />
+          <stop offset="0.52" stopColor="#d6aa36" stopOpacity="0.68" />
+          <stop offset="1" stopColor="#d6aa36" stopOpacity="0.76" />
+        </linearGradient>
+        <linearGradient id={`${backlightId}-travel-junction`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor="#db4e3a" stopOpacity="0.72" />
           <stop offset="0.48" stopColor="#db4e3a" stopOpacity="0.64" />
           <stop offset="0.52" stopColor="#4c689c" stopOpacity="0.68" />
@@ -576,9 +798,7 @@ function NetworkView({
         </mask>
       </defs>
       <desc id={`${view}-network-description`}>
-        {hiraganaAvailable
-          ? `Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line.${moraTimingAvailable ? " Mora Timing follows Vowels on the Speech line." : ""}${pitchAccentAvailable ? " Pitch Accent follows Mora Timing." : ""}`
-          : "Vowels is the first station on the Speech line."}
+        {`Japanese opens the network and begins the Travel and Speech lines. Japan, Greetings, Navigation, Food, and Shopping follow it on the Travel line. Vowels follows Japanese on the Speech line.${hiraganaAvailable ? " Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line." : ""}${moraTimingAvailable ? " Mora Timing follows Vowels on the Speech line." : ""}${pitchAccentAvailable ? " Pitch Accent follows Mora Timing." : ""}`}
       </desc>
       {mobile ? (
         <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>
@@ -644,7 +864,7 @@ export function NetworkMap({
     pitchAccentAvailable,
   )
     ? requestedStationFocus
-    : "kana";
+    : "japanese";
   const mobileFocus: MobileFocus = stationFocus;
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
   const desktopViewport = useRef<HTMLDivElement>(null);
@@ -666,7 +886,13 @@ export function NetworkMap({
         ? "kana"
         : requestedFocus;
     if (
-      focus === "kana"
+      focus === "japanese"
+      || focus === "japan"
+      || focus === "greetings"
+      || focus === "navigation"
+      || focus === "food"
+      || focus === "shopping"
+      || focus === "kana"
       || focus === "hiragana"
       || focus === "katakana"
       || focus === "marks"
@@ -753,14 +979,20 @@ export function NetworkMap({
     const distance = event.clientX - start.x;
     if (dragged.current) {
       if (distance <= -MOBILE_SWIPE_THRESHOLD) {
-        if (stationFocus === "mora" && pitchAccentAvailable) {
+        if (isTravelFocus(stationFocus)) {
+          selectStation("kana");
+        } else if (stationFocus === "mora" && pitchAccentAvailable) {
           selectStation("pitch");
         } else if (stationFocus !== "pitch" && moraTimingAvailable) {
           selectStation("mora");
         }
       }
       if (distance >= MOBILE_SWIPE_THRESHOLD) {
-        selectStation(stationFocus === "pitch" ? "mora" : "kana");
+        if (stationFocus === "pitch") {
+          selectStation("mora");
+        } else if (!isTravelFocus(stationFocus)) {
+          selectStation("japanese");
+        }
       }
     }
 

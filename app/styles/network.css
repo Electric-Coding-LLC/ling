@@ -13,6 +13,24 @@
   outline: none;
 }
 
+.network-desktop-viewport:focus-visible[data-desktop-focus="shopping"]
+  [data-station="shopping"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="food"]
+  [data-station="food"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="navigation"]
+  [data-station="navigation"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="greetings"]
+  [data-station="greetings"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="japan"]
+  [data-station="japan"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="japanese"]
+  [data-station="japanese"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
   [data-station="mora-timing"]
   .network-station-backlight,
@@ -68,6 +86,10 @@
   fill: var(--writing);
 }
 
+.network-line-label-travel {
+  fill: var(--travel);
+}
+
 .network-line {
   stroke-width: 6;
   stroke-linecap: round;
@@ -103,6 +125,10 @@
   stroke: var(--writing);
 }
 
+.network-line-travel {
+  stroke: var(--travel);
+}
+
 .network-station-label {
   fill: var(--foreground);
 }
@@ -135,6 +161,10 @@
 
 .network-single-station-outer-writing {
   stroke: var(--writing);
+}
+
+.network-single-station-outer-travel {
+  stroke: var(--travel);
 }
 
 .network-single-station-inner {
@@ -183,6 +213,24 @@
     outline: none;
   }
 
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="shopping"]
+    [data-station="shopping"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="food"]
+    [data-station="food"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="navigation"]
+    [data-station="navigation"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="greetings"]
+    [data-station="greetings"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="japan"]
+    [data-station="japan"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="japanese"]
+    [data-station="japanese"]
+    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
     [data-station="mora-timing"]
     .network-station-backlight,
@@ -217,12 +265,20 @@
     transition: transform 220ms ease;
   }
 
-  .network-mobile-track-mora {
+  .network-mobile-track-kana,
+  .network-mobile-track-hiragana,
+  .network-mobile-track-katakana,
+  .network-mobile-track-marks,
+  .network-mobile-track-combined {
     transform: translateX(-50%);
   }
 
-  .network-mobile-track-pitch {
+  .network-mobile-track-mora {
     transform: translateX(-100%);
+  }
+
+  .network-mobile-track-pitch {
+    transform: translateX(-150%);
   }
 
   .network-station-label {

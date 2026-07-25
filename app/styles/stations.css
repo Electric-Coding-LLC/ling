@@ -52,6 +52,11 @@
   stroke-width: 3;
 }
 
+.station-map-travel {
+  stroke: var(--travel);
+  stroke-width: 3;
+}
+
 .station-map-current {
   fill: var(--surface);
   stroke: var(--foreground);
@@ -266,6 +271,10 @@
   color: var(--writing);
 }
 
+.station-membership-travel {
+  color: var(--travel);
+}
+
 .station-heading h1 {
   margin: 0;
   font-size: clamp(2.25rem, 7vw, 3.5rem);
@@ -275,6 +284,7 @@
 
 .mora-guide audio,
 .pitch-accent-guide audio,
+.travel-guide audio,
 .kana-guide audio,
 .hiragana-guide audio,
 .katakana-guide audio,
@@ -288,6 +298,104 @@
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.6;
+}
+
+.travel-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.travel-intro p {
+  margin: 0;
+}
+
+.travel-reference {
+  width: min(100%, 38rem);
+  margin-top: 2rem;
+}
+
+.travel-reference-list {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.travel-reference-item {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 4.75rem;
+  align-content: center;
+  justify-items: start;
+  gap: 0.2rem;
+  padding: 0.75rem 2.5rem 0.75rem 0.5rem;
+  border: 0;
+  color: var(--foreground);
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.travel-reference-item:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.travel-reference-japanese {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  transition: color 120ms ease;
+}
+
+.travel-reference-meaning {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.travel-reference-note {
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.travel-audio-indicator {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  display: inline-flex;
+  height: 1rem;
+  align-items: center;
+  gap: 0.16rem;
+  color: var(--travel);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity 120ms ease;
+}
+
+.travel-audio-indicator span {
+  width: 0.16rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  background: currentcolor;
+  transform: scaleY(0.35);
+  transform-origin: center;
+}
+
+.travel-reference-item[data-playing="true"] .travel-audio-indicator {
+  opacity: 1;
+}
+
+.travel-reference-item[data-playing="true"] .travel-audio-indicator span {
+  animation: hiragana-test-sound-pulse 600ms ease-in-out infinite;
+}
+
+.travel-reference-item[data-playing="true"] .travel-audio-indicator span:nth-child(2) {
+  animation-delay: -400ms;
+}
+
+.travel-reference-item[data-playing="true"] .travel-audio-indicator span:nth-child(3) {
+  animation-delay: -200ms;
 }
 
 .hiragana-intro {
@@ -657,6 +765,10 @@
 
   .station-practice-word:hover {
     color: var(--sound);
+  }
+
+  .travel-reference-item:hover .travel-reference-japanese {
+    color: var(--travel);
   }
 }
 

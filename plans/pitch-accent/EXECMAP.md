@@ -22,7 +22,7 @@ Extend the Speech line with a source-verified, listening-first Pitch accent stat
 - [x] Build `/stations/pitch-accent` with concise teaching examples, mora-aligned pitch contours, direct bundled playback, and a listening-first `Good` / `Not Yet` review using the shared flashcard interaction.
 - [x] Add focused regression coverage for content validity, audio files, authentication and cache headers, persistence, prerequisite/reset behavior, route guards, network geometry/navigation, accessibility, and responsive station behavior.
 - [x] Update `VISION.md` so the current network and station-interior contract include Pitch accent without promoting speculative future geography.
-- [ ] Generate and inspect the migration, apply it locally, run `npm run check` and `execmap check .`, review the final diff, and verify the unlock/reset path plus the station at mobile and desktop widths with every teaching and review audio control, including one human listening pass over all ten authored assets.
+- [x] Generate and inspect the migration, apply it locally, run `npm run check` and `execmap check .`, review the final diff, and verify the unlock/reset path plus the station at mobile and desktop widths with every teaching and review audio control, including one human listening pass over all ten authored assets.
 
 ## Done When
 

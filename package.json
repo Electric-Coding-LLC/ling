@@ -12,6 +12,7 @@
     "test": "npm run build && node --experimental-strip-types --test tests/*.test.mjs",
     "check": "npm run lint && npm run typecheck && npm run test",
     "audio:verify:pitch": "node --experimental-strip-types scripts/verify-pitch-audio.mjs",
+    "audio:verify:travel": "node --experimental-strip-types scripts/verify-travel-audio.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",

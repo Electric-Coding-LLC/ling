@@ -41,14 +41,15 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /<p class="loading-kicker">Loading<\/p>/i);
   assert.doesNotMatch(html, /<p class="loading-title">Ling<\/p>/i);
   assert.doesNotMatch(html, /data-ling-ready=/i);
+  assert.match(html, /data-line="travel"[^>]*>Travel</i);
   assert.match(html, /data-line="sound"[^>]*>Speech</i);
   assert.doesNotMatch(html, /data-line="writing"[^>]*>Kana</i);
   assert.match(html, /data-network-view="desktop"/i);
   assert.match(html, /class="network-desktop-viewport"[^>]*tabindex="0"/i);
   assert.doesNotMatch(html, /class="network-map network-map-desktop"[^>]*tabindex=/i);
   assert.match(html, /data-network-view="mobile"/i);
-  assert.match(html, /aria-label="Speech network"/i);
-  assert.doesNotMatch(html, /data-tooltip="Speech line"/i);
+  assert.match(html, /aria-label="Japanese, Travel, and Speech network"/i);
+  assert.match(html, /data-tooltip="Speech line"/i);
   assert.doesNotMatch(html, /data-tooltip="Kana line"/i);
   assert.doesNotMatch(html, /<title>(?:Speech|Kana) line<\/title>/i);
   assert.doesNotMatch(html, /data-station="mora-timing"/i);
@@ -58,6 +59,18 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /data-station="sound-marks"/i);
   assert.doesNotMatch(html, /data-station="combined-sounds"/i);
   assert.doesNotMatch(html, /data-station="hiragana"/i);
+  for (const station of [
+    "japanese",
+    "japan",
+    "greetings",
+    "navigation",
+    "food",
+    "shopping",
+  ]) {
+    assert.match(html, new RegExp(`data-station="${station}"`, "i"));
+    assert.match(html, new RegExp(`href="/stations/${station}"`, "i"));
+  }
+  assert.match(html, /data-station="japanese"[^>]*data-station-kind="interchange"/i);
   assert.match(html, /data-station="kana"/i);
   assert.doesNotMatch(html, /data-station="vowels"/i);
   assert.match(html, /data-station="kana"[^>]*data-station-kind="single-line"/i);
@@ -71,7 +84,8 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /href="\/stations\/kana"/i);
   assert.doesNotMatch(html, /aria-disabled="true"|data-available=/i);
   assert.doesNotMatch(html, /Learn Hiragana to activate Mora timing/i);
-  assert.match(html, /Vowels is the first station on the Speech line/i);
+  assert.match(html, /Japanese opens the network and begins the Travel and Speech lines/i);
+  assert.match(html, /Vowels follows Japanese on the Speech line/i);
   assert.doesNotMatch(html, /After Vowels/i);
   assert.match(html, /alt="Ling"/i);
   assert.doesNotMatch(html, /aria-label="Ready"/i);
@@ -83,37 +97,37 @@ test("server-renders the base network before private availability loads", async 
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /data-mobile-focus="kana"/i);
+  assert.match(html, /data-mobile-focus="japanese"/i);
   assert.doesNotMatch(html, /network-mobile-track-mora/i);
 
   const katakanaResponse = await request("/?focus=katakana");
   assert.equal(katakanaResponse.status, 200);
   const katakanaHtml = await katakanaResponse.text();
-  assert.match(katakanaHtml, /data-mobile-focus="kana"/i);
+  assert.match(katakanaHtml, /data-mobile-focus="japanese"/i);
   assert.doesNotMatch(katakanaHtml, /data-station="katakana"/i);
 
   const hiraganaResponse = await request("/?focus=hiragana");
   assert.equal(hiraganaResponse.status, 200);
   const hiraganaHtml = await hiraganaResponse.text();
-  assert.match(hiraganaHtml, /data-mobile-station-focus="kana"/i);
-  assert.match(hiraganaHtml, /network-mobile-track-kana/i);
+  assert.match(hiraganaHtml, /data-mobile-station-focus="japanese"/i);
+  assert.match(hiraganaHtml, /network-mobile-track-japanese/i);
 
   const marksResponse = await request("/?focus=sound-marks");
   assert.equal(marksResponse.status, 200);
   const marksHtml = await marksResponse.text();
-  assert.match(marksHtml, /data-mobile-station-focus="kana"/i);
+  assert.match(marksHtml, /data-mobile-station-focus="japanese"/i);
   assert.doesNotMatch(marksHtml, /data-station="sound-marks"/i);
 
   const combinedResponse = await request("/?focus=combined-sounds");
   assert.equal(combinedResponse.status, 200);
   const combinedHtml = await combinedResponse.text();
-  assert.match(combinedHtml, /data-mobile-station-focus="kana"/i);
+  assert.match(combinedHtml, /data-mobile-station-focus="japanese"/i);
   assert.doesNotMatch(combinedHtml, /data-station="combined-sounds"/i);
 
   const pitchResponse = await request("/?focus=pitch-accent");
   assert.equal(pitchResponse.status, 200);
   const pitchHtml = await pitchResponse.text();
-  assert.match(pitchHtml, /data-mobile-focus="kana"/i);
+  assert.match(pitchHtml, /data-mobile-focus="japanese"/i);
   assert.doesNotMatch(pitchHtml, /data-station="pitch-accent"/i);
 });
 
@@ -121,6 +135,25 @@ test("the retired Vowels route leads to Kana", async () => {
   const response = await request("/stations/vowels");
   assert.ok([307, 308].includes(response.status));
   assert.match(response.headers.get("location") ?? "", /\/stations\/kana$/i);
+});
+
+test("the six Travel stations are always available references", async () => {
+  for (const station of [
+    "japanese",
+    "japan",
+    "greetings",
+    "navigation",
+    "food",
+    "shopping",
+  ]) {
+    const response = await request(`/stations/${station}`);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("cache-control"), "private, no-store");
+    const html = await response.text();
+    assert.match(html, new RegExp(`<h1>${station === "japanese" ? "Japanese" : station[0].toUpperCase() + station.slice(1)}</h1>`, "i"));
+    assert.match(html, /station-membership station-membership-travel/);
+    assert.doesNotMatch(html, /station-options|progress|review|score|streak/i);
+  }
 });
 
 test("redirects Mora timing until Yōon is complete", async () => {

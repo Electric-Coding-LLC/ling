@@ -63,15 +63,47 @@ test("Travel uses one immediate-feedback reference surface without progression",
     new URL("app/stations/travel-station.tsx", root),
     "utf8",
   );
+  const styles = await readFile(
+    new URL("app/styles/stations.css", root),
+    "utf8",
+  );
   const stations = ["japanese", "japan", "greetings", "navigation", "food", "shopping"];
 
   assert.match(component, /useFlashcardAudio\(\)/);
-  assert.match(component, /onClick=\{\(\) => playAudio\(\{ index, src: item\.audio \}\)\}/);
+  assert.match(
+    component,
+    /onClick=\{\(\) => playAudio\(\{\s*beatCount:[\s\S]*index,\s*src: item\.audio,\s*\}\)\}/,
+  );
   assert.match(component, /data-playing=\{playing\}/);
   assert.match(component, /<span className="travel-reference-japanese" lang="ja">/);
   assert.match(component, /className="travel-reference-meaning"/);
+  assert.match(component, /item\.soundCues \?\? getJapaneseMoraSoundCues\(reading\)/);
+  assert.match(component, /soundCues\.length !== morae\.length/);
+  assert.match(component, /beatCount:\s*showPronunciation \? morae\.length : undefined/);
+  assert.match(component, /className="travel-reference-japanese-beat"/);
+  assert.match(component, /className="travel-reference-pronunciation-beat"/);
+  assert.match(component, /className="travel-reference-pronunciation-tail"/);
+  assert.match(component, /pronunciationBeats\.slice\(-2\)/);
+  assert.match(component, /key=\{`\$\{item\.japanese\}-mora-\$\{beatIndex\}`\}/);
+  assert.match(component, /data-active=\{playing && activeBeatIndex === beatIndex/);
+  assert.match(
+    component,
+    /\{showPronunciation \? \(\s*<span className="travel-reference-meaning">\{item\.meaning\}<\/span>[\s\S]*?<span className="travel-reference-japanese"/,
+  );
+  assert.match(
+    component,
+    /\{!showPronunciation \? \(\s*<span className="travel-reference-meaning">\{item\.meaning\}<\/span>/,
+  );
   assert.match(component, /<audio[\s\S]*onEnded=\{handleAudioEnded\}[\s\S]*onError=\{handleAudioError\}/);
   assert.doesNotMatch(component, /fetch\(|review|score|streak|progress|known|complete/i);
+  assert.match(
+    styles,
+    /\.travel-reference-item:not\(\[data-pronunciation="true"\]\):hover\s*\.travel-reference-japanese/,
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.travel-reference-item:hover\s*\.travel-reference-japanese/,
+  );
 
   for (const station of stations) {
     const page = await readFile(
@@ -85,6 +117,16 @@ test("Travel uses one immediate-feedback reference surface without progression",
     assert.match(page, new RegExp(`mapPosition="${station}"`));
     assert.match(page, /<TravelStation/);
     assert.doesNotMatch(page, /redirect|isStationAvailable|introduction|knowledge/);
+    if (station === "japanese") {
+      assert.doesNotMatch(page, /items=\{/);
+    } else {
+      assert.match(page, /items=\{(?:TRAVEL_PHRASES\.|JAPAN_STARTER_PHRASES\})/);
+    }
+    if (station === "japan") {
+      assert.match(page, /showPronunciation/);
+    } else {
+      assert.doesNotMatch(page, /showPronunciation/);
+    }
     assert.match(loading, /<LoadingScreen station=/);
   }
 });

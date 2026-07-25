@@ -84,12 +84,40 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /href="\/stations\/kana"/i);
   assert.doesNotMatch(html, /aria-disabled="true"|data-available=/i);
   assert.doesNotMatch(html, /Learn Hiragana to activate Mora timing/i);
+  assert.match(html, /href="\/welcome"/i);
+  assert.match(html, /aria-label="About Ling"/i);
+  assert.match(html, /class="network-help-link"/i);
+  assert.match(html, /title="About Ling"/i);
+  assert.doesNotMatch(html, /network-welcome-entry|A quick guide to the network, practice, and progress/i);
   assert.match(html, /Japanese opens the network and begins the Travel and Speech lines/i);
   assert.match(html, /Vowels follows Japanese on the Speech line/i);
   assert.doesNotMatch(html, /After Vowels/i);
   assert.match(html, /alt="Ling"/i);
   assert.doesNotMatch(html, /aria-label="Ready"/i);
   assert.doesNotMatch(html, /Your site is taking shape|Codex is working|react-loading-skeleton/i);
+});
+
+test("server-renders the reusable Welcome to Ling guide outside the station network", async () => {
+  const response = await request("/welcome");
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "private, no-store");
+
+  const html = await response.text();
+  assert.match(html, /<h1 id="welcome-title">Welcome to Ling<\/h1>/i);
+  assert.match(html, /Ling is a calm, practical place to build Japanese through sounds, words, and useful situations\./i);
+  assert.match(html, /Inspired by a transit system, Ling starts with the stations available to you\./i);
+  assert.match(html, /<h2 id="welcome-cues-title">How Ling works<\/h2>/i);
+  assert.match(html, /<strong>Network<\/strong>/i);
+  assert.match(html, /<strong>Stations<\/strong>/i);
+  assert.match(html, /<strong>Progress<\/strong>/i);
+  assert.match(html, /<strong>Flashcards &amp; checks<\/strong>/i);
+  assert.match(html, /data-position="japanese"/i);
+  assert.match(html, /class="welcome-cue-station"/i);
+  assert.match(html, /class="hiragana-test-trigger welcome-cue-progress"/i);
+  assert.match(html, /class="hiragana-test-card welcome-cue-flashcard"/i);
+  assert.match(html, /aria-label="Dismiss the Welcome to Ling guide and return to the map"/i);
+  assert.match(html, /href="\/"/i);
+  assert.doesNotMatch(html, /station-membership|data-station=|station-options/i);
 });
 
 test("server-renders the base network before private availability loads", async () => {
@@ -137,7 +165,7 @@ test("the retired Vowels route leads to Kana", async () => {
   assert.match(response.headers.get("location") ?? "", /\/stations\/kana$/i);
 });
 
-test("the six Travel stations are always available references", async () => {
+test("the six Travel stations are always available without progression", async () => {
   for (const station of [
     "japanese",
     "japan",
@@ -152,7 +180,78 @@ test("the six Travel stations are always available references", async () => {
     const html = await response.text();
     assert.match(html, new RegExp(`<h1>${station === "japanese" ? "Japanese" : station[0].toUpperCase() + station.slice(1)}</h1>`, "i"));
     assert.match(html, /station-membership station-membership-travel/);
-    assert.doesNotMatch(html, /station-options|progress|review|score|streak/i);
+    if (station === "japanese" || station === "japan") {
+      if (station === "japanese") {
+        assert.doesNotMatch(html, /travel-reference/);
+        assert.match(html, /station-page station-page-travel station-page-japanese/);
+        assert.doesNotMatch(html, /Welcome to Ling|What you’ll see|How Ling works/);
+        assert.match(html, /<section(?=[^>]*aria-label="Introduction to Japanese")(?=[^>]*class="japanese-orientation")[^>]*>/);
+        assert.match(html, /Japanese is the language spoken by most people in Japan and by communities around the world\. It has its own sounds, grammar, and ways of expressing politeness, and it is written with hiragana, katakana, and kanji\./);
+        assert.match(html, /<dl class="japanese-paths-list">/);
+        for (const [script, description, example] of [
+          ["hiragana", "the phonetic script used for grammar and many Japanese words.", "ありがとう"],
+          ["katakana", "the phonetic script most often used for borrowed words and names.", "ホテル"],
+          ["kanji", "characters that carry meaning.", "日本"],
+        ]) {
+          assert.match(html, new RegExp(`<dt>${script}</dt>`));
+          assert.match(
+            html,
+            new RegExp(
+              `<dd>${description.replaceAll(".", "\\.")}<!-- --> <span class="japanese-script-example" lang="ja">${example}</span></dd>`,
+            ),
+          );
+        }
+        assert.match(html, /Rōmaji uses the Roman alphabet to represent Japanese sounds\. It is useful in some contexts, while hiragana, katakana, and kanji are the main writing systems used in Japanese\./);
+        assert.doesNotMatch(html, /<dt>Rōmaji<\/dt>/i);
+        assert.match(html, /Visiting Japan\? Start with/);
+        assert.match(html, /<a href="\/stations\/greetings">Greetings<\/a>/);
+        assert.match(html, /on the Travel line for useful introductory phrases\./);
+        assert.doesNotMatch(html, /As you continue, you’ll encounter:|Sounds, listening, and spoken Japanese|Hiragana, katakana, and written Japanese/);
+        assert.doesNotMatch(html, /Sound, writing, and context|Listen for a steady rhythm|日本語のクラス|ありがとうございます/i);
+      } else {
+        assert.match(html, /aria-label="Introduction to Japan"/);
+        assert.match(
+          html,
+          /Japan is a mountainous island country where dense, energetic cities sit close to quiet neighborhoods, farming communities, forests, and coastlines\.[\s\S]*Japan is not culturally uniform\. Each region has its own food, dialect, climate, customs, and pace\.[\s\S]*becoming richer the more closely you observe, listen, and communicate\./,
+        );
+        assert.doesNotMatch(html, /Japan is varied\./);
+        assert.match(
+          html,
+          /<div class="japan-orientation-lead"><p>Japan is a mountainous island country[\s\S]*<\/p><p>Daily life often feels organized and considerate:[\s\S]*<\/p><p>Japan is not culturally uniform\. Each region has its own food,[\s\S]*<\/p><\/div>/,
+        );
+        assert.doesNotMatch(html, /culturally uniform—each region/);
+        assert.match(html, /<h2 id="japan-learning-title">Start small<\/h2>/);
+        assert.match(
+          html,
+          /You do not need to learn everything before a first trip\. Start with these three expressions and tap each one to hear how it sounds\./,
+        );
+        assert.doesNotMatch(html, /Japanese that helps|What to learn/);
+        assert.doesNotMatch(
+          html,
+          /Begin politely|Ask when needed|Listen for what you know|When you get stuck|Read a little at a time/,
+        );
+        assert.match(html, /class="travel-reference"/);
+        for (const [japanese, meaning, pronunciation] of [
+          ["すみません", "Excuse me / I’m sorry", "soo mee mah seh nn"],
+          ["ありがとうございます", "Thank you", "ah ree gah toh oo goh zah ee mah s"],
+          ["お願いします", "Please", "oh neh gah ee shee mah s"],
+        ]) {
+          assert.match(
+            html,
+            new RegExp(`aria-label="${japanese}: ${meaning}\\. Pronunciation: ${pronunciation}\\. Play audio"`),
+          );
+          assert.match(html, new RegExp(`aria-label="${pronunciation}"`));
+        }
+        assert.match(html, /data-pronunciation="true"/);
+        assert.doesNotMatch(
+          html,
+          /The Travel line is a small, always-available reference|You will meet kanji, kana, and romaji/,
+        );
+      }
+    } else {
+      assert.match(html, /travel-reference/);
+    }
+    assert.doesNotMatch(html, /station-options|data-(?:score|streak)=|class="[^"]*(?:review|score|streak)[^"]*"/i);
   }
 });
 

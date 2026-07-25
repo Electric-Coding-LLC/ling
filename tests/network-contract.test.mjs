@@ -163,7 +163,9 @@ test("the network keeps the approved desktop and mobile geography", async () => 
 });
 
 test("station map glyphs reflect each station's network position", async () => {
-  const source = await readFile(new URL("app/stations/station-topbar.tsx", root), "utf8");
+  const source = await readFile(new URL("app/network-visuals.tsx", root), "utf8");
+  const topbar = await readFile(new URL("app/stations/station-topbar.tsx", root), "utf8");
+  const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const japaneseGlyph = source.slice(
     source.indexOf('if (position === "japanese")'),
     source.indexOf('if (\n    position === "japan"'),
@@ -174,6 +176,7 @@ test("station map glyphs reflect each station's network position", async () => {
   );
 
   assert.match(japaneseGlyph, /station-map-travel[\s\S]*station-map-sound[\s\S]*station-map-interchange/);
+  assert.match(japaneseGlyph, /d="M14 8v14"[\s\S]*d="M14 8h14"/);
   assert.doesNotMatch(japaneseGlyph, /station-map-connection/);
   assert.match(source, /position === "japan"[\s\S]*position === "food"[\s\S]*station-map-travel/);
   assert.match(source, /position === "shopping"[\s\S]*data-terminal="true"[\s\S]*station-map-travel/);
@@ -183,6 +186,8 @@ test("station map glyphs reflect each station's network position", async () => {
   assert.match(source, /position === "katakana"[\s\S]*station-map-writing/);
   assert.match(source, /position === "katakana" \|\| position === "sound-marks"[\s\S]*station-map-writing/);
   assert.match(source, /position === "combined-sounds"[\s\S]*data-terminal="true"[\s\S]*station-map-writing/);
+  assert.match(topbar, /import \{ NetworkGlyph, type NetworkPosition \} from "\.\.\/network-visuals"/);
+  assert.match(networkMap, /<NetworkStationSymbol kind=\{kind\} \/>/);
 });
 
 test("the Kana stations reveal in order from account-scoped completion", async () => {

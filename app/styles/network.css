@@ -3,6 +3,47 @@
   overflow: hidden;
 }
 
+.network-topbar {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.network-help-link {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.network-help-link svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+  transition: color 150ms ease;
+}
+
+.network-help-dot {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.network-help-link:hover {
+  color: var(--foreground);
+}
+
+.network-help-link:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
 .network-views,
 .network-map {
   display: block;

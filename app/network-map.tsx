@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
 import { LingWordmark } from "./brand";
 import { NavigationLink, useRouteReady } from "./navigation-feedback";
+import { NetworkStationSymbol, type NetworkStationKind } from "./network-visuals";
 
 type MobileFocus =
   | "combined"
@@ -231,7 +232,7 @@ function LinkedStation({
   y = SOUND_Y,
 }: {
   backlightId: string;
-  kind: "interchange" | "sound" | "travel" | "travel-interchange" | "writing";
+  kind: NetworkStationKind;
   label: string;
   labelLines?: readonly string[];
   labelPlacement?: "above" | "right";
@@ -280,17 +281,7 @@ function LinkedStation({
             ))
           : label}
       </text>
-      {interchange ? (
-        <>
-          <circle className="network-interchange-outer" r="28" />
-          <circle className="network-interchange-inner" r="16" />
-        </>
-      ) : (
-        <>
-          <circle className={`network-single-station-outer network-single-station-outer-${kind}`} r="15" />
-          <circle className="network-single-station-inner" r="7" />
-        </>
-      )}
+      <NetworkStationSymbol kind={kind} />
       <circle className="network-station-hit" r="48" />
     </g>
   );

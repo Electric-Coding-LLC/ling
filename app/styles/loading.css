@@ -42,7 +42,8 @@ html[data-ling-ready="true"] .loading-shell-boot {
   --loading-accent: var(--writing);
 }
 
-.loading-shell[data-station="mora-timing"] {
+.loading-shell[data-station="mora-timing"],
+.loading-shell[data-station="pitch-accent"] {
   --loading-accent: var(--sound);
 }
 

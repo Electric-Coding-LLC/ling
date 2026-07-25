@@ -5,6 +5,7 @@ export const STATION_IDS = [
   "sound-marks",
   "combined-sounds",
   "mora-timing",
+  "pitch-accent",
 ] as const;
 
 export type StationId = (typeof STATION_IDS)[number];
@@ -17,6 +18,7 @@ export const STATION_PREREQUISITES: Partial<
   "sound-marks": ["katakana"],
   "combined-sounds": ["sound-marks"],
   "mora-timing": ["combined-sounds"],
+  "pitch-accent": ["mora-timing"],
 };
 
 export function isStationId(value: string): value is StationId {

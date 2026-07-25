@@ -5,7 +5,7 @@ import type { KeyboardEvent, PointerEvent } from "react";
 import { LingWordmark } from "./brand";
 import { NavigationLink, useRouteReady } from "./navigation-feedback";
 
-type MobileFocus = "combined" | "hiragana" | "kana" | "katakana" | "marks" | "mora";
+type MobileFocus = "combined" | "hiragana" | "kana" | "katakana" | "marks" | "mora" | "pitch";
 export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 type AvailabilityStatus = "error" | "loading" | "ready";
@@ -16,8 +16,10 @@ const NETWORK_LINE_NODE_OFFSET = 18;
 const NETWORK_INTERCHANGE_NODE_OFFSET = 31;
 const DESKTOP_KANA_X = 250;
 const DESKTOP_MORA_X = DESKTOP_KANA_X + NETWORK_SEGMENT_LENGTH;
+const DESKTOP_PITCH_X = DESKTOP_MORA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_KANA_X = NETWORK_SEGMENT_LENGTH;
 const MOBILE_MORA_X = MOBILE_KANA_X + NETWORK_SEGMENT_LENGTH;
+const MOBILE_PITCH_X = MOBILE_MORA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_VIEW_WIDTH = MOBILE_MORA_X;
 const NETWORK_VIEW_HEIGHT = 990;
 const SOUND_Y = 180;
@@ -35,6 +37,7 @@ const INITIAL_AVAILABILITY = {
   marks: false,
   combined: false,
   mora: false,
+  pitch: false,
 } as const;
 const ROUTABLE_STATION_HREFS = {
   kana: "/stations/kana",
@@ -43,6 +46,7 @@ const ROUTABLE_STATION_HREFS = {
   marks: "/stations/sound-marks",
   combined: "/stations/combined-sounds",
   mora: "/stations/mora-timing",
+  pitch: "/stations/pitch-accent",
 } as const;
 const STATION_LABELS: Record<StationFocus, string> = {
   kana: "Vowels",
@@ -51,6 +55,7 @@ const STATION_LABELS: Record<StationFocus, string> = {
   marks: "Dakuten & Handakuten",
   combined: "Yōon",
   mora: "Mora Timing",
+  pitch: "Pitch Accent",
 };
 const STATION_NEIGHBORS: Record<
   StationFocus,
@@ -61,7 +66,8 @@ const STATION_NEIGHBORS: Record<
   katakana: { ArrowDown: "marks", ArrowUp: "hiragana" },
   marks: { ArrowDown: "combined", ArrowUp: "katakana" },
   combined: { ArrowUp: "marks" },
-  mora: { ArrowLeft: "kana" },
+  mora: { ArrowLeft: "kana", ArrowRight: "pitch" },
+  pitch: { ArrowLeft: "mora" },
 };
 
 function NetworkLoadError({ onRetry }: { onRetry: () => void }) {
@@ -93,6 +99,7 @@ type NetworkViewProps = {
   soundMarksAvailable: boolean;
   combinedSoundsAvailable: boolean;
   moraTimingAvailable: boolean;
+  pitchAccentAvailable: boolean;
   onLinePointerLeave: () => void;
   onStationFocus: (focus: StationFocus) => void;
   onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
@@ -100,7 +107,7 @@ type NetworkViewProps = {
 
 function readStoredStationFocus(): StationFocus | null {
   const storedFocus = localStorage.getItem(STATION_FOCUS_STORAGE_KEY);
-  return storedFocus === "mora" || storedFocus === "combined" || storedFocus === "marks" || storedFocus === "katakana" || storedFocus === "hiragana" || storedFocus === "kana"
+  return storedFocus === "pitch" || storedFocus === "mora" || storedFocus === "combined" || storedFocus === "marks" || storedFocus === "katakana" || storedFocus === "hiragana" || storedFocus === "kana"
     ? storedFocus
     : null;
 }
@@ -134,13 +141,15 @@ function isStationVisible(
   soundMarksAvailable: boolean,
   combinedSoundsAvailable: boolean,
   moraTimingAvailable: boolean,
+  pitchAccentAvailable: boolean,
 ) {
   return focus === "kana"
     || (focus === "hiragana" && hiraganaAvailable)
     || (focus === "katakana" && katakanaAvailable)
     || (focus === "marks" && soundMarksAvailable)
     || (focus === "combined" && combinedSoundsAvailable)
-    || (focus === "mora" && moraTimingAvailable);
+    || (focus === "mora" && moraTimingAvailable)
+    || (focus === "pitch" && pitchAccentAvailable);
 }
 
 function LinkedStation({
@@ -239,6 +248,7 @@ function NetworkView({
   soundMarksAvailable,
   combinedSoundsAvailable,
   moraTimingAvailable,
+  pitchAccentAvailable,
   onLinePointerLeave,
   onStationFocus,
   onTooltipPointerMove,
@@ -246,6 +256,7 @@ function NetworkView({
   const width = mobile ? MOBILE_VIEW_WIDTH : 1000;
   const kanaX = mobile ? MOBILE_KANA_X : DESKTOP_KANA_X;
   const moraX = mobile ? MOBILE_MORA_X : DESKTOP_MORA_X;
+  const pitchX = mobile ? MOBILE_PITCH_X : DESKTOP_PITCH_X;
   const view = mobile ? "mobile" : "desktop";
   const backlightId = `${view}-station-backlight`;
   const kanaLineOffset = hiraganaAvailable
@@ -287,6 +298,34 @@ function NetworkView({
             pointerEvents="none"
             x1={kanaX + kanaLineOffset}
             x2={moraX - NETWORK_LINE_NODE_OFFSET}
+            y1={SOUND_Y}
+            y2={SOUND_Y}
+          />
+        </g>
+      ) : null}
+      {pitchAccentAvailable ? (
+        <g className="network-line-target">
+          <line
+            aria-label="Speech line"
+            className="network-line-hit"
+            data-tooltip="Speech line"
+            onPointerEnter={(event) => onTooltipPointerMove(event, "Speech line")}
+            onPointerLeave={onLinePointerLeave}
+            onPointerMove={(event) => onTooltipPointerMove(event, "Speech line")}
+            pointerEvents="stroke"
+            stroke="transparent"
+            strokeWidth="24"
+            x1={moraX + NETWORK_LINE_NODE_OFFSET}
+            x2={pitchX - NETWORK_LINE_NODE_OFFSET}
+            y1={SOUND_Y}
+            y2={SOUND_Y}
+          />
+          <line
+            aria-hidden="true"
+            className="network-line network-line-sound"
+            pointerEvents="none"
+            x1={moraX + NETWORK_LINE_NODE_OFFSET}
+            x2={pitchX - NETWORK_LINE_NODE_OFFSET}
             y1={SOUND_Y}
             y2={SOUND_Y}
           />
@@ -486,6 +525,18 @@ function NetworkView({
           x={moraX}
         />
       ) : null}
+      {pitchAccentAvailable ? (
+        <LinkedStation
+          backlightId={backlightId}
+          href={ROUTABLE_STATION_HREFS.pitch}
+          kind="sound"
+          label="Pitch Accent"
+          onFocus={() => onStationFocus("pitch")}
+          onPointerLeave={onLinePointerLeave}
+          slug="pitch-accent"
+          x={pitchX}
+        />
+      ) : null}
     </>
   );
 
@@ -526,7 +577,7 @@ function NetworkView({
       </defs>
       <desc id={`${view}-network-description`}>
         {hiraganaAvailable
-          ? "Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line."
+          ? `Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line.${moraTimingAvailable ? " Mora Timing follows Vowels on the Speech line." : ""}${pitchAccentAvailable ? " Pitch Accent follows Mora Timing." : ""}`
           : "Vowels is the first station on the Speech line."}
       </desc>
       {mobile ? (
@@ -545,6 +596,7 @@ export function NetworkMap({
   soundMarksAvailable: initialSoundMarksAvailable = false,
   combinedSoundsAvailable: initialCombinedSoundsAvailable = false,
   moraTimingAvailable: initialMoraTimingAvailable = false,
+  pitchAccentAvailable: initialPitchAccentAvailable = false,
 }: {
   initialStationFocus?: StationFocus;
   hiraganaAvailable?: boolean;
@@ -552,6 +604,7 @@ export function NetworkMap({
   soundMarksAvailable?: boolean;
   combinedSoundsAvailable?: boolean;
   moraTimingAvailable?: boolean;
+  pitchAccentAvailable?: boolean;
 }) {
   const routeReady = useRouteReady();
   const storedStationFocus = useSyncExternalStore(
@@ -569,6 +622,7 @@ export function NetworkMap({
     marks: initialSoundMarksAvailable,
     combined: initialCombinedSoundsAvailable,
     mora: initialMoraTimingAvailable,
+    pitch: initialPitchAccentAvailable,
   }));
   const [availabilityAttempt, setAvailabilityAttempt] = useState(0);
   const [availabilityStatus, setAvailabilityStatus] =
@@ -578,6 +632,7 @@ export function NetworkMap({
   const soundMarksAvailable = availability.marks;
   const combinedSoundsAvailable = availability.combined;
   const moraTimingAvailable = availability.mora;
+  const pitchAccentAvailable = availability.pitch;
   const requestedStationFocus = selectedStationFocus ?? storedStationFocus;
   const stationFocus = isStationVisible(
     requestedStationFocus,
@@ -586,6 +641,7 @@ export function NetworkMap({
     soundMarksAvailable,
     combinedSoundsAvailable,
     moraTimingAvailable,
+    pitchAccentAvailable,
   )
     ? requestedStationFocus
     : "kana";
@@ -598,7 +654,9 @@ export function NetworkMap({
 
   useEffect(() => {
     const requestedFocus = new URLSearchParams(window.location.search).get("focus");
-    const focus = requestedFocus === "mora-timing"
+    const focus = requestedFocus === "pitch-accent"
+      ? "pitch"
+      : requestedFocus === "mora-timing"
       ? "mora"
       : requestedFocus === "sound-marks" || requestedFocus === "kana-extensions"
         ? "marks"
@@ -614,6 +672,7 @@ export function NetworkMap({
       || focus === "marks"
       || focus === "combined"
       || focus === "mora"
+      || focus === "pitch"
     ) {
       storeStationFocus(focus);
     }
@@ -639,6 +698,7 @@ export function NetworkMap({
           marks: payload.available.includes("sound-marks"),
           combined: payload.available.includes("combined-sounds"),
           mora: payload.available.includes("mora-timing"),
+          pitch: payload.available.includes("pitch-accent"),
         });
         setAvailabilityStatus("ready");
         routeReady();
@@ -692,11 +752,15 @@ export function NetworkMap({
 
     const distance = event.clientX - start.x;
     if (dragged.current) {
-      if (distance <= -MOBILE_SWIPE_THRESHOLD && moraTimingAvailable) {
-        selectStation("mora");
+      if (distance <= -MOBILE_SWIPE_THRESHOLD) {
+        if (stationFocus === "mora" && pitchAccentAvailable) {
+          selectStation("pitch");
+        } else if (stationFocus !== "pitch" && moraTimingAvailable) {
+          selectStation("mora");
+        }
       }
       if (distance >= MOBILE_SWIPE_THRESHOLD) {
-        selectStation("kana");
+        selectStation(stationFocus === "pitch" ? "mora" : "kana");
       }
     }
 
@@ -755,6 +819,7 @@ export function NetworkMap({
         soundMarksAvailable,
         combinedSoundsAvailable,
         moraTimingAvailable,
+        pitchAccentAvailable,
       )) {
         selectStation(nextFocus);
       }
@@ -789,6 +854,7 @@ export function NetworkMap({
         soundMarksAvailable,
         combinedSoundsAvailable,
         moraTimingAvailable,
+        pitchAccentAvailable,
       )) return;
 
       selectStation(nextFocus);
@@ -836,6 +902,7 @@ export function NetworkMap({
           hiraganaAvailable={hiraganaAvailable}
           katakanaAvailable={katakanaAvailable}
           moraTimingAvailable={moraTimingAvailable}
+          pitchAccentAvailable={pitchAccentAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
           onTooltipPointerMove={onTooltipPointerMove}
@@ -872,6 +939,7 @@ export function NetworkMap({
           mobile
           mobileFocus={mobileFocus}
           moraTimingAvailable={moraTimingAvailable}
+          pitchAccentAvailable={pitchAccentAvailable}
           onLinePointerLeave={() => setTooltip(null)}
           onStationFocus={selectStation}
           onTooltipPointerMove={onTooltipPointerMove}

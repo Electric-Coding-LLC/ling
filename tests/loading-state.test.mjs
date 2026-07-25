@@ -22,6 +22,10 @@ test("the root route has a branded, accessible loading state", async () => {
     new URL("app/stations/combined-sounds/loading.tsx", root),
     "utf8",
   );
+  const pitchAccentLoading = await readFile(
+    new URL("app/stations/pitch-accent/loading.tsx", root),
+    "utf8",
+  );
   const navigationFeedback = await readFile(
     new URL("app/navigation-feedback.tsx", root),
     "utf8",
@@ -42,9 +46,11 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(extensionsLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(soundMarksLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(combinedSoundsLoading, /<LoadingScreen station="Yōon" \/>/);
+  assert.match(pitchAccentLoading, /<LoadingScreen station="Pitch Accent" \/>/);
   assert.match(loadingStyles, /data-station="kana-extensions"/);
   assert.match(loadingStyles, /data-station="sound-marks"/);
   assert.match(loadingStyles, /data-station="combined-sounds"/);
+  assert.match(loadingStyles, /data-station="pitch-accent"/);
   assert.match(navigationFeedback, /<NavigationFeedbackContext value=\{beginNavigation\}>/);
   assert.match(navigationFeedback, /<RouteReadyContext value=\{completeNavigation\}>/);
   assert.match(navigationFeedback, /<NavigationCompletion onComplete=\{completeNavigation\} \/>/);

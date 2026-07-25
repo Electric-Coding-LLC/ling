@@ -73,6 +73,7 @@
 }
 
 .station-page-mora .station-heading,
+.station-page-pitch-accent .station-heading,
 .station-page-kana .station-heading,
 .station-page-hiragana .station-heading,
 .station-page-katakana .station-heading,
@@ -273,6 +274,7 @@
 }
 
 .mora-guide audio,
+.pitch-accent-guide audio,
 .kana-guide audio,
 .hiragana-guide audio,
 .katakana-guide audio,
@@ -448,19 +450,19 @@
   gap: 2rem;
 }
 
-.mora-practice {
+.station-practice {
   width: min(100%, 38rem);
   margin-top: 2rem;
 }
 
-.mora-practice-list {
+.station-practice-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 0.75rem;
   row-gap: 0.25rem;
 }
 
-.mora-practice-word {
+.station-practice-word {
   min-height: 3.75rem;
   padding: 0.5rem;
   border: 0;
@@ -471,18 +473,16 @@
   font: inherit;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   font-size: 1.35rem;
-  transition:
-    color 120ms ease,
-    background 120ms ease;
+  transition: color 120ms ease;
 }
 
-.mora-practice-word[data-known="true"] {
+.station-practice-word[data-known="true"] {
   color: var(--known);
 }
 
-.mora-practice-word:focus-visible {
+.station-practice-word:focus-visible {
   outline: 2px solid var(--foreground);
-  outline-offset: -2px;
+  outline-offset: 3px;
 }
 
 .mora-concept-heading {
@@ -655,8 +655,8 @@
     background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
   }
 
-  .mora-practice-word:hover {
-    background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
+  .station-practice-word:hover {
+    color: var(--sound);
   }
 }
 
@@ -1340,6 +1340,8 @@
   .mora-audio-indicator,
   .mora-audio-indicator span,
   .mora-beat,
+  .pitch-contour-morae span,
+  .pitch-contour-point,
   .flashcard-countdown-progress {
     animation: none;
     transition: none;
@@ -1556,6 +1558,164 @@
   line-height: 1;
 }
 
+.pitch-accent-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.pitch-accent-intro p {
+  margin: 0;
+}
+
+.pitch-accent-intro strong,
+.pitch-concept-heading h2 {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.pitch-concepts {
+  display: grid;
+  width: min(100%, 38rem);
+  gap: 2rem;
+}
+
+.pitch-concept-heading {
+  max-width: 34rem;
+  margin-bottom: 0.875rem;
+}
+
+.pitch-concept-heading h2,
+.pitch-concept-heading p {
+  margin: 0;
+}
+
+.pitch-concept-heading h2 {
+  font-size: 1rem;
+}
+
+.pitch-concept-heading p {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.pitch-example-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.pitch-example {
+  display: flex;
+  width: 100%;
+  min-height: 8.75rem;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  color: var(--foreground);
+  appearance: none;
+  background: var(--surface);
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.pitch-example-meaning,
+.pitch-review-meaning {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.pitch-contour {
+  display: block;
+  width: min(100%, calc(var(--pitch-mora-count) * 3rem));
+}
+
+.pitch-contour-line {
+  display: block;
+  width: 100%;
+  height: 3.5rem;
+  overflow: visible;
+}
+
+.pitch-contour-line polyline {
+  fill: none;
+  stroke: color-mix(in srgb, var(--sound) 65%, var(--muted));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.pitch-contour-point {
+  fill: var(--surface);
+  stroke: var(--sound);
+  stroke-width: 2;
+  transition:
+    fill 120ms ease,
+    r 120ms ease;
+}
+
+.pitch-contour-point[data-active="true"] {
+  fill: var(--sound);
+  r: 6px;
+}
+
+.pitch-contour-morae {
+  display: grid;
+  grid-template-columns: repeat(var(--pitch-mora-count), minmax(0, 1fr));
+  margin-top: -0.2rem;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.pitch-contour-morae span {
+  transition: color 120ms ease;
+}
+
+.pitch-contour-morae span[data-active="true"] {
+  color: var(--sound);
+}
+
+.pitch-example:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.pitch-review-card-content {
+  display: flex;
+  width: 100%;
+  min-height: 12rem;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.pitch-review-card-content .pitch-contour {
+  width: min(100%, calc(var(--pitch-mora-count) * 3.75rem));
+}
+
+.pitch-review-card-content .pitch-contour-morae {
+  font-size: clamp(1.75rem, 9vw, 2.5rem);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pitch-example:hover {
+    border-color: rgb(242 241 235 / 0.22);
+    background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
+  }
+
+}
+
 @media (max-width: 600px) {
   .station-page {
     padding: 1.5rem 1.25rem 2.5rem;
@@ -1566,6 +1726,7 @@
   }
 
   .station-page-mora .station-heading,
+  .station-page-pitch-accent .station-heading,
   .station-page-kana .station-heading,
   .station-page-hiragana .station-heading,
   .station-page-katakana .station-heading,
@@ -1591,6 +1752,15 @@
 
   .mora-concept-heading p {
     font-size: 0.85rem;
+  }
+
+  .pitch-concept-heading p {
+    font-size: 0.85rem;
+  }
+
+  .pitch-example {
+    min-height: 8.25rem;
+    padding-inline: 0.75rem;
   }
 
   .mora-beats {

@@ -52,6 +52,7 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /data-tooltip="Kana line"/i);
   assert.doesNotMatch(html, /<title>(?:Speech|Kana) line<\/title>/i);
   assert.doesNotMatch(html, /data-station="mora-timing"/i);
+  assert.doesNotMatch(html, /data-station="pitch-accent"/i);
   assert.doesNotMatch(html, /data-station="katakana"/i);
   assert.doesNotMatch(html, /data-station="kana-extensions"/i);
   assert.doesNotMatch(html, /data-station="sound-marks"/i);
@@ -62,6 +63,7 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /data-station="kana"[^>]*data-station-kind="single-line"/i);
   assert.doesNotMatch(html, /data-station="mora-timing"[^>]*data-station-kind="single-line"/i);
   assert.doesNotMatch(html, /href="\/stations\/mora-timing"/i);
+  assert.doesNotMatch(html, /href="\/stations\/pitch-accent"/i);
   assert.doesNotMatch(html, /href="\/stations\/hiragana"/i);
   assert.doesNotMatch(html, /href="\/stations\/kana-extensions"/i);
   assert.doesNotMatch(html, /href="\/stations\/sound-marks"/i);
@@ -107,6 +109,12 @@ test("server-renders the base network before private availability loads", async 
   const combinedHtml = await combinedResponse.text();
   assert.match(combinedHtml, /data-mobile-station-focus="kana"/i);
   assert.doesNotMatch(combinedHtml, /data-station="combined-sounds"/i);
+
+  const pitchResponse = await request("/?focus=pitch-accent");
+  assert.equal(pitchResponse.status, 200);
+  const pitchHtml = await pitchResponse.text();
+  assert.match(pitchHtml, /data-mobile-focus="kana"/i);
+  assert.doesNotMatch(pitchHtml, /data-station="pitch-accent"/i);
 });
 
 test("the retired Vowels route leads to Kana", async () => {
@@ -119,6 +127,12 @@ test("redirects Mora timing until Yōon is complete", async () => {
   const response = await request("/stations/mora-timing");
   assert.ok([307, 308].includes(response.status));
   assert.match(response.headers.get("location") ?? "", /\/\?focus=mora-timing$/i);
+});
+
+test("redirects Pitch Accent until Mora Timing is complete", async () => {
+  const response = await request("/stations/pitch-accent");
+  assert.ok([307, 308].includes(response.status));
+  assert.match(response.headers.get("location") ?? "", /\/\?focus=pitch-accent$/i);
 });
 
 test("redirects Hiragana until Kana has been introduced", async () => {
@@ -242,7 +256,7 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(extensionsKnowledge.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await extensionsKnowledge.json(), { error: "unauthorized" });
 
-  for (const station of ["sound-marks", "combined-sounds"]) {
+  for (const station of ["sound-marks", "combined-sounds", "pitch-accent"]) {
     const introduction = await request(
       `/api/stations/${station}/introduction`,
       { method: "POST" },
@@ -286,7 +300,7 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(bulkKnowledgeUpdate.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await bulkKnowledgeUpdate.json(), { error: "unauthorized" });
 
-  for (const station of ["kana", "mora-timing"]) {
+  for (const station of ["kana", "mora-timing", "pitch-accent"]) {
     const bulkStationKnowledgeUpdate = await request(
       `/api/stations/${station}/knowledge`,
       {

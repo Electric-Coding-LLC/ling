@@ -43,6 +43,13 @@
       "when": 1784769662492,
       "tag": "0005_violet_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784817032536,
+      "tag": "0006_secret_miek",
+      "breakpoints": true
     }
   ]
 }

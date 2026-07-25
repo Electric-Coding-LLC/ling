@@ -28,6 +28,10 @@ test("generated migrations create the account-scoped learning boundaries", async
     new URL("drizzle/0005_violet_namora.sql", root),
     "utf8",
   );
+  const pitchAccentKnowledgeMigration = await readFile(
+    new URL("drizzle/0006_secret_miek.sql", root),
+    "utf8",
+  );
   const database = new DatabaseSync(":memory:");
   database.exec("PRAGMA foreign_keys = ON");
   database.exec(userMigration);
@@ -36,6 +40,7 @@ test("generated migrations create the account-scoped learning boundaries", async
   database.exec(katakanaKnowledgeMigration);
   database.exec(kanaExtensionKnowledgeMigration);
   database.exec(moraTimingKnowledgeMigration);
+  database.exec(pitchAccentKnowledgeMigration);
 
   const tables = database
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
@@ -46,6 +51,7 @@ test("generated migrations create the account-scoped learning boundaries", async
     "kana_extension_knowledge",
     "katakana_knowledge",
     "mora_timing_knowledge",
+    "pitch_accent_knowledge",
     "station_introductions",
     "user_identities",
     "users",
@@ -91,6 +97,13 @@ test("generated migrations create the account-scoped learning boundaries", async
   assert.equal(moraTimingKnowledgeForeignKeys[0].table, "users");
   assert.equal(moraTimingKnowledgeForeignKeys[0].on_delete, "CASCADE");
 
+  const pitchAccentKnowledgeForeignKeys = database
+    .prepare("PRAGMA foreign_key_list(pitch_accent_knowledge)")
+    .all();
+  assert.equal(pitchAccentKnowledgeForeignKeys.length, 1);
+  assert.equal(pitchAccentKnowledgeForeignKeys[0].table, "users");
+  assert.equal(pitchAccentKnowledgeForeignKeys[0].on_delete, "CASCADE");
+
   database.prepare(
     "INSERT INTO users (id, created_at, updated_at) VALUES (?, ?, ?)",
   ).run("learner-1", 1, 1);
@@ -101,6 +114,15 @@ test("generated migrations create the account-scoped learning boundaries", async
     database.prepare(
       "INSERT INTO station_introductions (user_id, station_id, introduced_at) VALUES (?, ?, ?)",
     ).run("learner-1", "hiragana", 3);
+  }, /UNIQUE constraint failed/);
+
+  database.prepare(
+    "INSERT INTO pitch_accent_knowledge (user_id, item_id, known_at) VALUES (?, ?, ?)",
+  ).run("learner-1", "ame-candy", 12);
+  assert.throws(() => {
+    database.prepare(
+      "INSERT INTO pitch_accent_knowledge (user_id, item_id, known_at) VALUES (?, ?, ?)",
+    ).run("learner-1", "ame-candy", 13);
   }, /UNIQUE constraint failed/);
 
   database.prepare(
@@ -158,6 +180,10 @@ test("generated migrations create the account-scoped learning boundaries", async
   );
   assert.equal(
     database.prepare("SELECT COUNT(*) AS count FROM mora_timing_knowledge").get().count,
+    0,
+  );
+  assert.equal(
+    database.prepare("SELECT COUNT(*) AS count FROM pitch_accent_knowledge").get().count,
     0,
   );
   database.close();

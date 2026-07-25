@@ -16,6 +16,9 @@
 .network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
   [data-station="mora-timing"]
   .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="pitch"]
+  [data-station="pitch-accent"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="combined"]
   [data-station="combined-sounds"]
   .network-station-backlight,
@@ -183,6 +186,9 @@
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
     [data-station="mora-timing"]
     .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="pitch"]
+    [data-station="pitch-accent"]
+    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="combined"]
     [data-station="combined-sounds"]
     .network-station-backlight,
@@ -213,6 +219,10 @@
 
   .network-mobile-track-mora {
     transform: translateX(-50%);
+  }
+
+  .network-mobile-track-pitch {
+    transform: translateX(-100%);
   }
 
   .network-station-label {

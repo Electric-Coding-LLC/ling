@@ -408,18 +408,18 @@ export function MoraTimingGuide() {
           ))}
         </div>
 
-        <section aria-labelledby="mora-practice-title" className="mora-practice">
+        <section aria-labelledby="mora-practice-title" className="station-practice">
           <header className="mora-concept-heading">
             <h2 id="mora-practice-title">Practice words</h2>
           </header>
-          <div className="mora-practice-list">
+          <div className="station-practice-list">
             {MORA_REVIEW_CARDS.map((card) => {
               const isKnown = knownReviews.has(card.id);
 
               return (
                 <button
                   aria-label={`Study ${card.word}${isKnown ? ", marked known" : ""}`}
-                  className="mora-practice-word"
+                  className="station-practice-word"
                   data-known={isKnown ? "true" : undefined}
                   key={card.id}
                   onClick={() => openReview([card])}

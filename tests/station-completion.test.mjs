@@ -32,4 +32,16 @@ test("station completion follows the prerequisite chain", () => {
     ]),
     ["kana"],
   );
+
+  assert.deepEqual(
+    retainPrerequisiteCompleteStations([
+      "pitch-accent",
+      "combined-sounds",
+      "sound-marks",
+      "katakana",
+      "hiragana",
+      "kana",
+    ]),
+    ["kana", "hiragana", "katakana", "sound-marks", "combined-sounds"],
+  );
 });

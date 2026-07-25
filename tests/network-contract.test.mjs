@@ -33,8 +33,10 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /NETWORK_INTERCHANGE_NODE_OFFSET\s*=\s*31/);
   assert.match(source, /DESKTOP_KANA_X\s*=\s*250/);
   assert.match(source, /DESKTOP_MORA_X\s*=\s*DESKTOP_KANA_X \+ NETWORK_SEGMENT_LENGTH/);
+  assert.match(source, /DESKTOP_PITCH_X\s*=\s*DESKTOP_MORA_X \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /MOBILE_KANA_X\s*=\s*NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /MOBILE_MORA_X\s*=\s*MOBILE_KANA_X \+ NETWORK_SEGMENT_LENGTH/);
+  assert.match(source, /MOBILE_PITCH_X\s*=\s*MOBILE_MORA_X \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /MOBILE_VIEW_WIDTH\s*=\s*MOBILE_MORA_X/);
   assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*990/);
   assert.match(source, /SOUND_Y\s*=\s*180/);
@@ -60,12 +62,14 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /data-line="sound"/);
   assert.match(source, /kana:\s*"\/stations\/kana"/);
   assert.match(source, /mora:\s*"\/stations\/mora-timing"/);
+  assert.match(source, /pitch:\s*"\/stations\/pitch-accent"/);
   assert.match(source, /hiragana:\s*"\/stations\/hiragana"/);
   assert.match(source, /katakana:\s*"\/stations\/katakana"/);
   assert.match(source, /marks:\s*"\/stations\/sound-marks"/);
   assert.match(source, /combined:\s*"\/stations\/combined-sounds"/);
   assert.doesNotMatch(source, /vowels:\s*"\/stations\/vowels"/);
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.mora\}/);
+  assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.pitch\}/);
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.kana\}/);
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.hiragana\}/);
   assert.match(source, /LinkedStation[^>]*href=\{ROUTABLE_STATION_HREFS\.katakana\}/);
@@ -117,13 +121,14 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.equal((source.match(/ref=\{(?:desktop|mobile)Viewport\}/g) ?? []).length, 2);
   assert.match(source, /viewport\?\.focus\(\{ preventScroll: true \}\)/);
   assert.match(source, /event\.target !== event\.currentTarget/);
-  assert.match(source, /type MobileFocus = "combined" \| "hiragana" \| "kana" \| "katakana" \| "marks" \| "mora"/);
+  assert.match(source, /type MobileFocus = "combined" \| "hiragana" \| "kana" \| "katakana" \| "marks" \| "mora" \| "pitch"/);
   assert.match(source, /kana:\s*\{ ArrowDown: "hiragana", ArrowRight: "mora" \}/);
   assert.match(source, /hiragana:\s*\{ ArrowDown: "katakana", ArrowUp: "kana" \}/);
   assert.match(source, /katakana:\s*\{ ArrowDown: "marks", ArrowUp: "hiragana" \}/);
   assert.match(source, /marks:\s*\{ ArrowDown: "combined", ArrowUp: "katakana" \}/);
   assert.match(source, /combined:\s*\{ ArrowUp: "marks" \}/);
-  assert.match(source, /mora:\s*\{ ArrowLeft: "kana" \}/);
+  assert.match(source, /mora:\s*\{ ArrowLeft: "kana", ArrowRight: "pitch" \}/);
+  assert.match(source, /pitch:\s*\{ ArrowLeft: "mora" \}/);
   assert.equal((source.match(/STATION_NEIGHBORS\[stationFocus\]\[direction\]/g) ?? []).length, 2);
   assert.doesNotMatch(source, /function openStation\(focus: StationFocus\)/);
   assert.doesNotMatch(source, /router\.push/);
@@ -152,13 +157,14 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /new MouseEvent\("click", \{ bubbles: true, cancelable: true, view: window \}\)/);
   assert.doesNotMatch(source, /window\.location\.assign/);
   assert.match(styles, /\.network-mobile-track-mora\s*\{[^}]*translateX\(-50%\)/s);
+  assert.match(styles, /\.network-mobile-track-pitch\s*\{[^}]*translateX\(-100%\)/s);
   assert.match(styles, /\.network-desktop-viewport:focus\s*\{[^}]*outline:\s*none/s);
-  assert.match(styles, /data-desktop-focus="mora"[\s\S]*data-desktop-focus="combined"[\s\S]*data-desktop-focus="marks"[\s\S]*data-desktop-focus="katakana"[\s\S]*data-desktop-focus="hiragana"[\s\S]*data-desktop-focus="kana"/);
+  assert.match(styles, /data-desktop-focus="mora"[\s\S]*data-desktop-focus="pitch"[\s\S]*data-desktop-focus="combined"[\s\S]*data-desktop-focus="marks"[\s\S]*data-desktop-focus="katakana"[\s\S]*data-desktop-focus="hiragana"[\s\S]*data-desktop-focus="kana"/);
   assert.doesNotMatch(styles, /data-desktop-focus="vowels"/);
   assert.match(styles, /\.network-mobile-viewport:focus-visible\s*\{[^}]*outline:\s*none/s);
   assert.match(
     styles,
-    /data-mobile-station-focus="mora"[\s\S]*data-mobile-station-focus="combined"[\s\S]*data-mobile-station-focus="marks"[\s\S]*data-mobile-station-focus="katakana"[\s\S]*data-mobile-station-focus="hiragana"[\s\S]*data-mobile-station-focus="kana"/,
+    /data-mobile-station-focus="mora"[\s\S]*data-mobile-station-focus="pitch"[\s\S]*data-mobile-station-focus="combined"[\s\S]*data-mobile-station-focus="marks"[\s\S]*data-mobile-station-focus="katakana"[\s\S]*data-mobile-station-focus="hiragana"[\s\S]*data-mobile-station-focus="kana"/,
   );
   assert.doesNotMatch(styles, /data-mobile-station-focus="vowels"/);
   assert.doesNotMatch(styles, /\.network-mobile-viewport:focus-visible\s*\{[^}]*outline:\s*2px/s);
@@ -192,6 +198,7 @@ test("the Kana stations reveal in order from account-scoped completion", async (
   const source = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
   const moraPage = await readFile(new URL("app/stations/mora-timing/page.tsx", root), "utf8");
+  const pitchPage = await readFile(new URL("app/stations/pitch-accent/page.tsx", root), "utf8");
   const katakanaPage = await readFile(new URL("app/stations/katakana/page.tsx", root), "utf8");
   const soundMarksPage = await readFile(new URL("app/stations/sound-marks/page.tsx", root), "utf8");
   const combinedSoundsPage = await readFile(new URL("app/stations/combined-sounds/page.tsx", root), "utf8");
@@ -215,6 +222,7 @@ test("the Kana stations reveal in order from account-scoped completion", async (
   assert.match(stations, /"sound-marks": \["katakana"\]/);
   assert.match(stations, /"combined-sounds": \["sound-marks"\]/);
   assert.match(stations, /"mora-timing": \["combined-sounds"\]/);
+  assert.match(stations, /"pitch-accent": \["mora-timing"\]/);
   assert.match(stations, /prerequisites\.every/);
   assert.match(schema, /stationIntroductions = sqliteTable\(\s*"station_introductions"/s);
   assert.match(schema, /primaryKey\(\{ columns: \[table\.userId, table\.stationId\] \}\)/);
@@ -225,6 +233,7 @@ test("the Kana stations reveal in order from account-scoped completion", async (
   assert.match(repository, /knownKatakana\.length === BASIC_KATAKANA\.length/);
   assert.match(repository, /SOUND_MARK_PATTERN_IDS\.every\(\(patternId\) =>/);
   assert.match(repository, /COMBINED_SOUND_PATTERN_IDS\.every\(\(patternId\) =>/);
+  assert.match(repository, /PITCH_ACCENT_ITEM_IDS\.every\(\(itemId\) =>/);
   assert.match(repository, /retainPrerequisiteCompleteStations\(independentlyCompleted\)/);
   assert.match(repository, /onConflictDoNothing\(\)/);
   assert.match(kanaApi, /recordStationIntroduction\(user\.id, "kana"\)/);
@@ -247,6 +256,7 @@ test("the Kana stations reveal in order from account-scoped completion", async (
   assert.match(availabilityApi, /STATION_IDS\.filter/);
   assert.match(availabilityApi, /private, no-store/);
   assert.match(moraPage, /redirect\("\/\?focus=mora-timing"\)/);
+  assert.match(pitchPage, /redirect\("\/\?focus=pitch-accent"\)/);
   assert.match(katakanaPage, /redirect\("\/\?focus=katakana"\)/);
   assert.match(soundMarksPage, /redirect\("\/\?focus=sound-marks"\)/);
   assert.match(combinedSoundsPage, /redirect\("\/\?focus=combined-sounds"\)/);
@@ -264,7 +274,8 @@ test("the Kana stations reveal in order from account-scoped completion", async (
   assert.match(source, /focus === "katakana" && katakanaAvailable/);
   assert.match(source, /focus === "marks" && soundMarksAvailable/);
   assert.match(source, /focus === "combined" && combinedSoundsAvailable/);
-  assert.match(source, /nextFocus && isStationVisible\([\s\S]*?nextFocus,[\s\S]*?hiraganaAvailable,[\s\S]*?katakanaAvailable,[\s\S]*?soundMarksAvailable,[\s\S]*?combinedSoundsAvailable,[\s\S]*?moraTimingAvailable/);
+  assert.match(source, /focus === "pitch" && pitchAccentAvailable/);
+  assert.match(source, /nextFocus && isStationVisible\([\s\S]*?nextFocus,[\s\S]*?hiraganaAvailable,[\s\S]*?katakanaAvailable,[\s\S]*?soundMarksAvailable,[\s\S]*?combinedSoundsAvailable,[\s\S]*?moraTimingAvailable,[\s\S]*?pitchAccentAvailable/);
   assert.doesNotMatch(source, /MORA_UNAVAILABLE_REASON|network-line-unavailable|unavailableReason|aria-disabled/);
   assert.doesNotMatch(source, /After Hiragana|network-station-dependency/);
   assert.doesNotMatch(hiragana, /score|streak|timer|progress meter/i);
@@ -561,19 +572,21 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.match(styles, /\.mora-review-answer-slot\s*\{[^}]*min-height:\s*3\.5rem/s);
   assert.doesNotMatch(styles, /\.mora-review-answer-slot \.mora-pronunciation\s*\{/);
   assert.match(styles, /\.mora-review-answer\s*\{[^}]*display:\s*flex[^}]*flex-direction:\s*column[^}]*gap:\s*0\.35rem/s);
-  assert.match(source, /aria-labelledby="mora-practice-title" className="mora-practice"[\s\S]*?<header className="mora-concept-heading">[\s\S]*?<h2 id="mora-practice-title">Practice words<\/h2>/);
+  assert.match(source, /aria-labelledby="mora-practice-title" className="station-practice"[\s\S]*?<header className="mora-concept-heading">[\s\S]*?<h2 id="mora-practice-title">Practice words<\/h2>/);
   assert.doesNotMatch(styles, /\.mora-practice-heading/);
   assert.doesNotMatch(source, /These 10 words appear in the test|Learned words turn green/);
   assert.doesNotMatch(practiceSource, /mora-practice-progress|remainingCount|Complete\./);
-  assert.match(styles, /\.mora-practice\s*\{[^}]*width:\s*min\(100%, 38rem\)[^}]*margin-top:\s*2rem/s);
-  assert.doesNotMatch(styles, /\.mora-practice\s*\{[^}]*border-top:/s);
+  assert.match(styles, /\.station-practice\s*\{[^}]*width:\s*min\(100%, 38rem\)[^}]*margin-top:\s*2rem/s);
+  assert.doesNotMatch(styles, /\.station-practice\s*\{[^}]*border-top:/s);
   assert.match(source, /MORA_REVIEW_CARDS\.map\(\(card\) =>[\s\S]*?knownReviews\.has\(card\.id\)[\s\S]*?aria-label=\{`Study \$\{card\.word\}\$\{isKnown \? ", marked known" : ""\}`\}[\s\S]*?onClick=\{\(\) => openReview\(\[card\]\)\}/);
-  assert.match(practiceSource, /className="mora-practice-word"[\s\S]*?<span lang="ja">\{card\.word\}<\/span>/);
+  assert.match(practiceSource, /className="station-practice-word"[\s\S]*?<span lang="ja">\{card\.word\}<\/span>/);
   assert.doesNotMatch(practiceSource, /<MoraBeats|<MoraPronunciation|card\.meaning/);
-  assert.match(styles, /\.mora-practice-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)[^}]*column-gap:\s*0\.75rem[^}]*row-gap:\s*0\.25rem/s);
-  assert.match(styles, /\.mora-practice-word\s*\{[^}]*min-height:\s*3\.75rem[^}]*border:\s*0[^}]*font-size:\s*1\.35rem/s);
-  assert.doesNotMatch(styles, /\.mora-practice-word\s*\{[^}]*border-bottom:/s);
-  assert.match(styles, /\.mora-practice-word\[data-known="true"\]\s*\{[^}]*color:\s*var\(--known\)/s);
+  assert.match(styles, /\.station-practice-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)[^}]*column-gap:\s*0\.75rem[^}]*row-gap:\s*0\.25rem/s);
+  assert.match(styles, /\.station-practice-word\s*\{[^}]*min-height:\s*3\.75rem[^}]*border:\s*0[^}]*font-size:\s*1\.35rem/s);
+  assert.doesNotMatch(styles, /\.station-practice-word\s*\{[^}]*border-bottom:/s);
+  assert.match(styles, /\.station-practice-word\[data-known="true"\]\s*\{[^}]*color:\s*var\(--known\)/s);
+  assert.match(styles, /\.station-practice-word:hover\s*\{[^}]*color:\s*var\(--sound\)/s);
+  assert.match(styles, /\.station-membership::before\s*\{[^}]*background:\s*currentColor[^}]*content:\s*""/s);
   assert.match(styles, /\.mora-example\[data-playing="true"\] \.mora-audio-indicator span\s*\{[^}]*animation:\s*hiragana-test-sound-pulse/s);
   assert.doesNotMatch(styles, /@media \(max-width: 600px\)[\s\S]*\.mora-example-list\s*\{/s);
   assert.match(schema, /moraTimingKnowledge = sqliteTable\(\s*"mora_timing_knowledge"/s);
@@ -690,6 +703,7 @@ test("every station with tracked progress exposes the standard options menu", as
     "app/stations/katakana/katakana-guide.tsx",
     "app/stations/kana-extensions/kana-extensions-guide.tsx",
     "app/stations/mora-timing/mora-timing-guide.tsx",
+    "app/stations/pitch-accent/pitch-accent-guide.tsx",
   ].map((path) => readFile(new URL(path, root), "utf8")));
 
   for (const guide of guides) {
@@ -813,8 +827,8 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.hiragana-test-close\s*\{[^}]*width:\s*2rem[^}]*height:\s*2rem[^}]*border-radius:\s*50%[^}]*appearance:\s*none/s);
   assert.match(styles, /\.hiragana-test-close::before\s*\{[^}]*inset:\s*-0\.375rem[^}]*content:\s*""/s);
   assert.match(styles, /\.hiragana-test-close:focus-visible\s*\{[^}]*outline:\s*none[^}]*box-shadow:/s);
-  assert.match(flashcardReview, /<span>Not yet<\/span>/);
-  assert.match(flashcardReview, /<span>Got it!<\/span>/);
+  assert.match(flashcardReview, /<span>Not Yet<\/span>/);
+  assert.match(flashcardReview, /<span>Good<\/span>/);
   assert.equal((source.match(/className="hiragana-test-answer-icon"/g) ?? []).length, 4);
   assert.equal((flashcardReview.match(/className="hiragana-test-answer-icon"/g) ?? []).length, 2);
   assert.match(styles, /\.hiragana-test-answer-icon\s*\{[^}]*stroke:\s*currentcolor/s);

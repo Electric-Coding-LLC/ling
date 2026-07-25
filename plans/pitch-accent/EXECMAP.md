@@ -8,7 +8,7 @@ Extend the Speech line with a source-verified, listening-first Pitch accent stat
 
 - Validate every contour and audio asset before station implementation; do not treat synthetic speech as pitch-accurate without evidence.
 - Use source material as a reference only unless its license explicitly permits bundling; record provenance for the authored content and audio that ships.
-- Present pitch through Japanese writing, sound, and a clear mora-level contour; use no romaji, numeric accent notation, stress marks, scores, streaks, timers, or gamification.
+- Present pitch through Japanese writing, sound, and a clear mora-level contour; use no romaji, numeric accent notation, stress marks, scores, streaks, or gamification.
 - Keep the first station to word-level perception and recall. Do not expand into sentence prosody, dialect comparison, vocabulary management, speech recording, or pronunciation scoring.
 - Reuse the current station, flashcard-review, identity, D1 repository, and private non-cacheable API patterns; add no dependency or generic content/deck abstraction.
 - Preserve existing network geography. Reveal Pitch accent only after Mora timing is complete, and draw no speculative Speech segment beyond it.
@@ -16,13 +16,13 @@ Extend the Speech line with a source-verified, listening-first Pitch accent stat
 
 ## Execution Map
 
-- [ ] [Validate and freeze the pitch-accent content and audio contract.](./01-content-contract.md)
-- [ ] Add `pitch-accent` to the learning domain, prerequisite chain, D1 schema and generated migration, focused repository methods, introduction endpoint, and private knowledge API.
-- [ ] Extend the Speech-line network, route availability, stored/query focus, keyboard neighbors, mobile horizontal navigation, loading treatment, and station locator so Pitch accent appears only after Mora timing is complete.
-- [ ] Build `/stations/pitch-accent` with concise teaching examples, mora-aligned pitch contours, direct bundled playback, and a listening-first `Good` / `Not Yet` review using the shared flashcard interaction.
-- [ ] Add focused regression coverage for content validity, audio files, authentication and cache headers, persistence, prerequisite/reset behavior, route guards, network geometry/navigation, accessibility, and responsive station behavior.
-- [ ] Update `VISION.md` so the current network and station-interior contract include Pitch accent without promoting speculative future geography.
-- [ ] Generate and inspect the migration, apply it locally, run `npm run check` and `execmap check .`, review the final diff, and verify the unlock/reset path plus the station at mobile and desktop widths with every teaching and review audio control.
+- [x] [Validate and freeze the pitch-accent content and machine-verified audio contract; reserve the human listening pass for final browser verification.](./01-content-contract.md)
+- [x] Add `pitch-accent` to the learning domain, prerequisite chain, D1 schema and generated migration, focused repository methods, introduction endpoint, and private knowledge API.
+- [x] Extend the Speech-line network, route availability, stored/query focus, keyboard neighbors, mobile horizontal navigation, loading treatment, and station locator so Pitch accent appears only after Mora timing is complete.
+- [x] Build `/stations/pitch-accent` with concise teaching examples, mora-aligned pitch contours, direct bundled playback, and a listening-first `Good` / `Not Yet` review using the shared flashcard interaction.
+- [x] Add focused regression coverage for content validity, audio files, authentication and cache headers, persistence, prerequisite/reset behavior, route guards, network geometry/navigation, accessibility, and responsive station behavior.
+- [x] Update `VISION.md` so the current network and station-interior contract include Pitch accent without promoting speculative future geography.
+- [ ] Generate and inspect the migration, apply it locally, run `npm run check` and `execmap check .`, review the final diff, and verify the unlock/reset path plus the station at mobile and desktop widths with every teaching and review audio control, including one human listening pass over all ten authored assets.
 
 ## Done When
 

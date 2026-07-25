@@ -1,7 +1,7 @@
 import { LingWordmark } from "../brand";
 import { NavigationLink } from "../navigation-feedback";
 
-type NetworkPosition = "combined-sounds" | "hiragana" | "kana" | "katakana" | "mora-timing" | "sound-marks";
+type NetworkPosition = "combined-sounds" | "hiragana" | "kana" | "katakana" | "mora-timing" | "pitch-accent" | "sound-marks";
 
 function NetworkGlyph({ position }: { position: NetworkPosition }) {
   if (position === "kana") {

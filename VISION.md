@@ -80,10 +80,10 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-The current mapped network has two lines and six stations:
+The current mapped network has two lines and seven stations:
 
 ```text
-Speech              Vowels ───────── Mora timing
+Speech              Vowels ───────── Mora Timing ───────── Pitch Accent
                       │
 Kana                  │
                       │
@@ -104,7 +104,7 @@ Kana                  │
 
 The chart places Hiragana and Katakana in separate rows beneath the same five sounds. Each Kana opens a flashcard with its pronunciation, a playable Japanese example word, and a translation.
 
-This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Vowels` alone, reveals the Kana segment to `Hiragana` after the learner explores Vowels, extends to `Katakana` after Hiragana is known, then reaches `Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is completed. Completing Yōon reveals `Mora timing` on the Speech line. Future stations and connecting segments stay hidden until their prerequisites are complete. Do not use faint or inactive geography, and add no line segments for speculative stations.
+This seed is a valid piece of the eventual network, not a disposable prototype. The visible network represents where the learner has traveled: it begins with `Vowels` alone, reveals the Kana segment to `Hiragana` after the learner explores Vowels, extends to `Katakana` after Hiragana is known, then reaches `Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is completed. Completing Yōon reveals `Mora Timing` on the Speech line, and completing Mora Timing extends that line once more to `Pitch Accent`. Future stations and connecting segments stay hidden until their prerequisites are complete. Do not use faint or inactive geography, and add no line segments for speculative stations.
 
 ## Current Station Interiors
 
@@ -118,7 +118,9 @@ This seed is a valid piece of the eventual network, not a disposable prototype. 
 
 `Yōon` teaches how small `ゃ`, `ゅ`, and `ょ` and their Katakana matches join the Kana before them to make one sound. One complete three-column chart keeps every Hiragana and Katakana combination visible, and every entry opens the same flashcard and private progress interaction used by the preceding Kana stations.
 
-`Mora timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division. The station remains hidden until Yōon is complete.
+`Mora Timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division. The station remains hidden until Yōon is complete.
+
+`Pitch Accent` introduces standard Tokyo Japanese word-pitch contours as movement between low and high morae. Concise teaching examples group contours by whether pitch stays high, falls early, or falls later. Each bundled word plays directly beside one mora-aligned contour. Review begins with audio and a quiet listening window, then reveals the Japanese word, contour, and meaning before the learner marks it `Good` or `Not Yet`. The station remains hidden until Mora Timing is complete.
 
 All pronunciation is bundled synthetic speech played at its authored speed. Stations record no score. Kana chart and extension tests record only the learner's self-reported knowledge and show it through restrained progress rings on the chart and study rows.
 

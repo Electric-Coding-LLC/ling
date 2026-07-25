@@ -24,7 +24,7 @@ test("flashcards share directional touch gestures and answer transitions", async
   assert.match(review, /onClick=\{\(\) => beginAnswer\(false\)\}/);
   assert.match(review, /onClick=\{\(\) => beginAnswer\(true\)\}/);
   assert.ok(
-    review.indexOf("<span>Not yet</span>") < review.indexOf("<span>Got it!</span>"),
+    review.indexOf("<span>Not Yet</span>") < review.indexOf("<span>Good</span>"),
     "the fallback button order should match Not-yet-left and Got-it-right swipes",
   );
   assert.match(styles, /\.hiragana-test-card-gesture\s*\{[^}]*touch-action:\s*pan-y/s);
@@ -34,8 +34,8 @@ test("flashcards share directional touch gestures and answer transitions", async
   assert.match(styles, /@media \(max-width: 600px\), \(hover: none\) and \(pointer: coarse\) \{[\s\S]*\.hiragana-test-answer\s*\{[^}]*min-height:\s*2\.75rem[^}]*font-size:\s*0\.875rem[\s\S]*\.hiragana-test-answer-yes\s*\{[^}]*color:\s*var\(--known\)[^}]*background:\s*transparent/s);
   assert.match(styles, /@media \(max-width: 600px\), \(hover: none\) and \(pointer: coarse\) \{[\s\S]*\.hiragana-test-answer-no\s*\{[^}]*color:\s*var\(--sound\)/s);
   assert.match(review, /className="hiragana-test-actions hiragana-test-review-actions"/);
-  assert.match(review, /className="hiragana-test-swipe-icon"[\s\S]*M13 8H3m4-4L3 8l4 4[\s\S]*<span>Not yet<\/span>/);
-  assert.match(review, /<span>Got it!<\/span>[\s\S]*className="hiragana-test-swipe-icon"[\s\S]*M3 8h10m-4-4 4 4-4 4/);
+  assert.match(review, /className="hiragana-test-swipe-icon"[\s\S]*M13 8H3m4-4L3 8l4 4[\s\S]*<span>Not Yet<\/span>/);
+  assert.match(review, /<span>Good<\/span>[\s\S]*className="hiragana-test-swipe-icon"[\s\S]*M3 8h10m-4-4 4 4-4 4/);
   assert.match(styles, /\.hiragana-test-swipe-icon\s*\{[^}]*display:\s*none[^}]*stroke:\s*currentcolor/s);
   assert.match(styles, /\.hiragana-test-review-actions \.hiragana-test-answer-icon\s*\{[^}]*display:\s*none[^}]*\}[\s\S]*\.hiragana-test-review-actions \.hiragana-test-swipe-icon\s*\{[^}]*display:\s*block/s);
   assert.match(review, /revealed \? \([\s\S]*className="hiragana-test-example"[\s\S]*\) : \([\s\S]*<FlashcardCountdown onComplete=\{onReveal\} \/>/);

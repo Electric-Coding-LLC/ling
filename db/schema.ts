@@ -84,3 +84,15 @@ export const moraTimingKnowledge = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.reviewId] })],
 );
+
+export const pitchAccentKnowledge = sqliteTable(
+  "pitch_accent_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemId: text("item_id").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.itemId] })],
+);

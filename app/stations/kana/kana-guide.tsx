@@ -8,7 +8,9 @@ import {
   JAPANESE_VOWEL_SOUND_CUES,
   splitJapaneseMorae,
 } from "@/src/modules/learning/japanese-sound-cues";
+import { isVowelKana } from "@/src/modules/learning/vowels";
 import { FlashcardContent, FlashcardReview } from "../flashcard-review";
+import { StationOptions } from "../station-options";
 import { useFlashcardAudio } from "../use-flashcard-audio";
 
 type VowelCard = {
@@ -162,6 +164,22 @@ export function KanaGuide() {
     });
   }
 
+  async function setAllKnowledge(known: boolean) {
+    setKnowledgeError(false);
+    const response = await fetch("/api/stations/kana/knowledge", {
+      body: JSON.stringify({ known }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    });
+    if (!response.ok) throw new Error("Knowledge could not save");
+
+    const payload = await response.json() as { known?: unknown };
+    if (!Array.isArray(payload.known)) throw new Error("Knowledge is invalid");
+    const nextKnown = payload.known.filter(isVowelKana);
+    if (nextKnown.length !== payload.known.length) throw new Error("Knowledge is invalid");
+    setKnownKana(new Set(nextKnown));
+  }
+
   function renderTestButton() {
     const knownCount = VOWEL_CARDS.filter((entry) => knownKana.has(entry.kana)).length;
     const remainingCount = VOWEL_CARDS.length - knownCount;
@@ -215,7 +233,19 @@ export function KanaGuide() {
             <span className="station-membership station-membership-sound" data-line="sound">Speech</span>
             <span className="station-membership station-membership-writing" data-line="writing">Kana</span>
           </div>
-          <div className="station-heading-actions">{renderTestButton()}</div>
+          <div className="station-heading-actions">
+            <StationOptions
+              allComplete={knownKana.size === VOWEL_CARDS.length}
+              completeDescription="This marks all 10 Vowels as complete."
+              hasProgress={knownKana.size > 0}
+              onError={() => setKnowledgeError(true)}
+              onSetComplete={setAllKnowledge}
+              resetDescription="This marks all 10 Vowels as incomplete."
+              stationId="vowels"
+              stationName="Vowels"
+            />
+            {renderTestButton()}
+          </div>
         </div>
         <h1>Vowels</h1>
       </header>

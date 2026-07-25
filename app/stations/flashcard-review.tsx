@@ -326,7 +326,7 @@ export function FlashcardReview({
           <svg aria-hidden="true" className="hiragana-test-swipe-icon" viewBox="0 0 16 16">
             <path d="M13 8H3m4-4L3 8l4 4" />
           </svg>
-          <span>Not yet</span>
+          <span>Not Yet</span>
         </button>
         <button
           className="hiragana-test-answer hiragana-test-answer-yes"
@@ -336,7 +336,7 @@ export function FlashcardReview({
           <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">
             <path d="m3 8.5 3 3 7-7" />
           </svg>
-          <span>Got it!</span>
+          <span>Good</span>
           <svg aria-hidden="true" className="hiragana-test-swipe-icon" viewBox="0 0 16 16">
             <path d="M3 8h10m-4-4 4 4-4 4" />
           </svg>

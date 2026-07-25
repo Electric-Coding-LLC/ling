@@ -1,7 +1,11 @@
 import { getOrCreateUser } from "@/src/modules/users/repository";
-import { isMoraTimingReviewId } from "@/src/modules/learning/mora-timing";
+import {
+  isMoraTimingReviewId,
+  MORA_TIMING_REVIEW_IDS,
+} from "@/src/modules/learning/mora-timing";
 import {
   listKnownMoraTimingReviews,
+  setAllMoraTimingReviewsKnown,
   setMoraTimingReviewKnown,
 } from "@/src/modules/learning/repository";
 import { getCurrentIdentity } from "@/src/platform/current-identity";
@@ -29,6 +33,20 @@ export async function PUT(request: Request) {
   return Response.json(body, { headers: privateNoStoreHeaders() });
 }
 
+export async function PATCH(request: Request) {
+  const user = await getCurrentUser();
+  if (!user) return unauthorized();
+
+  const body = await readJson(request);
+  if (!isBulkKnowledgeUpdate(body)) return invalidKnowledge();
+
+  await setAllMoraTimingReviewsKnown(user.id, body.known);
+  return Response.json(
+    { known: body.known ? MORA_TIMING_REVIEW_IDS : [] },
+    { headers: privateNoStoreHeaders() },
+  );
+}
+
 async function getCurrentUser() {
   const identity = await getCurrentIdentity();
   return identity ? getOrCreateUser(identity) : null;
@@ -52,6 +70,13 @@ function isKnowledgeUpdate(
   const candidate = value as { reviewId?: unknown; known?: unknown };
   return isMoraTimingReviewId(candidate.reviewId)
     && typeof candidate.known === "boolean";
+}
+
+function isBulkKnowledgeUpdate(
+  value: unknown,
+): value is { known: boolean } {
+  if (!value || typeof value !== "object") return false;
+  return typeof (value as { known?: unknown }).known === "boolean";
 }
 
 function unauthorized() {

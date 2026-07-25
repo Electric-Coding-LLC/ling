@@ -5,6 +5,7 @@ import {
   kanaExtensionKnowledge,
   katakanaKnowledge,
   moraTimingKnowledge,
+  pitchAccentKnowledge,
   stationIntroductions,
 } from "@/db/schema";
 import {
@@ -35,6 +36,15 @@ import {
   MORA_TIMING_REVIEW_IDS,
   type MoraTimingReviewId,
 } from "./mora-timing";
+import {
+  isPitchAccentItemId,
+  PITCH_ACCENT_ITEM_IDS,
+  type PitchAccentItemId,
+} from "./pitch-accent";
+import {
+  VOWEL_HIRAGANA,
+  VOWEL_KATAKANA,
+} from "./vowels";
 
 const HIRAGANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 const KANA_EXTENSION_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
@@ -79,6 +89,7 @@ export async function listCompletedStations(
     knownKatakana,
     knownKanaExtensionPatterns,
     knownMoraTimingReviews,
+    knownPitchAccentItems,
   ] = await Promise.all([
     introductions.includes("hiragana") ? listKnownHiragana(userId) : [],
     introductions.includes("katakana") ? listKnownKatakana(userId) : [],
@@ -88,6 +99,9 @@ export async function listCompletedStations(
     introductions.includes("mora-timing")
       ? listKnownMoraTimingReviews(userId)
       : [] as MoraTimingReviewId[],
+    introductions.includes("pitch-accent")
+      ? listKnownPitchAccentItems(userId)
+      : [] as PitchAccentItemId[],
   ]);
   const independentlyCompleted = introductions.filter(
     (stationId) => (
@@ -109,6 +123,12 @@ export async function listCompletedStations(
         stationId !== "mora-timing"
         || MORA_TIMING_REVIEW_IDS.every((reviewId) =>
           knownMoraTimingReviews.includes(reviewId),
+        )
+      )
+      && (
+        stationId !== "pitch-accent"
+        || PITCH_ACCENT_ITEM_IDS.every((itemId) =>
+          knownPitchAccentItems.includes(itemId),
         )
       )
     ),
@@ -281,6 +301,49 @@ export async function setAllKatakanaKnown(
   await db.batch([firstStatement, ...remainingStatements]);
 }
 
+export async function setAllVowelsKnown(
+  userId: string,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db.batch([
+      db
+        .delete(hiraganaKnowledge)
+        .where(and(
+          eq(hiraganaKnowledge.userId, userId),
+          inArray(hiraganaKnowledge.kana, VOWEL_HIRAGANA),
+        )),
+      db
+        .delete(katakanaKnowledge)
+        .where(and(
+          eq(katakanaKnowledge.userId, userId),
+          inArray(katakanaKnowledge.kana, VOWEL_KATAKANA),
+        )),
+    ]);
+    return;
+  }
+
+  const knownAt = new Date();
+  await db.batch([
+    db
+      .insert(hiraganaKnowledge)
+      .values(VOWEL_HIRAGANA.map((kana) => ({ userId, kana, knownAt })))
+      .onConflictDoUpdate({
+        target: [hiraganaKnowledge.userId, hiraganaKnowledge.kana],
+        set: { knownAt },
+      }),
+    db
+      .insert(katakanaKnowledge)
+      .values(VOWEL_KATAKANA.map((kana) => ({ userId, kana, knownAt })))
+      .onConflictDoUpdate({
+        target: [katakanaKnowledge.userId, katakanaKnowledge.kana],
+        set: { knownAt },
+      }),
+  ]);
+}
+
 export async function listKnownKanaExtensionPatterns(
   userId: string,
 ): Promise<KanaExtensionPatternId[]> {
@@ -413,5 +476,99 @@ export async function setMoraTimingReviewKnown(
     .onConflictDoUpdate({
       target: [moraTimingKnowledge.userId, moraTimingKnowledge.reviewId],
       set: { knownAt: new Date() },
+    });
+}
+
+export async function setAllMoraTimingReviewsKnown(
+  userId: string,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(moraTimingKnowledge)
+      .where(eq(moraTimingKnowledge.userId, userId));
+    return;
+  }
+
+  const knownAt = new Date();
+  await db
+    .insert(moraTimingKnowledge)
+    .values(MORA_TIMING_REVIEW_IDS.map((reviewId) => ({
+      userId,
+      reviewId,
+      knownAt,
+    })))
+    .onConflictDoUpdate({
+      target: [moraTimingKnowledge.userId, moraTimingKnowledge.reviewId],
+      set: { knownAt },
+    });
+}
+
+export async function listKnownPitchAccentItems(
+  userId: string,
+): Promise<PitchAccentItemId[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ itemId: pitchAccentKnowledge.itemId })
+    .from(pitchAccentKnowledge)
+    .where(eq(pitchAccentKnowledge.userId, userId));
+
+  return rows.map((row) => row.itemId).filter(isPitchAccentItemId);
+}
+
+export async function setPitchAccentItemKnown(
+  userId: string,
+  itemId: PitchAccentItemId,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(pitchAccentKnowledge)
+      .where(
+        and(
+          eq(pitchAccentKnowledge.userId, userId),
+          eq(pitchAccentKnowledge.itemId, itemId),
+        ),
+      );
+    return;
+  }
+
+  await db
+    .insert(pitchAccentKnowledge)
+    .values({ userId, itemId, knownAt: new Date() })
+    .onConflictDoUpdate({
+      target: [pitchAccentKnowledge.userId, pitchAccentKnowledge.itemId],
+      set: { knownAt: new Date() },
+    });
+}
+
+export async function setAllPitchAccentItemsKnown(
+  userId: string,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(pitchAccentKnowledge)
+      .where(eq(pitchAccentKnowledge.userId, userId));
+    return;
+  }
+
+  const knownAt = new Date();
+  await db
+    .insert(pitchAccentKnowledge)
+    .values(PITCH_ACCENT_ITEM_IDS.map((itemId) => ({
+      userId,
+      itemId,
+      knownAt,
+    })))
+    .onConflictDoUpdate({
+      target: [pitchAccentKnowledge.userId, pitchAccentKnowledge.itemId],
+      set: { knownAt },
     });
 }

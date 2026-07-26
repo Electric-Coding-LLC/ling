@@ -14,7 +14,7 @@ export async function POST() {
   }
 
   const user = await getOrCreateUser(identity);
-  await recordStationIntroduction(user.id, "kana");
+  await recordStationIntroduction(user.id, "vowels");
 
   return Response.json(
     { available: ["hiragana"] },

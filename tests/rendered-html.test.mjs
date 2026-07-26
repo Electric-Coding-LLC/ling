@@ -47,17 +47,18 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /<p class="loading-kicker">Loading<\/p>/i);
   assert.doesNotMatch(html, /<p class="loading-title">Ling<\/p>/i);
   assert.doesNotMatch(html, /data-ling-ready=/i);
-  assert.match(html, /data-line="travel"[^>]*>Japan</i);
+  assert.match(html, /<text[^>]*aria-label="Japan line"[^>]*data-line="travel"/i);
   assert.match(html, /data-line="sound"[^>]*>Speech</i);
-  assert.doesNotMatch(html, /data-line="writing"[^>]*>Kana</i);
+  assert.match(html, /<text[^>]*aria-label="Script line"[^>]*data-line="writing"/i);
   assert.match(html, /data-network-view="desktop"/i);
   assert.match(html, /class="network-desktop-viewport"[^>]*tabindex="0"/i);
   assert.doesNotMatch(html, /class="network-map network-map-desktop"[^>]*tabindex=/i);
   assert.match(html, /data-network-view="mobile"/i);
-  assert.match(html, /aria-label="Japanese, Japan, and Speech network"/i);
+  assert.match(html, /aria-label="Japanese, Japan, Speech, and Script network"/i);
   assert.match(html, /data-tooltip="Speech line"/i);
-  assert.doesNotMatch(html, /data-tooltip="Kana line"/i);
-  assert.doesNotMatch(html, /<title>(?:Speech|Kana) line<\/title>/i);
+  assert.match(html, /data-tooltip="Local connection"/i);
+  assert.match(html, /data-tooltip="Script line"/i);
+  assert.doesNotMatch(html, /<title>(?:Speech|Script) line<\/title>/i);
   assert.doesNotMatch(html, /data-station="mora-timing"/i);
   assert.doesNotMatch(html, /data-station="pitch-accent"/i);
   assert.doesNotMatch(html, /data-station="katakana"/i);
@@ -79,9 +80,11 @@ test("server-renders the Ling network home", async () => {
     assert.match(html, new RegExp(`href="/stations/${station}"`, "i"));
   }
   assert.match(html, /data-station="japanese"[^>]*data-station-kind="interchange"/i);
+  assert.match(html, /data-station="romaji"[^>]*data-station-kind="local"/i);
   assert.match(html, /data-station="kana"/i);
-  assert.doesNotMatch(html, /data-station="vowels"/i);
-  assert.match(html, /data-station="kana"[^>]*data-station-kind="single-line"/i);
+  assert.match(html, /data-station="vowels"/i);
+  assert.match(html, /data-station="kana"[^>]*data-station-kind="interchange"/i);
+  assert.match(html, /data-station="vowels"[^>]*data-station-kind="single-line"/i);
   assert.doesNotMatch(html, /data-station="mora-timing"[^>]*data-station-kind="single-line"/i);
   assert.doesNotMatch(html, /href="\/stations\/mora-timing"/i);
   assert.doesNotMatch(html, /href="\/stations\/pitch-accent"/i);
@@ -90,6 +93,7 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /href="\/stations\/sound-marks"/i);
   assert.doesNotMatch(html, /href="\/stations\/combined-sounds"/i);
   assert.match(html, /href="\/stations\/kana"/i);
+  assert.match(html, /href="\/stations\/vowels"/i);
   assert.doesNotMatch(html, /aria-disabled="true"|data-available=/i);
   assert.doesNotMatch(html, /Learn Hiragana to activate Mora timing/i);
   assert.match(html, /href="\/welcome"/i);
@@ -98,7 +102,8 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /title="About Ling"/i);
   assert.doesNotMatch(html, /network-welcome-entry|A quick guide to the network, practice, and progress/i);
   assert.match(html, /Japanese opens the network and begins the Japan and Speech lines/i);
-  assert.match(html, /Vowels follows Japanese on the Speech line/i);
+  assert.match(html, /Rōmaji is a local connection point between Japanese, Visit, and Kana/i);
+  assert.match(html, /Kana follows Japanese on the Speech line and begins the Script line with Vowels/i);
   assert.doesNotMatch(html, /After Vowels/i);
   assert.match(html, /aria-label="Ling"[^>]*role="img"/i);
   assert.doesNotMatch(html, /aria-label="Ready"/i);
@@ -182,13 +187,7 @@ test("server-renders the base network before private availability loads", async 
   assert.doesNotMatch(pitchHtml, /data-station="pitch-accent"/i);
 });
 
-test("the retired Vowels route leads to Kana", async () => {
-  const response = await request("/stations/vowels");
-  assert.ok([307, 308].includes(response.status));
-  assert.match(response.headers.get("location") ?? "", /\/stations\/kana$/i);
-});
-
-test("the eight Japan line stations are always available without progression", async () => {
+test("the Japan area stations and Connector are always available without progression", async () => {
   for (const station of [
     "japanese",
     "visit",
@@ -209,8 +208,16 @@ test("the eight Japan line stations are always available without progression", a
         ? "Rōmaji"
         : station[0].toUpperCase() + station.slice(1);
     assert.match(html, new RegExp(`<h1>${title}</h1>`, "i"));
-    assert.match(html, /station-membership station-membership-travel/);
-    assert.match(html, /station-membership station-membership-travel">Japan<\/span>/);
+    if (station === "romaji") {
+      assert.match(html, /aria-label="Network role"/);
+      assert.match(html, /station-membership station-membership-connector/);
+      assert.match(html, /station-membership station-membership-connector">Connector<\/span>/);
+      assert.doesNotMatch(html, /station-membership station-membership-travel/);
+      assert.doesNotMatch(html, /station-membership station-membership-writing/);
+    } else {
+      assert.match(html, /station-membership station-membership-travel/);
+      assert.match(html, /station-membership station-membership-travel">Japan<\/span>/);
+    }
     if (station === "japanese" || station === "visit") {
       if (station === "japanese") {
         assert.doesNotMatch(html, /travel-reference/);
@@ -292,7 +299,8 @@ test("the eight Japan line stations are always available without progression", a
       for (const sound of ["ah", "ee", "oo", "eh", "oh"]) {
         assert.match(html, new RegExp(`>${sound}<`));
       }
-      assert.match(html, /Rōmaji writes Japanese sounds with the Roman alphabet\./);
+      assert.match(html, /Rōmaji uses the Latin alphabet—the letters A–Z—to represent Japanese sounds\./);
+      assert.match(html, /We use it as a bridge, so you can read the sounds in the Kana stations while learning Hiragana and Katakana\./);
       assert.doesNotMatch(
         html,
         /The chart follows|shows only the Rōmaji|Tap one to say|reveal and hear/,
@@ -450,7 +458,7 @@ test("redirects Pitch Accent until Mora Timing is complete", async () => {
   assert.match(response.headers.get("location") ?? "", /\/\?focus=pitch-accent$/i);
 });
 
-test("redirects Hiragana until Kana has been introduced", async () => {
+test("redirects Hiragana until Vowels has been introduced", async () => {
   const response = await request("/stations/hiragana");
   assert.ok([307, 308].includes(response.status));
   assert.match(response.headers.get("location") ?? "", /\/\?focus=hiragana$/i);
@@ -480,8 +488,25 @@ test("the retired Kana extensions route leads to Dakuten & Handakuten", async ()
   assert.match(response.headers.get("location") ?? "", /\/stations\/sound-marks$/i);
 });
 
-test("server-renders the Vowels introduction", async () => {
+test("server-renders Kana as the Speech and Script interchange", async () => {
   const response = await request("/stations/kana");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+
+  assert.match(html, /<h1>Kana<\/h1>/i);
+  assert.match(html, /aria-label="Return to network map from Kana"/i);
+  assert.match(html, /data-position="kana"/i);
+  assert.match(html, /class="station-map-sound"/i);
+  assert.match(html, /class="station-map-writing"/i);
+  assert.match(html, /data-line="sound"[^>]*>Speech</i);
+  assert.match(html, /data-line="writing"[^>]*>Script</i);
+  assert.match(html, /Kana is the collective name for Hiragana and Katakana/i);
+  assert.match(html, /href="\/stations\/vowels"[^>]*>Vowels</i);
+  assert.doesNotMatch(html, /aria-label="Test All Vowels/i);
+});
+
+test("server-renders the Vowels introduction", async () => {
+  const response = await request("/stations/vowels");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
@@ -490,17 +515,12 @@ test("server-renders the Vowels introduction", async () => {
   assert.match(html, /aria-label="Return to the Ling network map"/i);
   assert.match(html, /aria-label="Station navigation"/i);
   assert.match(html, /aria-label="Return to network map from Vowels"/i);
-  assert.equal((html.match(/href="\/\?focus=kana"/gi) ?? []).length, 1);
-  assert.match(html, /data-position="kana"/i);
-  assert.match(html, /class="station-map-sound"/i);
+  assert.equal((html.match(/href="\/\?focus=vowels"/gi) ?? []).length, 1);
+  assert.match(html, /data-position="vowels"/i);
   assert.match(html, /class="station-map-writing"/i);
-  assert.match(html, /data-line="sound"[^>]*>Speech</i);
-  assert.match(html, /data-line="writing"[^>]*>Kana</i);
-  assert.match(html, /Kana is the collective name for Hiragana and Katakana/i);
-  assert.match(html, /used to write how Japanese words sound/i);
-  assert.match(html, /Both sets represent the same sounds with different shapes/i);
-  assert.match(html, /Hiragana is used for everyday Japanese words and grammar/i);
-  assert.match(html, /Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects/i);
+  assert.match(html, /data-line="writing"[^>]*>Script</i);
+  assert.match(html, /Japanese Kana are built around five vowel sounds/i);
+  assert.match(html, /Hiragana and Katakana write each sound with a different shape/i);
   assert.doesNotMatch(html, /<dl|<dt|<dd/i);
   assert.match(html, /Start with the five vowel sounds.*Tap any Kana to practice it/is);
   assert.doesNotMatch(html, /International Phonetic Alphabet|\bIPA\b/i);
@@ -509,11 +529,12 @@ test("server-renders the Vowels introduction", async () => {
   assert.equal((html.match(/class="hiragana-button"/gi) ?? []).length, 10);
   assert.match(html, /aria-label="Test All Vowels\. 10 remaining\."/i);
   assert.match(html, /あ.*い.*う.*え.*お.*ア.*イ.*ウ.*エ.*オ/is);
-  assert.match(html, />ah<.*>ee<.*>oo<.*>eh<.*>oh</is);
+  assert.match(html, />a<.*>i<.*>u<.*>e<.*>o</is);
+  assert.doesNotMatch(html, />ah<.*>ee<.*>oo<.*>eh<.*>oh</is);
   assert.match(html, /Same sound, two shapes.*Each pair above is pronounced the same way/is);
   assert.doesNotMatch(html, /kana-study-button|kana-study-example-button|kana-pair/i);
   assert.doesNotMatch(html, /Kanji is different|Kanji primarily carries meaning/i);
-  assert.doesNotMatch(html, /romaji|score|streak|progress meter/i);
+  assert.doesNotMatch(html, /score|streak|progress meter/i);
 });
 
 test("health and version routes are private and non-cacheable", async () => {
@@ -542,13 +563,13 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(introduction.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await introduction.json(), { error: "unauthorized" });
 
-  const kanaIntroduction = await request(
-    "/api/stations/kana/introduction",
+  const vowelsIntroduction = await request(
+    "/api/stations/vowels/introduction",
     { method: "POST" },
   );
-  assert.equal(kanaIntroduction.status, 401);
-  assert.equal(kanaIntroduction.headers.get("cache-control"), "private, no-store");
-  assert.deepEqual(await kanaIntroduction.json(), { error: "unauthorized" });
+  assert.equal(vowelsIntroduction.status, 401);
+  assert.equal(vowelsIntroduction.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await vowelsIntroduction.json(), { error: "unauthorized" });
 
   const katakanaIntroduction = await request(
     "/api/stations/katakana/introduction",
@@ -635,7 +656,7 @@ test("the current-user API fails closed without production identity", async () =
   );
   assert.deepEqual(await romajiKnowledgeUpdate.json(), { error: "unauthorized" });
 
-  for (const station of ["kana", "romaji", "mora-timing", "pitch-accent"]) {
+  for (const station of ["vowels", "romaji", "mora-timing", "pitch-accent"]) {
     const bulkStationKnowledgeUpdate = await request(
       `/api/stations/${station}/knowledge`,
       {

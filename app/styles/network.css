@@ -15,6 +15,7 @@
   flex: none;
   align-items: center;
   justify-content: center;
+  margin-inline-end: -0.5rem;
   color: var(--muted);
   text-decoration: none;
 }
@@ -96,6 +97,9 @@
 .network-desktop-viewport:focus-visible[data-desktop-focus="hiragana"]
   [data-station="hiragana"]
   .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="vowels"]
+  [data-station="vowels"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="kana"]
   [data-station="kana"]
   .network-station-backlight {
@@ -176,6 +180,12 @@
   stroke: var(--travel);
 }
 
+.network-line-local {
+  stroke: var(--muted);
+  stroke-opacity: 0.72;
+  stroke-width: 3;
+}
+
 .network-station-label {
   fill: var(--foreground);
 }
@@ -204,6 +214,10 @@
 
 .network-single-station-outer-sound {
   stroke: var(--sound);
+}
+
+.network-single-station-outer-local {
+  stroke: var(--muted);
 }
 
 .network-single-station-outer-writing {
@@ -302,6 +316,9 @@
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="hiragana"]
     [data-station="hiragana"]
     .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="vowels"]
+    [data-station="vowels"]
+    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="kana"]
     [data-station="kana"]
     .network-station-backlight {
@@ -319,6 +336,7 @@
   }
 
   .network-mobile-track-kana,
+  .network-mobile-track-vowels,
   .network-mobile-track-hiragana,
   .network-mobile-track-katakana,
   .network-mobile-track-marks,

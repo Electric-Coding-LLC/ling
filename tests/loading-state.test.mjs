@@ -51,7 +51,7 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(screen, /loading-title/);
   assert.match(screen, /loading-track/);
   assert.doesNotMatch(screen, /<svg|loading-network|spinner/i);
-  assert.match(kanaLoading, /<LoadingScreen station="Vowels" \/>/);
+  assert.match(kanaLoading, /<LoadingScreen station="Kana" \/>/);
   assert.match(extensionsLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(soundMarksLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(combinedSoundsLoading, /<LoadingScreen station="Yōon" \/>/);

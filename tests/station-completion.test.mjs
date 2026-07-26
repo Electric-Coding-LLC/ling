@@ -17,9 +17,9 @@ test("station completion follows the prerequisite chain", () => {
       "combined-sounds",
       "katakana",
       "hiragana",
-      "kana",
+      "vowels",
     ]),
-    ["kana", "hiragana", "katakana"],
+    ["vowels", "hiragana", "katakana"],
   );
 
   assert.deepEqual(
@@ -28,9 +28,9 @@ test("station completion follows the prerequisite chain", () => {
       "combined-sounds",
       "sound-marks",
       "katakana",
-      "kana",
+      "vowels",
     ]),
-    ["kana"],
+    ["vowels"],
   );
 
   assert.deepEqual(
@@ -40,8 +40,8 @@ test("station completion follows the prerequisite chain", () => {
       "sound-marks",
       "katakana",
       "hiragana",
-      "kana",
+      "vowels",
     ]),
-    ["kana", "hiragana", "katakana", "sound-marks", "combined-sounds"],
+    ["vowels", "hiragana", "katakana", "sound-marks", "combined-sounds"],
   );
 });

@@ -4,10 +4,12 @@ import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KanaExtensionPatternId } from "@/src/modules/learning/kana-extensions";
 import {
-  getJapaneseSoundCue,
-  getJapaneseWordSoundCue,
-  JAPANESE_VOWEL_SOUND_CUES,
-  JAPANESE_YOON_VOWEL_SOUND_CUES,
+  getJapaneseRomaji,
+  getJapaneseWordRomaji,
+  JAPANESE_ROMAJI_VOWELS,
+  JAPANESE_ROMAJI_YOON_VOWELS,
+} from "@/src/modules/romaji";
+import {
   splitJapaneseMorae,
 } from "@/src/modules/learning/japanese-sound-cues";
 import { FlashcardContent, FlashcardReview } from "../flashcard-review";
@@ -243,7 +245,7 @@ export function CombinedSoundsGuide() {
       intro={(
         <>
           <p>Yōon is a way of writing one sound with two Kana. A small <strong lang="ja">ゃ</strong>, <strong lang="ja">ゅ</strong>, or <strong lang="ja">ょ</strong> changes the sound of the Kana before it, and the pair is read together.</p>
-          <p>For example, <strong lang="ja">き</strong> is kee. With a small <strong lang="ja">ゃ</strong>, <strong lang="ja">きゃ</strong> is kyah—not kee-yah. Katakana follows the same pattern with <strong lang="ja">ャ</strong>, <strong lang="ja">ュ</strong>, and <strong lang="ja">ョ</strong>.</p>
+          <p>For example, <strong lang="ja">き</strong> is <span lang="ja-Latn">ki</span>. With a small <strong lang="ja">ゃ</strong>, <strong lang="ja">きゃ</strong> is <span lang="ja-Latn">kya</span>—not <span lang="ja-Latn">ki-ya</span>. Katakana follows the same pattern with <strong lang="ja">ャ</strong>, <strong lang="ja">ュ</strong>, and <strong lang="ja">ョ</strong>.</p>
         </>
       )}
       nextStation="Mora Timing"
@@ -509,7 +511,7 @@ function KanaPatternGuide({
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Kana
+              Script
             </span>
           </div>
           <div className="station-heading-actions">
@@ -600,7 +602,7 @@ function KanaPatternGuide({
                   ? `Replay ${activeCard.kana}`
                   : `Reveal and play ${activeCard.kana}`}
                 announcement={pronunciationRevealed
-                  ? `${getJapaneseSoundCue(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordSoundCue(activeCard.example)}, ${activeCard.translation}`
+                  ? `${getJapaneseRomaji(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordRomaji(activeCard.example)}, ${activeCard.translation}`
                   : ""}
                 key={`${testIndex}-${activeCard.id}`}
                 onActivate={activateCard}
@@ -613,11 +615,11 @@ function KanaPatternGuide({
                     : activeAudioIndex === 1 ? "example" : null}
                   activeExampleBeatIndex={activeBeatIndex}
                   example={activeCard.example}
-                  examplePronunciation={getJapaneseWordSoundCue(activeCard.example)}
+                  examplePronunciation={getJapaneseWordRomaji(activeCard.example)}
                   kana={activeCard.kana}
                   onPlayExample={playExample}
                   onReveal={activateCard}
-                  pronunciation={getJapaneseSoundCue(activeCard.kana)}
+                  pronunciation={getJapaneseRomaji(activeCard.kana)}
                   revealed={pronunciationRevealed}
                   translation={activeCard.translation}
                 />
@@ -685,7 +687,7 @@ function SoundMarksChart({ renderCard }: SoundMarksChartProps) {
         <table aria-label="All marked Hiragana and Katakana sounds" className="hiragana-table kana-extension-all-sounds-chart">
           <thead>
             <tr>
-              {JAPANESE_VOWEL_SOUND_CUES.map((sound) => <th key={sound} scope="col">{sound}</th>)}
+              {JAPANESE_ROMAJI_VOWELS.map((sound) => <th key={sound} scope="col">{sound}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -732,7 +734,7 @@ function CombinedSoundsChart({ renderCard }: CombinedSoundsChartProps) {
         <table aria-label="All combined Hiragana and Katakana sounds" className="hiragana-table kana-extension-all-sounds-chart">
           <thead>
             <tr>
-              {JAPANESE_YOON_VOWEL_SOUND_CUES.map((sound) => <th key={sound} scope="col">{sound}</th>)}
+              {JAPANESE_ROMAJI_YOON_VOWELS.map((sound) => <th key={sound} scope="col">{sound}</th>)}
             </tr>
           </thead>
           <tbody>

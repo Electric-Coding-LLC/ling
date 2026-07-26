@@ -1,5 +1,5 @@
 export const STATION_IDS = [
-  "kana",
+  "vowels",
   "hiragana",
   "katakana",
   "sound-marks",
@@ -13,7 +13,7 @@ export type StationId = (typeof STATION_IDS)[number];
 export const STATION_PREREQUISITES: Partial<
   Record<StationId, readonly StationId[]>
 > = {
-  hiragana: ["kana"],
+  hiragana: ["vowels"],
   katakana: ["hiragana"],
   "sound-marks": ["katakana"],
   "combined-sounds": ["sound-marks"],

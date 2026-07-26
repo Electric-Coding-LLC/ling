@@ -56,7 +56,7 @@ test("first visit, dismissal, and permanent map help stay outside station progre
   assert.match(home, /title="About Ling"/);
   assert.match(home, /className="network-help-link"/);
   assert.doesNotMatch(home, /network-welcome-entry|A quick guide to the network/);
-  assert.match(networkStyles, /\.network-help-link \{[\s\S]*width: 2\.75rem;[\s\S]*height: 2\.75rem;/);
+  assert.match(networkStyles, /\.network-help-link \{[\s\S]*width: 2\.75rem;[\s\S]*height: 2\.75rem;[\s\S]*margin-inline-end: -0\.5rem;/);
   assert.doesNotMatch(networkStyles, /\.network-welcome-(?:entry|link|copy|affordance)/);
   assert.match(guard, /if \(!storage\) return/);
   assert.match(guard, /if \(dismissed === false\) router\.replace\("\/welcome"\)/);

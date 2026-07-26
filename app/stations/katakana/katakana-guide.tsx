@@ -3,9 +3,11 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-  getJapaneseSoundCue,
-  getJapaneseWordSoundCue,
-  JAPANESE_VOWEL_SOUND_CUES,
+  getJapaneseRomaji,
+  getJapaneseWordRomaji,
+  JAPANESE_ROMAJI_VOWELS,
+} from "@/src/modules/romaji";
+import {
   splitJapaneseMorae,
 } from "@/src/modules/learning/japanese-sound-cues";
 import { FlashcardContent, FlashcardReview } from "../flashcard-review";
@@ -352,7 +354,7 @@ export function KatakanaGuide() {
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Kana
+              Script
             </span>
           </div>
           <div className="station-heading-actions">
@@ -433,7 +435,7 @@ export function KatakanaGuide() {
         <table aria-label="The 46 basic Katakana" className="hiragana-table katakana-table">
           <thead>
             <tr>
-              {JAPANESE_VOWEL_SOUND_CUES.map((sound) => (
+              {JAPANESE_ROMAJI_VOWELS.map((sound) => (
                 <th aria-label={`Column of sounds ending in ${sound}`} key={sound} scope="col">
                   {sound}
                 </th>
@@ -483,7 +485,7 @@ export function KatakanaGuide() {
                   ? `Replay ${activeCard.katakana}`
                   : `Reveal and play ${activeCard.katakana}`}
                 announcement={pronunciationRevealed
-                  ? `${getJapaneseSoundCue(activeCard.katakana)}. Example: ${activeCard.example}, ${getJapaneseWordSoundCue(activeCard.example)}, ${activeCard.translation}`
+                  ? `${getJapaneseRomaji(activeCard.katakana)}. Example: ${activeCard.example}, ${getJapaneseWordRomaji(activeCard.example)}, ${activeCard.translation}`
                   : ""}
                 key={`${testIndex}-${activeCard.katakana}`}
                 onActivate={activateCard}
@@ -496,11 +498,11 @@ export function KatakanaGuide() {
                     : activeAudioIndex === 1 ? "example" : null}
                   activeExampleBeatIndex={activeBeatIndex}
                   example={activeCard.example}
-                  examplePronunciation={getJapaneseWordSoundCue(activeCard.example)}
+                  examplePronunciation={getJapaneseWordRomaji(activeCard.example)}
                   kana={activeCard.katakana}
                   onPlayExample={playExample}
                   onReveal={activateCard}
-                  pronunciation={getJapaneseSoundCue(activeCard.katakana)}
+                  pronunciation={getJapaneseRomaji(activeCard.katakana)}
                   revealed={pronunciationRevealed}
                   translation={activeCard.translation}
                 />

@@ -57,6 +57,11 @@
   stroke-width: 3;
 }
 
+.station-map-local {
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
 .station-map-current {
   fill: var(--surface);
   stroke: var(--foreground);
@@ -273,6 +278,10 @@
 
 .station-membership-travel {
   color: var(--travel);
+}
+
+.station-membership-connector::before {
+  height: 0.125rem;
 }
 
 .station-heading h1 {

@@ -22,38 +22,42 @@ type MobileFocus =
   | "pitch"
   | "romaji"
   | "shopping"
-  | "visit";
+  | "visit"
+  | "vowels";
 export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 type AvailabilityStatus = "error" | "loading" | "ready";
 
 // A station-to-station edge uses one visual unit unless its meaning requires otherwise.
 const NETWORK_SEGMENT_LENGTH = 180;
+const NETWORK_JUNCTION_SEGMENT_LENGTH = 220;
 const NETWORK_LINE_NODE_OFFSET = 18;
 const NETWORK_INTERCHANGE_NODE_OFFSET = 31;
 const DESKTOP_JAPANESE_X = 250;
-const DESKTOP_KANA_X = DESKTOP_JAPANESE_X + NETWORK_SEGMENT_LENGTH;
+const DESKTOP_KANA_X = DESKTOP_JAPANESE_X + NETWORK_JUNCTION_SEGMENT_LENGTH;
 const DESKTOP_MORA_X = DESKTOP_KANA_X + NETWORK_SEGMENT_LENGTH;
 const DESKTOP_PITCH_X = DESKTOP_MORA_X + NETWORK_SEGMENT_LENGTH;
-const MOBILE_JAPANESE_X = NETWORK_SEGMENT_LENGTH;
-const MOBILE_KANA_X = MOBILE_JAPANESE_X + NETWORK_SEGMENT_LENGTH;
+const MOBILE_JAPANESE_X = 140;
+const MOBILE_KANA_X = MOBILE_JAPANESE_X + NETWORK_JUNCTION_SEGMENT_LENGTH;
 const MOBILE_MORA_X = MOBILE_KANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_PITCH_X = MOBILE_MORA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_VIEW_WIDTH = MOBILE_KANA_X;
-const NETWORK_VIEW_HEIGHT = 1530;
+const NETWORK_VIEW_HEIGHT = 1390;
 const SOUND_Y = 180;
-const VISIT_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
-const ROMAJI_Y = VISIT_Y + NETWORK_SEGMENT_LENGTH;
-const INTRODUCTIONS_Y = ROMAJI_Y + NETWORK_SEGMENT_LENGTH;
+const VISIT_Y = SOUND_Y + NETWORK_JUNCTION_SEGMENT_LENGTH;
+const ROMAJI_Y = SOUND_Y + NETWORK_JUNCTION_SEGMENT_LENGTH / 2;
+const INTRODUCTIONS_Y = VISIT_Y + NETWORK_SEGMENT_LENGTH;
 const NAVIGATION_Y = INTRODUCTIONS_Y + NETWORK_SEGMENT_LENGTH;
 const FOOD_Y = NAVIGATION_Y + NETWORK_SEGMENT_LENGTH;
 const SHOPPING_Y = FOOD_Y + NETWORK_SEGMENT_LENGTH;
 const HELP_Y = SHOPPING_Y + NETWORK_SEGMENT_LENGTH;
-const HIRAGANA_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
+const VOWELS_Y = SOUND_Y + NETWORK_JUNCTION_SEGMENT_LENGTH;
+const HIRAGANA_Y = VOWELS_Y + NETWORK_SEGMENT_LENGTH;
 const KATAKANA_Y = HIRAGANA_Y + NETWORK_SEGMENT_LENGTH;
 const SOUND_MARKS_Y = KATAKANA_Y + NETWORK_SEGMENT_LENGTH;
 const COMBINED_SOUNDS_Y = SOUND_MARKS_Y + NETWORK_SEGMENT_LENGTH;
-const WRITING_LABEL_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH / 2;
+const VERTICAL_LINE_LABEL_Y = 72;
+const VERTICAL_LINE_LABEL_STEP = 12;
 const MOBILE_SWIPE_THRESHOLD = 40;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
@@ -75,6 +79,7 @@ const ROUTABLE_STATION_HREFS = {
   shopping: "/stations/shopping",
   help: "/stations/help",
   kana: "/stations/kana",
+  vowels: "/stations/vowels",
   hiragana: "/stations/hiragana",
   katakana: "/stations/katakana",
   marks: "/stations/sound-marks",
@@ -91,7 +96,8 @@ const STATION_LABELS: Record<StationFocus, string> = {
   food: "Food",
   shopping: "Shopping",
   help: "Help",
-  kana: "Vowels",
+  kana: "Kana",
+  vowels: "Vowels",
   hiragana: "Hiragana",
   katakana: "Katakana",
   marks: "Dakuten & Handakuten",
@@ -104,15 +110,16 @@ const STATION_NEIGHBORS: Record<
   Partial<Record<StationDirection, StationFocus>>
 > = {
   japanese: { ArrowDown: "visit", ArrowRight: "kana" },
-  visit: { ArrowDown: "romaji", ArrowUp: "japanese" },
-  romaji: { ArrowDown: "introductions", ArrowUp: "visit" },
-  introductions: { ArrowDown: "navigation", ArrowUp: "romaji" },
+  visit: { ArrowDown: "introductions", ArrowUp: "japanese" },
+  romaji: { ArrowDown: "visit", ArrowRight: "kana", ArrowUp: "japanese" },
+  introductions: { ArrowDown: "navigation", ArrowUp: "visit" },
   navigation: { ArrowDown: "food", ArrowUp: "introductions" },
   food: { ArrowDown: "shopping", ArrowUp: "navigation" },
   shopping: { ArrowDown: "help", ArrowUp: "food" },
   help: { ArrowUp: "shopping" },
-  kana: { ArrowDown: "hiragana", ArrowLeft: "japanese", ArrowRight: "mora" },
-  hiragana: { ArrowDown: "katakana", ArrowUp: "kana" },
+  kana: { ArrowDown: "vowels", ArrowLeft: "japanese", ArrowRight: "mora" },
+  vowels: { ArrowDown: "hiragana", ArrowUp: "kana" },
+  hiragana: { ArrowDown: "katakana", ArrowUp: "vowels" },
   katakana: { ArrowDown: "marks", ArrowUp: "hiragana" },
   marks: { ArrowDown: "combined", ArrowUp: "katakana" },
   combined: { ArrowUp: "marks" },
@@ -173,6 +180,7 @@ function readStoredStationFocus(): StationFocus | null {
     || storedFocus === "marks"
     || storedFocus === "katakana"
     || storedFocus === "hiragana"
+    || storedFocus === "vowels"
     || storedFocus === "kana"
     ? storedFocus
     : null;
@@ -218,6 +226,7 @@ function isStationVisible(
     || focus === "shopping"
     || focus === "help"
     || focus === "kana"
+    || focus === "vowels"
     || (focus === "hiragana" && hiraganaAvailable)
     || (focus === "katakana" && katakanaAvailable)
     || (focus === "marks" && soundMarksAvailable)
@@ -254,7 +263,7 @@ function LinkedStation({
   kind: NetworkStationKind;
   label: string;
   labelLines?: readonly string[];
-  labelPlacement?: "above" | "right";
+  labelPlacement?: "above" | "below" | "below-right" | "right";
   href: string;
   onFocus: () => void;
   onPointerLeave: () => void;
@@ -262,7 +271,22 @@ function LinkedStation({
   x: number;
   y?: number;
 }) {
-  const interchange = kind === "interchange" || kind === "travel-interchange";
+  const interchange = kind === "interchange"
+    || kind === "travel-interchange";
+  const labelBeside = labelPlacement === "right";
+  const labelBelow = labelPlacement === "below"
+    || labelPlacement === "below-right";
+  const labelBelowRight = labelPlacement === "below-right";
+  const labelY = labelBeside
+    ? 0
+    : labelBelow
+      ? interchange ? 48 : 36
+      : interchange ? -48 : -36;
+  const labelX = labelBeside
+    ? 26
+    : labelBelowRight
+      ? 24
+      : 0;
   const backlightKind = kind === "travel-interchange"
     ? "travel-junction"
     : interchange
@@ -272,7 +296,7 @@ function LinkedStation({
     <g
       className="network-station"
       data-station={slug}
-      data-station-kind={interchange ? "interchange" : "single-line"}
+      data-station-kind={interchange ? "interchange" : kind === "local" ? "local" : "single-line"}
       transform={`translate(${x} ${y})`}
     >
       <circle
@@ -283,16 +307,16 @@ function LinkedStation({
       />
       <text
         className={`network-station-label network-station-label-${labelPlacement}`}
-        dominantBaseline={labelPlacement === "right" ? "middle" : undefined}
-        textAnchor={labelPlacement === "right" ? "start" : "middle"}
-        x={labelPlacement === "right" ? 26 : 0}
-        y={labelPlacement === "right" ? 0 : interchange ? -48 : -36}
+        dominantBaseline={labelBeside ? "middle" : undefined}
+        textAnchor={labelBeside ? "start" : "middle"}
+        x={labelX}
+        y={labelY}
       >
         {labelLines
           ? labelLines.map((line, index) => (
               <tspan
                 key={line}
-                x={labelPlacement === "right" ? 26 : 0}
+                x={labelX}
                 dy={index === 0 ? "-0.55em" : "1.1em"}
               >
                 {line}
@@ -319,6 +343,40 @@ function LinkedStation({
   );
 }
 
+function VerticalLineLabel({
+  label,
+  line,
+  x,
+}: {
+  label: string;
+  line: "travel" | "writing";
+  x: number;
+}) {
+  const firstLetterY = VERTICAL_LINE_LABEL_Y
+    - ((label.length - 1) * VERTICAL_LINE_LABEL_STEP) / 2;
+
+  return (
+    <text
+      aria-label={`${label} line`}
+      className={`network-line-label network-line-label-${line} network-line-label-vertical`}
+      data-line={line}
+      dominantBaseline="middle"
+      textAnchor="middle"
+    >
+      {Array.from(label.toUpperCase()).map((letter, index) => (
+        <tspan
+          aria-hidden="true"
+          key={`${letter}-${index}`}
+          x={x}
+          y={firstLetterY + index * VERTICAL_LINE_LABEL_STEP}
+        >
+          {letter}
+        </tspan>
+      ))}
+    </text>
+  );
+}
+
 function NetworkView({
   mobile = false,
   mobileFocus = "japanese",
@@ -335,26 +393,16 @@ function NetworkView({
   const width = mobile ? MOBILE_VIEW_WIDTH : 1000;
   const japaneseX = mobile ? MOBILE_JAPANESE_X : DESKTOP_JAPANESE_X;
   const kanaX = mobile ? MOBILE_KANA_X : DESKTOP_KANA_X;
+  const romajiX = (japaneseX + kanaX) / 2;
   const moraX = mobile ? MOBILE_MORA_X : DESKTOP_MORA_X;
   const pitchX = mobile ? MOBILE_PITCH_X : DESKTOP_PITCH_X;
   const view = mobile ? "mobile" : "desktop";
   const backlightId = `${view}-station-backlight`;
-  const kanaLineOffset = hiraganaAvailable
-    ? NETWORK_INTERCHANGE_NODE_OFFSET
-    : NETWORK_LINE_NODE_OFFSET;
+  const kanaLineOffset = NETWORK_INTERCHANGE_NODE_OFFSET;
 
   const network = (
     <>
-      <text
-        className="network-line-label network-line-label-travel"
-        data-line="travel"
-        dominantBaseline="middle"
-        textAnchor="end"
-        x={japaneseX - 20}
-        y={WRITING_LABEL_Y}
-      >
-        JAPAN
-      </text>
+      <VerticalLineLabel label="Japan" line="travel" x={japaneseX} />
       <g className="network-line-target">
         <line
           aria-label="Speech line"
@@ -383,8 +431,7 @@ function NetworkView({
       </g>
       {[
         [SOUND_Y, VISIT_Y],
-        [VISIT_Y, ROMAJI_Y],
-        [ROMAJI_Y, INTRODUCTIONS_Y],
+        [VISIT_Y, INTRODUCTIONS_Y],
         [INTRODUCTIONS_Y, NAVIGATION_Y],
         [NAVIGATION_Y, FOOD_Y],
         [FOOD_Y, SHOPPING_Y],
@@ -417,6 +464,63 @@ function NetworkView({
           />
         </g>
       ))}
+      {[
+        [japaneseX, SOUND_Y, romajiX, ROMAJI_Y],
+        [romajiX, ROMAJI_Y, japaneseX, VISIT_Y],
+      ].map(([fromX, fromY, toX, toY]) => (
+        <g className="network-line-target" key={`${fromX}-${fromY}-${toX}-${toY}`}>
+          <line
+            aria-label="Local connection"
+            className="network-line-hit"
+            data-tooltip="Local connection"
+            onPointerEnter={(event) => onTooltipPointerMove(event, "Local connection")}
+            onPointerLeave={onLinePointerLeave}
+            onPointerMove={(event) => onTooltipPointerMove(event, "Local connection")}
+            pointerEvents="stroke"
+            stroke="transparent"
+            strokeWidth="24"
+            x1={fromX}
+            x2={toX}
+            y1={fromY}
+            y2={toY}
+          />
+          <line
+            aria-hidden="true"
+            className="network-line network-line-local"
+            pointerEvents="none"
+            x1={fromX}
+            x2={toX}
+            y1={fromY}
+            y2={toY}
+          />
+        </g>
+      ))}
+      <g className="network-line-target">
+        <line
+          aria-label="Local connection"
+          className="network-line-hit"
+          data-tooltip="Local connection"
+          onPointerEnter={(event) => onTooltipPointerMove(event, "Local connection")}
+          onPointerLeave={onLinePointerLeave}
+          onPointerMove={(event) => onTooltipPointerMove(event, "Local connection")}
+          pointerEvents="stroke"
+          stroke="transparent"
+          strokeWidth="24"
+          x1={romajiX}
+          x2={kanaX}
+          y1={ROMAJI_Y}
+          y2={SOUND_Y}
+        />
+        <line
+          aria-hidden="true"
+          className="network-line network-line-local"
+          pointerEvents="none"
+          x1={romajiX}
+          x2={kanaX}
+          y1={ROMAJI_Y}
+          y2={SOUND_Y}
+        />
+      </g>
       <text
         className="network-line-label network-line-label-sound"
         data-line="sound"
@@ -483,32 +587,49 @@ function NetworkView({
           />
         </g>
       ) : null}
+      <VerticalLineLabel label="Script" line="writing" x={kanaX} />
+      <g className="network-line-target">
+        <line
+          aria-label="Script line"
+          className="network-line-hit"
+          data-tooltip="Script line"
+          onPointerEnter={(event) => onTooltipPointerMove(event, "Script line")}
+          onPointerLeave={onLinePointerLeave}
+          onPointerMove={(event) => onTooltipPointerMove(event, "Script line")}
+          pointerEvents="stroke"
+          stroke="transparent"
+          strokeWidth="24"
+          x1={kanaX}
+          x2={kanaX}
+          y1={SOUND_Y + NETWORK_INTERCHANGE_NODE_OFFSET}
+          y2={VOWELS_Y - NETWORK_LINE_NODE_OFFSET}
+        />
+        <line
+          aria-hidden="true"
+          className="network-line network-line-writing"
+          pointerEvents="none"
+          x1={kanaX}
+          x2={kanaX}
+          y1={SOUND_Y + NETWORK_INTERCHANGE_NODE_OFFSET}
+          y2={VOWELS_Y - NETWORK_LINE_NODE_OFFSET}
+        />
+      </g>
       {hiraganaAvailable ? (
         <>
-          <text
-            className="network-line-label network-line-label-writing"
-            data-line="writing"
-            dominantBaseline="middle"
-            textAnchor="end"
-            x={kanaX - 20}
-            y={WRITING_LABEL_Y}
-          >
-            KANA
-          </text>
           <g className="network-line-target">
             <line
-              aria-label="Kana line"
+              aria-label="Script line"
               className="network-line-hit"
-              data-tooltip="Kana line"
-              onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
+              data-tooltip="Script line"
+              onPointerEnter={(event) => onTooltipPointerMove(event, "Script line")}
               onPointerLeave={onLinePointerLeave}
-              onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
+              onPointerMove={(event) => onTooltipPointerMove(event, "Script line")}
               pointerEvents="stroke"
               stroke="transparent"
               strokeWidth="24"
               x1={kanaX}
               x2={kanaX}
-              y1={SOUND_Y + NETWORK_INTERCHANGE_NODE_OFFSET}
+              y1={VOWELS_Y + NETWORK_LINE_NODE_OFFSET}
               y2={HIRAGANA_Y - NETWORK_LINE_NODE_OFFSET}
             />
             <line
@@ -517,19 +638,19 @@ function NetworkView({
               pointerEvents="none"
               x1={kanaX}
               x2={kanaX}
-              y1={SOUND_Y + NETWORK_INTERCHANGE_NODE_OFFSET}
+              y1={VOWELS_Y + NETWORK_LINE_NODE_OFFSET}
               y2={HIRAGANA_Y - NETWORK_LINE_NODE_OFFSET}
             />
           </g>
           {katakanaAvailable ? (
             <g className="network-line-target">
               <line
-                aria-label="Kana line"
+                aria-label="Script line"
                 className="network-line-hit"
-                data-tooltip="Kana line"
-                onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
+                data-tooltip="Script line"
+                onPointerEnter={(event) => onTooltipPointerMove(event, "Script line")}
                 onPointerLeave={onLinePointerLeave}
-                onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
+                onPointerMove={(event) => onTooltipPointerMove(event, "Script line")}
                 pointerEvents="stroke"
                 stroke="transparent"
                 strokeWidth="24"
@@ -552,12 +673,12 @@ function NetworkView({
           {soundMarksAvailable ? (
             <g className="network-line-target">
               <line
-                aria-label="Kana line"
+                aria-label="Script line"
                 className="network-line-hit"
-                data-tooltip="Kana line"
-                onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
+                data-tooltip="Script line"
+                onPointerEnter={(event) => onTooltipPointerMove(event, "Script line")}
                 onPointerLeave={onLinePointerLeave}
-                onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
+                onPointerMove={(event) => onTooltipPointerMove(event, "Script line")}
                 pointerEvents="stroke"
                 stroke="transparent"
                 strokeWidth="24"
@@ -580,12 +701,12 @@ function NetworkView({
           {combinedSoundsAvailable ? (
             <g className="network-line-target">
               <line
-                aria-label="Kana line"
+                aria-label="Script line"
                 className="network-line-hit"
-                data-tooltip="Kana line"
-                onPointerEnter={(event) => onTooltipPointerMove(event, "Kana line")}
+                data-tooltip="Script line"
+                onPointerEnter={(event) => onTooltipPointerMove(event, "Script line")}
                 onPointerLeave={onLinePointerLeave}
-                onPointerMove={(event) => onTooltipPointerMove(event, "Kana line")}
+                onPointerMove={(event) => onTooltipPointerMove(event, "Script line")}
                 pointerEvents="stroke"
                 stroke="transparent"
                 strokeWidth="24"
@@ -632,13 +753,13 @@ function NetworkView({
       <LinkedStation
         backlightId={backlightId}
         href={ROUTABLE_STATION_HREFS.romaji}
-        kind="travel"
+        kind="local"
         label="Rōmaji"
-        labelPlacement="right"
+        labelPlacement="below-right"
         onFocus={() => onStationFocus("romaji")}
         onPointerLeave={onLinePointerLeave}
         slug="romaji"
-        x={japaneseX}
+        x={romajiX}
         y={ROMAJI_Y}
       />
       <LinkedStation
@@ -701,7 +822,19 @@ function NetworkView({
         x={japaneseX}
         y={HELP_Y}
       />
-      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Vowels" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
+      <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind="interchange" label="Kana" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.vowels}
+        kind="writing"
+        label="Vowels"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("vowels")}
+        onPointerLeave={onLinePointerLeave}
+        slug="vowels"
+        x={kanaX}
+        y={VOWELS_Y}
+      />
       {hiraganaAvailable ? (
         <LinkedStation
           backlightId={backlightId}
@@ -789,7 +922,7 @@ function NetworkView({
   return (
     <svg
       aria-describedby={`${view}-network-description`}
-      aria-label={hiraganaAvailable ? "Japanese, Japan, Speech, and Kana network" : "Japanese, Japan, and Speech network"}
+      aria-label="Japanese, Japan, Speech, and Script network"
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
@@ -810,6 +943,11 @@ function NetworkView({
           <stop offset="0" stopColor="#4c689c" stopOpacity="0.46" />
           <stop offset="0.48" stopColor="#4c689c" stopOpacity="0.22" />
           <stop offset="1" stopColor="#4c689c" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`${backlightId}-local`}>
+          <stop offset="0" stopColor="#929188" stopOpacity="0.4" />
+          <stop offset="0.48" stopColor="#929188" stopOpacity="0.18" />
+          <stop offset="1" stopColor="#929188" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={`${backlightId}-junction`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor="#db4e3a" stopOpacity="0.72" />
@@ -833,7 +971,7 @@ function NetworkView({
         </mask>
       </defs>
       <desc id={`${view}-network-description`}>
-        {`Japanese opens the network and begins the Japan and Speech lines. Visit, Rōmaji, Introductions, Navigation, Food, Shopping, and Help follow it on the Japan line. Vowels follows Japanese on the Speech line.${hiraganaAvailable ? " Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line." : ""}${moraTimingAvailable ? " Mora Timing follows Vowels on the Speech line." : ""}${pitchAccentAvailable ? " Pitch Accent follows Mora Timing." : ""}`}
+        {`Japanese opens the network and begins the Japan and Speech lines. Rōmaji is a local connection point between Japanese, Visit, and Kana. Visit, Introductions, Navigation, Food, Shopping, and Help continue directly from Japanese on the Japan line. Kana follows Japanese on the Speech line and begins the Script line with Vowels.${hiraganaAvailable ? " Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow Vowels on the Script line." : ""}${moraTimingAvailable ? " Mora Timing follows Kana on the Speech line." : ""}${pitchAccentAvailable ? " Pitch Accent follows Mora Timing." : ""}`}
       </desc>
       {mobile ? (
         <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>
@@ -917,8 +1055,6 @@ export function NetworkMap({
         ? "marks"
       : requestedFocus === "combined-sounds"
         ? "combined"
-      : requestedFocus === "vowels"
-        ? "kana"
       : requestedFocus === "japan"
         ? "visit"
         : requestedFocus;
@@ -932,6 +1068,7 @@ export function NetworkMap({
       || focus === "shopping"
       || focus === "help"
       || focus === "kana"
+      || focus === "vowels"
       || focus === "hiragana"
       || focus === "katakana"
       || focus === "marks"

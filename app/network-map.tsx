@@ -3,15 +3,16 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
 import { LingWordmark } from "./brand";
+import { LoadingScreen } from "./loading-screen";
 import { NavigationLink, useRouteReady } from "./navigation-feedback";
 import { NetworkStationSymbol, type NetworkStationKind } from "./network-visuals";
 
 type MobileFocus =
   | "combined"
   | "food"
-  | "greetings"
+  | "help"
+  | "introductions"
   | "hiragana"
-  | "japan"
   | "japanese"
   | "kana"
   | "katakana"
@@ -19,7 +20,9 @@ type MobileFocus =
   | "mora"
   | "navigation"
   | "pitch"
-  | "shopping";
+  | "romaji"
+  | "shopping"
+  | "visit";
 export type StationFocus = MobileFocus;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 type AvailabilityStatus = "error" | "loading" | "ready";
@@ -37,13 +40,15 @@ const MOBILE_KANA_X = MOBILE_JAPANESE_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_MORA_X = MOBILE_KANA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_PITCH_X = MOBILE_MORA_X + NETWORK_SEGMENT_LENGTH;
 const MOBILE_VIEW_WIDTH = MOBILE_KANA_X;
-const NETWORK_VIEW_HEIGHT = 1170;
+const NETWORK_VIEW_HEIGHT = 1530;
 const SOUND_Y = 180;
-const JAPAN_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
-const GREETINGS_Y = JAPAN_Y + NETWORK_SEGMENT_LENGTH;
-const NAVIGATION_Y = GREETINGS_Y + NETWORK_SEGMENT_LENGTH;
+const VISIT_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
+const ROMAJI_Y = VISIT_Y + NETWORK_SEGMENT_LENGTH;
+const INTRODUCTIONS_Y = ROMAJI_Y + NETWORK_SEGMENT_LENGTH;
+const NAVIGATION_Y = INTRODUCTIONS_Y + NETWORK_SEGMENT_LENGTH;
 const FOOD_Y = NAVIGATION_Y + NETWORK_SEGMENT_LENGTH;
 const SHOPPING_Y = FOOD_Y + NETWORK_SEGMENT_LENGTH;
+const HELP_Y = SHOPPING_Y + NETWORK_SEGMENT_LENGTH;
 const HIRAGANA_Y = SOUND_Y + NETWORK_SEGMENT_LENGTH;
 const KATAKANA_Y = HIRAGANA_Y + NETWORK_SEGMENT_LENGTH;
 const SOUND_MARKS_Y = KATAKANA_Y + NETWORK_SEGMENT_LENGTH;
@@ -62,11 +67,13 @@ const INITIAL_AVAILABILITY = {
 } as const;
 const ROUTABLE_STATION_HREFS = {
   japanese: "/stations/japanese",
-  japan: "/stations/japan",
-  greetings: "/stations/greetings",
+  visit: "/stations/visit",
+  romaji: "/stations/romaji",
+  introductions: "/stations/introductions",
   navigation: "/stations/navigation",
   food: "/stations/food",
   shopping: "/stations/shopping",
+  help: "/stations/help",
   kana: "/stations/kana",
   hiragana: "/stations/hiragana",
   katakana: "/stations/katakana",
@@ -77,11 +84,13 @@ const ROUTABLE_STATION_HREFS = {
 } as const;
 const STATION_LABELS: Record<StationFocus, string> = {
   japanese: "Japanese",
-  japan: "Japan",
-  greetings: "Greetings",
+  visit: "Visit",
+  romaji: "Rōmaji",
+  introductions: "Introductions",
   navigation: "Navigation",
   food: "Food",
   shopping: "Shopping",
+  help: "Help",
   kana: "Vowels",
   hiragana: "Hiragana",
   katakana: "Katakana",
@@ -94,12 +103,14 @@ const STATION_NEIGHBORS: Record<
   StationFocus,
   Partial<Record<StationDirection, StationFocus>>
 > = {
-  japanese: { ArrowDown: "japan", ArrowRight: "kana" },
-  japan: { ArrowDown: "greetings", ArrowUp: "japanese" },
-  greetings: { ArrowDown: "navigation", ArrowUp: "japan" },
-  navigation: { ArrowDown: "food", ArrowUp: "greetings" },
+  japanese: { ArrowDown: "visit", ArrowRight: "kana" },
+  visit: { ArrowDown: "romaji", ArrowUp: "japanese" },
+  romaji: { ArrowDown: "introductions", ArrowUp: "visit" },
+  introductions: { ArrowDown: "navigation", ArrowUp: "romaji" },
+  navigation: { ArrowDown: "food", ArrowUp: "introductions" },
   food: { ArrowDown: "shopping", ArrowUp: "navigation" },
-  shopping: { ArrowUp: "food" },
+  shopping: { ArrowDown: "help", ArrowUp: "food" },
+  help: { ArrowUp: "shopping" },
   kana: { ArrowDown: "hiragana", ArrowLeft: "japanese", ArrowRight: "mora" },
   hiragana: { ArrowDown: "katakana", ArrowUp: "kana" },
   katakana: { ArrowDown: "marks", ArrowUp: "hiragana" },
@@ -146,11 +157,15 @@ type NetworkViewProps = {
 
 function readStoredStationFocus(): StationFocus | null {
   const storedFocus = localStorage.getItem(STATION_FOCUS_STORAGE_KEY);
-  return storedFocus === "shopping"
+  if (storedFocus === "japan") return "visit";
+
+  return storedFocus === "help"
+    || storedFocus === "shopping"
     || storedFocus === "food"
     || storedFocus === "navigation"
-    || storedFocus === "greetings"
-    || storedFocus === "japan"
+    || storedFocus === "introductions"
+    || storedFocus === "romaji"
+    || storedFocus === "visit"
     || storedFocus === "japanese"
     || storedFocus === "pitch"
     || storedFocus === "mora"
@@ -195,11 +210,13 @@ function isStationVisible(
   pitchAccentAvailable: boolean,
 ) {
   return focus === "japanese"
-    || focus === "japan"
-    || focus === "greetings"
+    || focus === "visit"
+    || focus === "romaji"
+    || focus === "introductions"
     || focus === "navigation"
     || focus === "food"
     || focus === "shopping"
+    || focus === "help"
     || focus === "kana"
     || (focus === "hiragana" && hiraganaAvailable)
     || (focus === "katakana" && katakanaAvailable)
@@ -211,11 +228,13 @@ function isStationVisible(
 
 function isTravelFocus(focus: StationFocus) {
   return focus === "japanese"
-    || focus === "japan"
-    || focus === "greetings"
+    || focus === "visit"
+    || focus === "romaji"
+    || focus === "introductions"
     || focus === "navigation"
     || focus === "food"
-    || focus === "shopping";
+    || focus === "shopping"
+    || focus === "help";
 }
 
 function LinkedStation({
@@ -291,7 +310,6 @@ function LinkedStation({
       aria-label={`Open ${label}`}
       className="network-station-link"
       href={href}
-      loadingStation={label}
       onFocus={onFocus}
       onPointerLeave={onPointerLeave}
       prefetch
@@ -335,7 +353,7 @@ function NetworkView({
         x={japaneseX - 20}
         y={WRITING_LABEL_Y}
       >
-        TRAVEL
+        JAPAN
       </text>
       <g className="network-line-target">
         <line
@@ -364,20 +382,22 @@ function NetworkView({
         />
       </g>
       {[
-        [SOUND_Y, JAPAN_Y],
-        [JAPAN_Y, GREETINGS_Y],
-        [GREETINGS_Y, NAVIGATION_Y],
+        [SOUND_Y, VISIT_Y],
+        [VISIT_Y, ROMAJI_Y],
+        [ROMAJI_Y, INTRODUCTIONS_Y],
+        [INTRODUCTIONS_Y, NAVIGATION_Y],
         [NAVIGATION_Y, FOOD_Y],
         [FOOD_Y, SHOPPING_Y],
+        [SHOPPING_Y, HELP_Y],
       ].map(([fromY, toY]) => (
         <g className="network-line-target" key={`${fromY}-${toY}`}>
           <line
-            aria-label="Travel line"
+            aria-label="Japan line"
             className="network-line-hit"
-            data-tooltip="Travel line"
-            onPointerEnter={(event) => onTooltipPointerMove(event, "Travel line")}
+            data-tooltip="Japan line"
+            onPointerEnter={(event) => onTooltipPointerMove(event, "Japan line")}
             onPointerLeave={onLinePointerLeave}
-            onPointerMove={(event) => onTooltipPointerMove(event, "Travel line")}
+            onPointerMove={(event) => onTooltipPointerMove(event, "Japan line")}
             pointerEvents="stroke"
             stroke="transparent"
             strokeWidth="24"
@@ -599,27 +619,39 @@ function NetworkView({
       />
       <LinkedStation
         backlightId={backlightId}
-        href={ROUTABLE_STATION_HREFS.japan}
+        href={ROUTABLE_STATION_HREFS.visit}
         kind="travel"
-        label="Japan"
+        label="Visit"
         labelPlacement="right"
-        onFocus={() => onStationFocus("japan")}
+        onFocus={() => onStationFocus("visit")}
         onPointerLeave={onLinePointerLeave}
-        slug="japan"
+        slug="visit"
         x={japaneseX}
-        y={JAPAN_Y}
+        y={VISIT_Y}
       />
       <LinkedStation
         backlightId={backlightId}
-        href={ROUTABLE_STATION_HREFS.greetings}
+        href={ROUTABLE_STATION_HREFS.romaji}
         kind="travel"
-        label="Greetings"
+        label="Rōmaji"
         labelPlacement="right"
-        onFocus={() => onStationFocus("greetings")}
+        onFocus={() => onStationFocus("romaji")}
         onPointerLeave={onLinePointerLeave}
-        slug="greetings"
+        slug="romaji"
         x={japaneseX}
-        y={GREETINGS_Y}
+        y={ROMAJI_Y}
+      />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.introductions}
+        kind="travel"
+        label="Introductions"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("introductions")}
+        onPointerLeave={onLinePointerLeave}
+        slug="introductions"
+        x={japaneseX}
+        y={INTRODUCTIONS_Y}
       />
       <LinkedStation
         backlightId={backlightId}
@@ -656,6 +688,18 @@ function NetworkView({
         slug="shopping"
         x={japaneseX}
         y={SHOPPING_Y}
+      />
+      <LinkedStation
+        backlightId={backlightId}
+        href={ROUTABLE_STATION_HREFS.help}
+        kind="travel"
+        label="Help"
+        labelPlacement="right"
+        onFocus={() => onStationFocus("help")}
+        onPointerLeave={onLinePointerLeave}
+        slug="help"
+        x={japaneseX}
+        y={HELP_Y}
       />
       <LinkedStation backlightId={backlightId} href={ROUTABLE_STATION_HREFS.kana} kind={hiraganaAvailable ? "interchange" : "sound"} label="Vowels" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} slug="kana" x={kanaX} />
       {hiraganaAvailable ? (
@@ -745,7 +789,7 @@ function NetworkView({
   return (
     <svg
       aria-describedby={`${view}-network-description`}
-      aria-label={hiraganaAvailable ? "Japanese, Travel, Speech, and Kana network" : "Japanese, Travel, and Speech network"}
+      aria-label={hiraganaAvailable ? "Japanese, Japan, Speech, and Kana network" : "Japanese, Japan, and Speech network"}
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
@@ -789,7 +833,7 @@ function NetworkView({
         </mask>
       </defs>
       <desc id={`${view}-network-description`}>
-        {`Japanese opens the network and begins the Travel and Speech lines. Japan, Greetings, Navigation, Food, and Shopping follow it on the Travel line. Vowels follows Japanese on the Speech line.${hiraganaAvailable ? " Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line." : ""}${moraTimingAvailable ? " Mora Timing follows Vowels on the Speech line." : ""}${pitchAccentAvailable ? " Pitch Accent follows Mora Timing." : ""}`}
+        {`Japanese opens the network and begins the Japan and Speech lines. Visit, Rōmaji, Introductions, Navigation, Food, Shopping, and Help follow it on the Japan line. Vowels follows Japanese on the Speech line.${hiraganaAvailable ? " Vowels connects the Speech and Kana lines. Hiragana, Katakana, Dakuten & Handakuten, and Yōon follow it on the Kana line." : ""}${moraTimingAvailable ? " Mora Timing follows Vowels on the Speech line." : ""}${pitchAccentAvailable ? " Pitch Accent follows Mora Timing." : ""}`}
       </desc>
       {mobile ? (
         <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>
@@ -875,14 +919,18 @@ export function NetworkMap({
         ? "combined"
       : requestedFocus === "vowels"
         ? "kana"
+      : requestedFocus === "japan"
+        ? "visit"
         : requestedFocus;
     if (
       focus === "japanese"
-      || focus === "japan"
-      || focus === "greetings"
+      || focus === "visit"
+      || focus === "romaji"
+      || focus === "introductions"
       || focus === "navigation"
       || focus === "food"
       || focus === "shopping"
+      || focus === "help"
       || focus === "kana"
       || focus === "hiragana"
       || focus === "katakana"
@@ -1106,7 +1154,9 @@ export function NetworkMap({
   }
 
   return (
-    <div className="network-views">
+    <>
+      <LoadingScreen boot overlay />
+      <div className="network-views">
       {availabilityStatus === "error" ? (
         <NetworkLoadError onRetry={retryAvailability} />
       ) : null}
@@ -1177,6 +1227,7 @@ export function NetworkMap({
           {tooltip.label}
         </span>
       ) : null}
-    </div>
+      </div>
+    </>
   );
 }

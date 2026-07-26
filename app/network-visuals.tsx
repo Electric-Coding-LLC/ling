@@ -1,17 +1,19 @@
 export type NetworkPosition =
   | "combined-sounds"
   | "food"
-  | "greetings"
+  | "help"
+  | "introductions"
   | "hiragana"
-  | "japan"
   | "japanese"
   | "kana"
   | "katakana"
   | "mora-timing"
   | "navigation"
   | "pitch-accent"
+  | "romaji"
   | "shopping"
-  | "sound-marks";
+  | "sound-marks"
+  | "visit";
 
 export type NetworkStationKind =
   | "interchange"
@@ -32,10 +34,12 @@ export function NetworkGlyph({ position }: { position: NetworkPosition }) {
   }
 
   if (
-    position === "japan"
-    || position === "greetings"
+    position === "visit"
+    || position === "romaji"
+    || position === "introductions"
     || position === "navigation"
     || position === "food"
+    || position === "shopping"
   ) {
     return (
       <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
@@ -45,7 +49,7 @@ export function NetworkGlyph({ position }: { position: NetworkPosition }) {
     );
   }
 
-  if (position === "shopping") {
+  if (position === "help") {
     return (
       <svg
         aria-hidden="true"

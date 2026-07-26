@@ -21,6 +21,10 @@ async function request(pathname = "/", init = {}) {
   );
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 test("server-renders the Ling network home", async () => {
   const response = await request();
   assert.equal(response.status, 200);
@@ -38,17 +42,19 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /viewBox="7 7 50 50"/i);
   assert.match(html, /class="loading-shell loading-shell-overlay loading-shell-boot"/i);
   assert.match(html, /class="loading-wordmark"/i);
+  assert.match(html, /data-brand="ling-wordmark"/i);
+  assert.doesNotMatch(html, /<img[^>]+ling-wordmark\.svg/i);
   assert.match(html, /<p class="loading-kicker">Loading<\/p>/i);
   assert.doesNotMatch(html, /<p class="loading-title">Ling<\/p>/i);
   assert.doesNotMatch(html, /data-ling-ready=/i);
-  assert.match(html, /data-line="travel"[^>]*>Travel</i);
+  assert.match(html, /data-line="travel"[^>]*>Japan</i);
   assert.match(html, /data-line="sound"[^>]*>Speech</i);
   assert.doesNotMatch(html, /data-line="writing"[^>]*>Kana</i);
   assert.match(html, /data-network-view="desktop"/i);
   assert.match(html, /class="network-desktop-viewport"[^>]*tabindex="0"/i);
   assert.doesNotMatch(html, /class="network-map network-map-desktop"[^>]*tabindex=/i);
   assert.match(html, /data-network-view="mobile"/i);
-  assert.match(html, /aria-label="Japanese, Travel, and Speech network"/i);
+  assert.match(html, /aria-label="Japanese, Japan, and Speech network"/i);
   assert.match(html, /data-tooltip="Speech line"/i);
   assert.doesNotMatch(html, /data-tooltip="Kana line"/i);
   assert.doesNotMatch(html, /<title>(?:Speech|Kana) line<\/title>/i);
@@ -61,11 +67,13 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /data-station="hiragana"/i);
   for (const station of [
     "japanese",
-    "japan",
-    "greetings",
+    "visit",
+    "romaji",
+    "introductions",
     "navigation",
     "food",
     "shopping",
+    "help",
   ]) {
     assert.match(html, new RegExp(`data-station="${station}"`, "i"));
     assert.match(html, new RegExp(`href="/stations/${station}"`, "i"));
@@ -89,12 +97,27 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /class="network-help-link"/i);
   assert.match(html, /title="About Ling"/i);
   assert.doesNotMatch(html, /network-welcome-entry|A quick guide to the network, practice, and progress/i);
-  assert.match(html, /Japanese opens the network and begins the Travel and Speech lines/i);
+  assert.match(html, /Japanese opens the network and begins the Japan and Speech lines/i);
   assert.match(html, /Vowels follows Japanese on the Speech line/i);
   assert.doesNotMatch(html, /After Vowels/i);
-  assert.match(html, /alt="Ling"/i);
+  assert.match(html, /aria-label="Ling"[^>]*role="img"/i);
   assert.doesNotMatch(html, /aria-label="Ready"/i);
   assert.doesNotMatch(html, /Your site is taking shape|Codex is working|react-loading-skeleton/i);
+});
+
+test("station documents do not render the map boot overlay", async () => {
+  const response = await request("/stations/visit");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.doesNotMatch(html, /class="loading-shell loading-shell-overlay loading-shell-boot"/i);
+  assert.match(html, /<h1>Visit<\/h1>/);
+});
+
+test("the retired Japan station route leads to Visit", async () => {
+  const response = await request("/stations/japan");
+  assert.ok([307, 308].includes(response.status));
+  assert.match(response.headers.get("location") ?? "", /\/stations\/visit$/i);
 });
 
 test("server-renders the reusable Welcome to Ling guide outside the station network", async () => {
@@ -165,22 +188,30 @@ test("the retired Vowels route leads to Kana", async () => {
   assert.match(response.headers.get("location") ?? "", /\/stations\/kana$/i);
 });
 
-test("the six Travel stations are always available without progression", async () => {
+test("the eight Japan line stations are always available without progression", async () => {
   for (const station of [
     "japanese",
-    "japan",
-    "greetings",
+    "visit",
+    "romaji",
+    "introductions",
     "navigation",
     "food",
     "shopping",
+    "help",
   ]) {
     const response = await request(`/stations/${station}`);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("cache-control"), "private, no-store");
     const html = await response.text();
-    assert.match(html, new RegExp(`<h1>${station === "japanese" ? "Japanese" : station[0].toUpperCase() + station.slice(1)}</h1>`, "i"));
+    const title = station === "japanese"
+      ? "Japanese"
+      : station === "romaji"
+        ? "Rōmaji"
+        : station[0].toUpperCase() + station.slice(1);
+    assert.match(html, new RegExp(`<h1>${title}</h1>`, "i"));
     assert.match(html, /station-membership station-membership-travel/);
-    if (station === "japanese" || station === "japan") {
+    assert.match(html, /station-membership station-membership-travel">Japan<\/span>/);
+    if (station === "japanese" || station === "visit") {
       if (station === "japanese") {
         assert.doesNotMatch(html, /travel-reference/);
         assert.match(html, /station-page station-page-travel station-page-japanese/);
@@ -204,8 +235,8 @@ test("the six Travel stations are always available without progression", async (
         assert.match(html, /Rōmaji uses the Roman alphabet to represent Japanese sounds\. It is useful in some contexts, while hiragana, katakana, and kanji are the main writing systems used in Japanese\./);
         assert.doesNotMatch(html, /<dt>Rōmaji<\/dt>/i);
         assert.match(html, /Visiting Japan\? Start with/);
-        assert.match(html, /<a href="\/stations\/greetings">Greetings<\/a>/);
-        assert.match(html, /on the Travel line for useful introductory phrases\./);
+        assert.match(html, /<a href="\/stations\/romaji">Rōmaji<\/a>/);
+        assert.match(html, /on the Japan line, then use it to read the phrases that follow\./);
         assert.doesNotMatch(html, /As you continue, you’ll encounter:|Sounds, listening, and spoken Japanese|Hiragana, katakana, and written Japanese/);
         assert.doesNotMatch(html, /Sound, writing, and context|Listen for a steady rhythm|日本語のクラス|ありがとうございます/i);
       } else {
@@ -231,27 +262,179 @@ test("the six Travel stations are always available without progression", async (
           /Begin politely|Ask when needed|Listen for what you know|When you get stuck|Read a little at a time/,
         );
         assert.match(html, /class="travel-reference"/);
-        for (const [japanese, meaning, pronunciation] of [
+        for (const [japanese, meaning, soundCue] of [
           ["すみません", "Excuse me / I’m sorry", "soo mee mah seh nn"],
           ["ありがとうございます", "Thank you", "ah ree gah toh oo goh zah ee mah s"],
           ["お願いします", "Please", "oh neh gah ee shee mah s"],
         ]) {
+          const label = `${japanese}: ${meaning}${/[.!?]$/.test(meaning) ? "" : "."} Pronunciation: ${soundCue}. Play audio`;
           assert.match(
             html,
-            new RegExp(`aria-label="${japanese}: ${meaning}\\. Pronunciation: ${pronunciation}\\. Play audio"`),
+            new RegExp(`aria-label="${escapeRegExp(label)}"`),
           );
-          assert.match(html, new RegExp(`aria-label="${pronunciation}"`));
+          assert.match(html, new RegExp(`>${escapeRegExp(soundCue)}<`));
         }
-        assert.match(html, /data-pronunciation="true"/);
+        assert.match(html, /data-sound-cue="true"/);
+        assert.doesNotMatch(html, /data-pronunciation="true"/);
         assert.doesNotMatch(
           html,
-          /The Travel line is a small, always-available reference|You will meet kanji, kana, and romaji/,
+          /The Japan line is a small, always-available reference|You will meet kanji, kana, and romaji/,
         );
       }
-    } else {
+    } else if (station !== "romaji") {
       assert.match(html, /travel-reference/);
     }
-    assert.doesNotMatch(html, /station-options|data-(?:score|streak)=|class="[^"]*(?:review|score|streak)[^"]*"/i);
+    if (station === "romaji") {
+      assert.match(html, /station-page station-page-travel station-page-romaji/);
+      assert.match(html, /aria-label="The 46 basic Rōmaji readings"/);
+      assert.match(html, /aria-label="The 33 combined Rōmaji readings"/);
+      assert.match(html, /class="hiragana-table romaji-chart"/);
+      for (const sound of ["ah", "ee", "oo", "eh", "oh"]) {
+        assert.match(html, new RegExp(`>${sound}<`));
+      }
+      assert.match(html, /Rōmaji writes Japanese sounds with the Roman alphabet\./);
+      assert.doesNotMatch(
+        html,
+        /The chart follows|shows only the Rōmaji|Tap one to say|reveal and hear/,
+      );
+      assert.match(html, /aria-label="Test Rōmaji\. 79 remaining\."/);
+      assert.match(html, /aria-label="Study shi"/);
+      assert.match(html, /aria-label="Study kya"/);
+      assert.match(html, /aria-label="Study sho"/);
+      assert.match(html, /aria-label="Study pyo"/);
+      assert.doesNotMatch(html, /class="romaji-chart-kana"/);
+      for (const romaji of [
+        "shi",
+        "chi",
+        "tsu",
+        "fu",
+        "kya",
+        "shu",
+        "cho",
+        "pyo",
+        "kitte",
+        "zasshi",
+        "Tōkyō",
+        "Toukyou",
+        "tan'i",
+        "kin'en",
+        "kouta",
+        "ko'uta",
+        "wa",
+        "e",
+        "o",
+      ]) {
+        const renderedRomaji = romaji.replaceAll("'", "&#x27;");
+        assert.match(html, new RegExp(`>${escapeRegExp(renderedRomaji)}<`));
+      }
+      assert.match(html, /Double consonants take an extra beat/);
+      assert.match(html, /Pause before tt; hold the ss sound slightly longer\./);
+      assert.match(html, /A macron is the line over a vowel/);
+      assert.match(html, /It marks a long vowel\. Tōkyō and Toukyou are pronounced the same\./);
+      assert.match(html, /An apostrophe separates n from a vowel or y/);
+      assert.match(html, /It prevents the n from joining the sound that follows\./);
+      assert.match(html, /An apostrophe can keep vowels separate/);
+      assert.match(html, /Kouta can read as a long vowel; ko'uta keeps o and u separate\./);
+      assert.match(html, /Particles use wa, e, and o/);
+      assert.match(html, /These three are written the way they are pronounced\./);
+      assert.doesNotMatch(html, /class="romaji-rule-kana"|>きって<|>とうきょう</);
+      assert.doesNotMatch(html, /·/);
+    }
+    if (station === "introductions") {
+      assert.match(
+        html,
+        /station-page station-page-travel station-page-introductions/,
+      );
+      assert.match(html, /data-pronunciation="true"/);
+      assert.match(html, /aria-label="Test Introductions\. 8 cards\."/);
+      assert.doesNotMatch(html, /station-intro travel-intro/);
+      assert.doesNotMatch(
+        html,
+        /Chris introduces himself|Tap each line|hear the (?:conversation|exchange)/,
+      );
+      for (const [japanese, meaning, romaji] of [
+        ["はじめまして、クリスです", "Nice to meet you. I’m Chris.", "Hajimemashite, Kurisu desu."],
+        ["よろしくお願いします", "It’s a pleasure to meet you.", "Yoroshiku onegaishimasu."],
+        ["ご出身は？", "Where are you from?", "Goshusshin wa?"],
+        ["アメリカから来ました", "I’m from the United States.", "Amerika kara kimashita."],
+        ["日本語、できますか？", "Do you speak Japanese?", "Nihongo, dekimasu ka?"],
+        ["はい、少しできます", "Yes, a little.", "Hai, sukoshi dekimasu."],
+        ["英語、できますか？", "Do you speak English?", "Eigo, dekimasu ka?"],
+        ["はい、できます", "Yes, I do.", "Hai, dekimasu."],
+      ]) {
+        const label = `${japanese}: ${meaning}${/[.!?]$/.test(meaning) ? "" : "."} Rōmaji: ${romaji}${/[.!?]$/.test(romaji) ? "" : "."} Play audio`;
+        assert.match(
+          html,
+          new RegExp(`aria-label="${escapeRegExp(label)}"`),
+        );
+      }
+      assert.doesNotMatch(html, /goh shoosh-shee|hah jee meh|Pronunciation:/);
+      assert.doesNotMatch(html, /data-sound-cue="true"/);
+      assert.doesNotMatch(html, /travel-reference-speaker|data-speaker=/);
+      assert.doesNotMatch(
+        html,
+        /どちらからですか|おはようございます|こんにちは|こんばんは|すみません|ありがとうございます/,
+      );
+    }
+    if (station === "navigation") {
+      assert.match(
+        html,
+        /station-page station-page-travel station-page-navigation/,
+      );
+      assert.match(html, /aria-label="Test Navigation\. 6 cards\."/);
+      assert.match(html, /トイレはどこですか？/);
+      assert.match(html, /この電車で合っていますか？/);
+      assert.match(html, /どこで乗り換えますか？/);
+      assert.match(html, /何番出口ですか？/);
+      assert.doesNotMatch(
+        html,
+        /駅はどこですか|今、どこですか|駅まで、どうやって行きますか|左に曲がってください|右に曲がってください|まっすぐ行ってください/,
+      );
+      assert.doesNotMatch(html, /station-intro travel-intro/);
+    }
+    if (station === "food") {
+      assert.match(
+        html,
+        /station-page station-page-travel station-page-food/,
+      );
+      assert.match(html, /aria-label="Test Food\. 8 cards\."/);
+      assert.match(html, /二人です/);
+      assert.match(html, /予約しています/);
+      assert.match(html, /お水をお願いします/);
+      assert.match(html, /卵は入っていますか？/);
+      assert.match(html, /ごちそうさまでした/);
+      assert.doesNotMatch(html, /水、お願いします|これは何ですか？|肉は入っていますか？/);
+      assert.doesNotMatch(html, /station-intro travel-intro/);
+    }
+    if (station === "shopping") {
+      assert.match(
+        html,
+        /station-page station-page-travel station-page-shopping/,
+      );
+      assert.match(html, /aria-label="Test Shopping\. 8 cards\."/);
+      assert.match(html, /ほかのサイズ、ありますか？/);
+      assert.match(html, /免税できますか？/);
+      assert.match(html, /袋をお願いします/);
+      assert.doesNotMatch(html, /もうちょっと大きいの、ありますか？/);
+      assert.doesNotMatch(html, /station-intro travel-intro/);
+    }
+    if (station === "help") {
+      assert.match(
+        html,
+        /station-page station-page-travel station-page-help/,
+      );
+      assert.match(html, /aria-label="Test Help\. 8 cards\."/);
+      assert.match(html, /助けてください/);
+      assert.match(html, /救急車を呼んでください/);
+      assert.match(html, /警察を呼んでください/);
+      assert.match(html, /英語を話せる人はいますか？/);
+      assert.doesNotMatch(html, /station-intro travel-intro/);
+    }
+    if (station === "romaji") {
+      assert.doesNotMatch(html, /data-(?:score|streak)=|class="[^"]*(?:score|streak)[^"]*"/i);
+    } else {
+      assert.doesNotMatch(html, /station-options|data-(?:score|streak)=|class="[^"]*(?:review|score|streak)[^"]*"/i);
+    }
   }
 });
 
@@ -432,7 +615,27 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(bulkKnowledgeUpdate.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await bulkKnowledgeUpdate.json(), { error: "unauthorized" });
 
-  for (const station of ["kana", "mora-timing", "pitch-accent"]) {
+  const romajiKnowledge = await request("/api/stations/romaji/knowledge");
+  assert.equal(romajiKnowledge.status, 401);
+  assert.equal(romajiKnowledge.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await romajiKnowledge.json(), { error: "unauthorized" });
+
+  const romajiKnowledgeUpdate = await request(
+    "/api/stations/romaji/knowledge",
+    {
+      body: JSON.stringify({ kana: "あ", known: true }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  assert.equal(romajiKnowledgeUpdate.status, 401);
+  assert.equal(
+    romajiKnowledgeUpdate.headers.get("cache-control"),
+    "private, no-store",
+  );
+  assert.deepEqual(await romajiKnowledgeUpdate.json(), { error: "unauthorized" });
+
+  for (const station of ["kana", "romaji", "mora-timing", "pitch-accent"]) {
     const bulkStationKnowledgeUpdate = await request(
       `/api/stations/${station}/knowledge`,
       {

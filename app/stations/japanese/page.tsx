@@ -59,12 +59,11 @@ export default function JapanesePage() {
               <p>
                 Visiting Japan? Start with{" "}
                 <NavigationLink
-                  href="/stations/greetings"
-                  loadingStation="greetings"
+                  href="/stations/romaji"
                 >
-                  Greetings
+                  Rōmaji
                 </NavigationLink>{" "}
-                on the Travel line for useful introductory phrases.
+                on the Japan line, then use it to read the phrases that follow.
               </p>
             </section>,
           ]}

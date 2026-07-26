@@ -54,6 +54,9 @@
   outline: none;
 }
 
+.network-desktop-viewport:focus-visible[data-desktop-focus="help"]
+  [data-station="help"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="shopping"]
   [data-station="shopping"]
   .network-station-backlight,
@@ -63,11 +66,14 @@
 .network-desktop-viewport:focus-visible[data-desktop-focus="navigation"]
   [data-station="navigation"]
   .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="greetings"]
-  [data-station="greetings"]
+.network-desktop-viewport:focus-visible[data-desktop-focus="introductions"]
+  [data-station="introductions"]
   .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="japan"]
-  [data-station="japan"]
+.network-desktop-viewport:focus-visible[data-desktop-focus="romaji"]
+  [data-station="romaji"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="visit"]
+  [data-station="visit"]
   .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="japanese"]
   [data-station="japanese"]
@@ -254,6 +260,9 @@
     outline: none;
   }
 
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="help"]
+    [data-station="help"]
+    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="shopping"]
     [data-station="shopping"]
     .network-station-backlight,
@@ -263,11 +272,14 @@
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="navigation"]
     [data-station="navigation"]
     .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="greetings"]
-    [data-station="greetings"]
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="introductions"]
+    [data-station="introductions"]
     .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="japan"]
-    [data-station="japan"]
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="romaji"]
+    [data-station="romaji"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="visit"]
+    [data-station="visit"]
     .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="japanese"]
     [data-station="japanese"]

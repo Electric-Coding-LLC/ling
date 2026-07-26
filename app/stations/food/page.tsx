@@ -6,10 +6,11 @@ export default function FoodPage() {
   return (
     <main className="shell station-shell">
       <StationTopbar current="Food" mapPosition="food" />
-      <div className="station-page station-page-travel">
+      <div className="station-page station-page-travel station-page-food">
         <TravelStation
-          intro={["Use these to point, ask a simple question, order water, or request the bill. Tap any phrase to hear it."]}
           items={TRAVEL_PHRASES.food}
+          review
+          showPronunciation
           title="Food"
         />
       </div>

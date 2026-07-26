@@ -1,3 +1,17 @@
+.route-transition-surface {
+  animation: route-content-enter 180ms ease-out both;
+}
+
+@keyframes route-content-enter {
+  from {
+    opacity: 0.25;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .shell {
   min-height: 100dvh;
   background: var(--surface);

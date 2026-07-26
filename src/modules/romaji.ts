@@ -55,6 +55,8 @@ export type RomajiRule = {
 };
 
 export const ROMAJI_COLUMN_HEADINGS = ["ah", "ee", "oo", "eh", "oh"] as const;
+export const JAPANESE_ROMAJI_VOWELS = ["a", "i", "u", "e", "o"] as const;
+export const JAPANESE_ROMAJI_YOON_VOWELS = ["a", "u", "o"] as const;
 
 export const ROMAJI_ROWS: readonly (readonly (RomajiEntry | null)[])[] = [
   [
@@ -263,3 +265,129 @@ export const ROMAJI_RULES: readonly RomajiRule[] = [
     ],
   },
 ] as const;
+
+const MARKED_KANA_ROMAJI: Readonly<Record<string, string>> = {
+  が: "ga",
+  ぎ: "gi",
+  ぐ: "gu",
+  げ: "ge",
+  ご: "go",
+  ざ: "za",
+  じ: "ji",
+  ず: "zu",
+  ぜ: "ze",
+  ぞ: "zo",
+  だ: "da",
+  ぢ: "ji",
+  づ: "zu",
+  で: "de",
+  ど: "do",
+  ば: "ba",
+  び: "bi",
+  ぶ: "bu",
+  べ: "be",
+  ぼ: "bo",
+  ぱ: "pa",
+  ぴ: "pi",
+  ぷ: "pu",
+  ぺ: "pe",
+  ぽ: "po",
+};
+
+const KANA_ROMAJI = new Map<string, string>([
+  ...ROMAJI_ROWS
+    .flatMap((row) => row.filter((entry) => entry !== null))
+    .map((entry) => [entry.kana, entry.romaji] as const),
+  [FINAL_ROMAJI.kana, FINAL_ROMAJI.romaji],
+  ...ROMAJI_COMBINED_ROWS
+    .flatMap((row) => row.filter((entry) => entry !== null))
+    .map((entry) => [entry.kana, entry.romaji] as const),
+  ...Object.entries(MARKED_KANA_ROMAJI),
+]);
+
+export function getJapaneseRomaji(kana: string): string {
+  const romaji = KANA_ROMAJI.get(toHiragana(kana));
+  if (!romaji) throw new Error(`Missing Rōmaji for ${kana}`);
+  return romaji;
+}
+
+export function getJapaneseWordRomaji(word: string): string {
+  return getJapaneseMoraRomaji(word).join("");
+}
+
+export function getJapaneseMoraRomaji(word: string): string[] {
+  const morae = splitJapaneseMorae(toHiragana(word));
+
+  return morae.map((mora, index) => {
+    if (mora === "ー") {
+      if (index === 0) {
+        throw new Error(`Long sound mark has no sound to extend in ${word}`);
+      }
+      return getFinalVowel(getPreviousRomaji(morae, index, word));
+    }
+
+    if (mora === "っ") {
+      const nextMora = morae[index + 1];
+      if (!nextMora || nextMora === "ー" || nextMora === "っ") return "'";
+      return getDoubledConsonant(getJapaneseRomaji(nextMora));
+    }
+
+    const romaji = getJapaneseRomaji(mora);
+    const nextMora = morae[index + 1];
+    if (romaji === "n" && nextMora && /^[aeiouy]/.test(getJapaneseRomaji(nextMora))) {
+      return "n'";
+    }
+    return romaji;
+  });
+}
+
+function getPreviousRomaji(
+  morae: readonly string[],
+  index: number,
+  word: string,
+): string {
+  for (let previousIndex = index - 1; previousIndex >= 0; previousIndex -= 1) {
+    const previousMora = morae[previousIndex];
+    if (previousMora && previousMora !== "っ" && previousMora !== "ー") {
+      return getJapaneseRomaji(previousMora);
+    }
+  }
+  throw new Error(`Long sound mark has no sound to extend in ${word}`);
+}
+
+function getFinalVowel(romaji: string): string {
+  const vowel = [...romaji].reverse().find((character) => "aeiou".includes(character));
+  if (!vowel) throw new Error(`Rōmaji has no vowel to extend: ${romaji}`);
+  return vowel;
+}
+
+function getDoubledConsonant(nextRomaji: string): string {
+  if (nextRomaji.startsWith("ch")) return "t";
+  if (nextRomaji.startsWith("sh")) return "s";
+  if (nextRomaji.startsWith("ts")) return "t";
+  return nextRomaji[0] ?? "";
+}
+
+function splitJapaneseMorae(word: string): string[] {
+  const morae: string[] = [];
+
+  for (const character of word) {
+    if ("ゃゅょぁぃぅぇぉャュョァィゥェォ".includes(character) && morae.length > 0) {
+      morae[morae.length - 1] = `${morae[morae.length - 1]}${character}`;
+    } else {
+      morae.push(character);
+    }
+  }
+
+  return morae;
+}
+
+function toHiragana(kana: string): string {
+  return [...kana].map((character) => {
+    const codePoint = character.codePointAt(0);
+    if (codePoint === undefined || codePoint < 0x30a1 || codePoint > 0x30f6) {
+      return character;
+    }
+    return String.fromCodePoint(codePoint - 0x60);
+  }).join("");
+}

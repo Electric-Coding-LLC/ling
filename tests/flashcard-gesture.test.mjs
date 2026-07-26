@@ -4,7 +4,7 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 const guidePaths = [
-  "app/stations/kana/kana-guide.tsx",
+  "app/stations/vowels/vowels-guide.tsx",
   "app/stations/hiragana/hiragana-guide.tsx",
   "app/stations/katakana/katakana-guide.tsx",
   "app/stations/kana-extensions/kana-extensions-guide.tsx",
@@ -57,7 +57,7 @@ test("flashcards share directional touch gestures and answer transitions", async
     const guide = await readFile(new URL(path, root), "utf8");
     assert.match(guide, /import \{ FlashcardContent, FlashcardReview \} from "\.\.\/flashcard-review"/);
     assert.match(guide, /<FlashcardReview[\s\S]*activationLabel=\{pronunciationRevealed[\s\S]*onActivate=\{activateCard\}[\s\S]*onAnswer=\{answerCard\}[\s\S]*playing=\{audioPlaying\}/);
-    assert.match(guide, /examplePronunciation=\{getJapaneseWordSoundCue\(activeCard\.example\)\}/);
+    assert.match(guide, /examplePronunciation=\{getJapaneseWordRomaji\(activeCard\.example\)\}/);
     assert.match(guide, /function activateCard\(\)[\s\S]*setPronunciationRevealed\(true\)[\s\S]*playAudio\(\{ index: 0, src: activeCard\.(?:audio|kanaAudio) \}\)/);
     assert.match(guide, /function playExample\(\)[\s\S]*splitJapaneseMorae\(activeCard\.example\)\.length[\s\S]*index: 1[\s\S]*activeCard\.exampleAudio/);
     assert.match(guide, /<FlashcardContent[\s\S]*activeExampleBeatIndex=\{activeBeatIndex\}[\s\S]*onPlayExample=\{playExample\}[\s\S]*onReveal=\{activateCard\}[\s\S]*revealed=\{pronunciationRevealed\}/);

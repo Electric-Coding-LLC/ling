@@ -206,9 +206,9 @@ export function RomajiGuide({
     <>
       <header className="station-heading">
         <div className="station-heading-row">
-          <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-travel">
-              Japan
+          <div aria-label="Network role" className="station-memberships">
+            <span className="station-membership station-membership-connector">
+              Connector
             </span>
           </div>
           <div className="station-heading-actions">
@@ -238,7 +238,8 @@ export function RomajiGuide({
 
         <div className="station-intro romaji-intro">
           <p>
-            <strong>Rōmaji writes Japanese sounds with the Roman alphabet.</strong>
+            <strong>Rōmaji uses the Latin alphabet—the letters A–Z—to represent Japanese sounds.</strong>{" "}
+            We use it as a bridge, so you can read the sounds in the Kana stations while learning Hiragana and Katakana.
           </p>
         </div>
 

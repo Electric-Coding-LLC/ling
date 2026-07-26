@@ -13,10 +13,12 @@ export type NetworkPosition =
   | "romaji"
   | "shopping"
   | "sound-marks"
-  | "visit";
+  | "visit"
+  | "vowels";
 
 export type NetworkStationKind =
   | "interchange"
+  | "local"
   | "sound"
   | "travel"
   | "travel-interchange"
@@ -33,9 +35,17 @@ export function NetworkGlyph({ position }: { position: NetworkPosition }) {
     );
   }
 
+  if (position === "romaji") {
+    return (
+      <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
+        <path className="station-map-local" d="M10 2 20 12 10 22M20 12 30 2" />
+        <circle className="station-map-current" cx="20" cy="12" r="4" />
+      </svg>
+    );
+  }
+
   if (
     position === "visit"
-    || position === "romaji"
     || position === "introductions"
     || position === "navigation"
     || position === "food"
@@ -73,7 +83,7 @@ export function NetworkGlyph({ position }: { position: NetworkPosition }) {
     );
   }
 
-  if (position === "hiragana") {
+  if (position === "vowels" || position === "hiragana") {
     return (
       <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
         <path className="station-map-writing" d="M20 2v20" />
@@ -119,7 +129,8 @@ export function NetworkGlyph({ position }: { position: NetworkPosition }) {
 }
 
 export function NetworkStationSymbol({ kind }: { kind: NetworkStationKind }) {
-  const interchange = kind === "interchange" || kind === "travel-interchange";
+  const interchange = kind === "interchange"
+    || kind === "travel-interchange";
 
   if (interchange) {
     return (

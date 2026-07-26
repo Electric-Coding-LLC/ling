@@ -66,9 +66,11 @@ export async function listStationIntroductions(
     .from(stationIntroductions)
     .where(eq(stationIntroductions.userId, userId));
 
-  return rows
-    .map((row) => row.stationId)
-    .filter(isStationId);
+  return Array.from(new Set(
+    rows
+      .map((row) => row.stationId === "kana" ? "vowels" : row.stationId)
+      .filter(isStationId),
+  ));
 }
 
 export async function recordStationIntroduction(

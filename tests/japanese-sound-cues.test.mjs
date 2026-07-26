@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  getJapaneseMoraRomaji,
+  getJapaneseRomaji,
+  getJapaneseWordRomaji,
+  JAPANESE_ROMAJI_VOWELS,
+  JAPANESE_ROMAJI_YOON_VOWELS,
+} from "../src/modules/romaji.ts";
+import {
   getJapaneseMoraSoundCues,
   getJapaneseSoundCue,
   getJapaneseWordSoundCue,
@@ -9,6 +16,56 @@ import {
   JAPANESE_YOON_VOWEL_SOUND_CUES,
   splitJapaneseMorae,
 } from "../src/modules/learning/japanese-sound-cues.ts";
+
+test("Kana readings use the Rōmaji station spellings", () => {
+  assert.deepEqual(JAPANESE_ROMAJI_VOWELS, ["a", "i", "u", "e", "o"]);
+  assert.deepEqual(JAPANESE_ROMAJI_YOON_VOWELS, ["a", "u", "o"]);
+
+  assert.equal(getJapaneseRomaji("か"), "ka");
+  assert.equal(getJapaneseRomaji("し"), "shi");
+  assert.equal(getJapaneseRomaji("つ"), "tsu");
+  assert.equal(getJapaneseRomaji("ふ"), "fu");
+  assert.equal(getJapaneseRomaji("ら"), "ra");
+  assert.equal(getJapaneseRomaji("ん"), "n");
+
+  assert.equal(getJapaneseRomaji("ガ"), "ga");
+  assert.equal(getJapaneseRomaji("じ"), "ji");
+  assert.equal(getJapaneseRomaji("ぢ"), "ji");
+  assert.equal(getJapaneseRomaji("ず"), "zu");
+  assert.equal(getJapaneseRomaji("づ"), "zu");
+
+  assert.equal(getJapaneseRomaji("きゃ"), "kya");
+  assert.equal(getJapaneseRomaji("シュ"), "shu");
+  assert.equal(getJapaneseRomaji("ちょ"), "cho");
+  assert.equal(getJapaneseRomaji("リュ"), "ryu");
+});
+
+test("Kana example words use continuous Rōmaji", () => {
+  assert.equal(getJapaneseWordRomaji("つき"), "tsuki");
+  assert.equal(getJapaneseWordRomaji("きょう"), "kyou");
+  assert.equal(getJapaneseWordRomaji("しゃしん"), "shashin");
+  assert.equal(getJapaneseWordRomaji("きって"), "kitte");
+  assert.equal(getJapaneseWordRomaji("ロボット"), "robotto");
+  assert.equal(getJapaneseWordRomaji("ケーキ"), "keeki");
+  assert.equal(getJapaneseWordRomaji("ショコラ"), "shokora");
+  assert.equal(getJapaneseWordRomaji("パン"), "pan");
+  assert.equal(getJapaneseWordRomaji("ピャッ"), "pya'");
+  assert.equal(getJapaneseWordRomaji("しんよう"), "shin'you");
+});
+
+test("Rōmaji units stay aligned with example-word morae", () => {
+  assert.deepEqual(getJapaneseMoraRomaji("いぬ"), ["i", "nu"]);
+  assert.deepEqual(getJapaneseMoraRomaji("きょう"), ["kyo", "u"]);
+  assert.deepEqual(getJapaneseMoraRomaji("しゃしん"), ["sha", "shi", "n"]);
+  assert.deepEqual(getJapaneseMoraRomaji("きって"), ["ki", "t", "te"]);
+  assert.deepEqual(getJapaneseMoraRomaji("ロボット"), ["ro", "bo", "t", "to"]);
+  assert.deepEqual(getJapaneseMoraRomaji("ケーキ"), ["ke", "e", "ki"]);
+  assert.deepEqual(getJapaneseMoraRomaji("ピャッ"), ["pya", "'"]);
+});
+
+test("Rōmaji rejects Kana without an approved spelling", () => {
+  assert.throws(() => getJapaneseRomaji("ゔ"), /Missing Rōmaji/);
+});
 
 test("Japanese pronunciation uses simple sound cues across Kana families", () => {
   assert.deepEqual(JAPANESE_VOWEL_SOUND_CUES, ["ah", "ee", "oo", "eh", "oh"]);
@@ -69,7 +126,7 @@ test("Japanese pronunciation rejects Kana without an approved sound cue", () => 
 
 test("example vocabulary introduces no writing concepts ahead of its station", async () => {
   const kanaSource = await readFile(
-    new URL("../app/stations/kana/kana-guide.tsx", import.meta.url),
+    new URL("../app/stations/vowels/vowels-guide.tsx", import.meta.url),
     "utf8",
   );
   const katakanaSource = await readFile(
@@ -132,9 +189,9 @@ test("example vocabulary introduces no writing concepts ahead of its station", a
   }
 });
 
-test("every station flashcard and example has an approved sound cue", async () => {
+test("every Kana station flashcard and example has approved Rōmaji", async () => {
   const sources = await Promise.all([
-    readFile(new URL("../app/stations/kana/kana-guide.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/stations/vowels/vowels-guide.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/stations/hiragana/hiragana-guide.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/stations/katakana/katakana-guide.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/stations/kana-extensions/kana-extensions-guide.tsx", import.meta.url), "utf8"),
@@ -150,16 +207,16 @@ test("every station flashcard and example has an approved sound cue", async () =
   assert.ok(kana.length > 200);
   for (const characters of new Set(kana)) {
     assert.doesNotThrow(
-      () => getJapaneseSoundCue(characters),
-      `expected a sound cue for ${characters}`,
+      () => getJapaneseRomaji(characters),
+      `expected Rōmaji for ${characters}`,
     );
   }
 
   assert.ok(examples.length > 200);
   for (const example of new Set(examples)) {
     assert.doesNotThrow(
-      () => getJapaneseWordSoundCue(example),
-      `expected a word sound cue for ${example}`,
+      () => getJapaneseWordRomaji(example),
+      `expected word Rōmaji for ${example}`,
     );
   }
 });

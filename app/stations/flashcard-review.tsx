@@ -7,9 +7,8 @@ import type {
   ReactNode,
 } from "react";
 import { useEffect, useRef, useState } from "react";
+import { getJapaneseMoraRomaji } from "@/src/modules/romaji";
 import {
-  getJapaneseMoraSoundCueSeparator,
-  getJapaneseMoraSoundCues,
   splitJapaneseMorae,
 } from "@/src/modules/learning/japanese-sound-cues";
 
@@ -113,7 +112,7 @@ export function FlashcardContent({
   translation,
 }: FlashcardContentProps) {
   const exampleMorae = splitJapaneseMorae(example);
-  const examplePronunciationUnits = getJapaneseMoraSoundCues(example);
+  const examplePronunciationUnits = getJapaneseMoraRomaji(example);
 
   return (
     <>
@@ -154,13 +153,10 @@ export function FlashcardContent({
               className="hiragana-test-example-pronunciation"
             >
               {examplePronunciationUnits.map((unit, index) => {
-                const connected = index > 0
-                  && getJapaneseMoraSoundCueSeparator(exampleMorae, index) === "";
-
                 return (
                   <span
                     className="hiragana-test-example-pronunciation-beat"
-                    data-connected={connected ? "true" : undefined}
+                    data-connected={index > 0 ? "true" : undefined}
                     data-playing={activeAudio === "example" && activeExampleBeatIndex === index
                       ? "true"
                       : undefined}

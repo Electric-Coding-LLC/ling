@@ -4,7 +4,7 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 const flashcardGuides = [
-  "app/stations/kana/kana-guide.tsx",
+  "app/stations/vowels/vowels-guide.tsx",
   "app/stations/hiragana/hiragana-guide.tsx",
   "app/stations/katakana/katakana-guide.tsx",
   "app/stations/kana-extensions/kana-extensions-guide.tsx",

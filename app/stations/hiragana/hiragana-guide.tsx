@@ -3,9 +3,11 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-  getJapaneseSoundCue,
-  getJapaneseWordSoundCue,
-  JAPANESE_VOWEL_SOUND_CUES,
+  getJapaneseRomaji,
+  getJapaneseWordRomaji,
+  JAPANESE_ROMAJI_VOWELS,
+} from "@/src/modules/romaji";
+import {
   splitJapaneseMorae,
 } from "@/src/modules/learning/japanese-sound-cues";
 import { FlashcardContent, FlashcardReview } from "../flashcard-review";
@@ -460,7 +462,7 @@ export function HiraganaGuide() {
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Kana
+              Script
             </span>
           </div>
           <div className="station-heading-actions">
@@ -533,7 +535,7 @@ export function HiraganaGuide() {
       <table aria-label="The 46 basic hiragana" className="hiragana-table">
         <thead>
           <tr>
-            {JAPANESE_VOWEL_SOUND_CUES.map((sound) => (
+            {JAPANESE_ROMAJI_VOWELS.map((sound) => (
               <th aria-label={`Column of sounds ending in ${sound}`} key={sound} scope="col">
                 {sound}
               </th>
@@ -588,7 +590,7 @@ export function HiraganaGuide() {
                 ? `Replay ${activeCard.kana}`
                 : `Reveal and play ${activeCard.kana}`}
               announcement={pronunciationRevealed
-                ? `${getJapaneseSoundCue(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordSoundCue(activeCard.example)}, ${activeCard.translation}`
+                ? `${getJapaneseRomaji(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordRomaji(activeCard.example)}, ${activeCard.translation}`
                 : ""}
               key={`${testIndex}-${activeCard.kana}`}
               onActivate={activateCard}
@@ -601,11 +603,11 @@ export function HiraganaGuide() {
                   : activeAudioIndex === 1 ? "example" : null}
                 activeExampleBeatIndex={activeBeatIndex}
                 example={activeCard.example}
-                examplePronunciation={getJapaneseWordSoundCue(activeCard.example)}
+                examplePronunciation={getJapaneseWordRomaji(activeCard.example)}
                 kana={activeCard.kana}
                 onPlayExample={playExample}
                 onReveal={activateCard}
-                pronunciation={getJapaneseSoundCue(activeCard.kana)}
+                pronunciation={getJapaneseRomaji(activeCard.kana)}
                 revealed={pronunciationRevealed}
                 translation={activeCard.translation}
               />

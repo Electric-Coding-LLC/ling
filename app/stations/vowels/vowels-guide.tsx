@@ -3,9 +3,11 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-  getJapaneseSoundCue,
-  getJapaneseWordSoundCue,
-  JAPANESE_VOWEL_SOUND_CUES,
+  getJapaneseRomaji,
+  getJapaneseWordRomaji,
+  JAPANESE_ROMAJI_VOWELS,
+} from "@/src/modules/romaji";
+import {
   splitJapaneseMorae,
 } from "@/src/modules/learning/japanese-sound-cues";
 import { isVowelKana } from "@/src/modules/learning/vowels";
@@ -45,7 +47,7 @@ const VOWEL_ROWS = [
 ] as const;
 const VOWEL_KANA = new Set(VOWEL_CARDS.map((entry) => entry.kana));
 
-export function KanaGuide() {
+export function VowelsGuide() {
   const {
     activeAudioIndex,
     activeBeatIndex,
@@ -67,7 +69,7 @@ export function KanaGuide() {
 
   useEffect(() => {
     const controller = new AbortController();
-    void fetch("/api/stations/kana/introduction", { method: "POST" });
+    void fetch("/api/stations/vowels/introduction", { method: "POST" });
 
     void Promise.all([
       fetch("/api/stations/hiragana/knowledge", { cache: "no-store", signal: controller.signal }),
@@ -166,7 +168,7 @@ export function KanaGuide() {
 
   async function setAllKnowledge(known: boolean) {
     setKnowledgeError(false);
-    const response = await fetch("/api/stations/kana/knowledge", {
+    const response = await fetch("/api/stations/vowels/knowledge", {
       body: JSON.stringify({ known }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -230,8 +232,7 @@ export function KanaGuide() {
       <header className="station-heading">
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-sound" data-line="sound">Speech</span>
-            <span className="station-membership station-membership-writing" data-line="writing">Kana</span>
+            <span className="station-membership station-membership-writing" data-line="writing">Script</span>
           </div>
           <div className="station-heading-actions">
             <StationOptions
@@ -259,8 +260,10 @@ export function KanaGuide() {
         />
 
         <div className="station-intro kana-intro">
-          <p><strong>Kana is the collective name for Hiragana and Katakana.</strong> They are two sets of characters used to write how Japanese words sound. Both sets represent the same sounds with different shapes.</p>
-          <p>Hiragana is used for everyday Japanese words and grammar. Katakana is used mainly for borrowed words, foreign names, emphasis, and sound effects.</p>
+          <p>
+            <strong>Japanese Kana are built around five vowel sounds.</strong>{" "}
+            Hiragana and Katakana write each sound with a different shape.
+          </p>
         </div>
 
         <p className="kana-table-intro"><strong>Start with the five vowel sounds.</strong> Tap any Kana to practice it.</p>
@@ -268,7 +271,7 @@ export function KanaGuide() {
         <table aria-label="The five Japanese vowels in Hiragana and Katakana" className="hiragana-table kana-vowels-chart">
           <thead>
             <tr>
-              {JAPANESE_VOWEL_SOUND_CUES.map((sound) => <th key={sound} scope="col">{sound}</th>)}
+              {JAPANESE_ROMAJI_VOWELS.map((sound) => <th key={sound} scope="col">{sound}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -310,7 +313,7 @@ export function KanaGuide() {
                 activationLabel={pronunciationRevealed
                   ? `Replay ${activeCard.kana}`
                   : `Reveal and play ${activeCard.kana}`}
-                announcement={pronunciationRevealed ? `${getJapaneseSoundCue(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordSoundCue(activeCard.example)}, ${activeCard.translation}` : ""}
+                announcement={pronunciationRevealed ? `${getJapaneseRomaji(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordRomaji(activeCard.example)}, ${activeCard.translation}` : ""}
                 key={`${testIndex}-${activeCard.kana}`}
                 onActivate={activateCard}
                 onAnswer={answerCard}
@@ -322,11 +325,11 @@ export function KanaGuide() {
                     : activeAudioIndex === 1 ? "example" : null}
                   activeExampleBeatIndex={activeBeatIndex}
                   example={activeCard.example}
-                  examplePronunciation={getJapaneseWordSoundCue(activeCard.example)}
+                  examplePronunciation={getJapaneseWordRomaji(activeCard.example)}
                   kana={activeCard.kana}
                   onPlayExample={playExample}
                   onReveal={activateCard}
-                  pronunciation={getJapaneseSoundCue(activeCard.kana)}
+                  pronunciation={getJapaneseRomaji(activeCard.kana)}
                   revealed={pronunciationRevealed}
                   translation={activeCard.translation}
                 />

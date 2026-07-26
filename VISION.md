@@ -80,37 +80,42 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-The current mapped network has three lines, a Japanese entrance, and fifteen
+The current mapped network has three lines, a Japanese entrance, and sixteen
 stations:
 
 ```text
-Japanese ───────── Vowels ───────── Mora Timing ───────── Pitch Accent
-    │                 │
-  Visit            Hiragana
-    │                 │
- Rōmaji            Katakana
-    │                 │
-Introductions      Dakuten & Handakuten
-    │                 │
-Navigation         Yōon
-    │
-  Food
-    │
-Shopping
+Japanese ────────────── Kana ───────── Mora Timing ───────── Pitch Accent
+    │ ╲                 ╱ │
+    │   ╲   Rōmaji   ╱   │
+    │     ╲       ╱       │
+  Visit                Vowels
+    │                    │
+Introductions         Hiragana
+    │                    │
+Navigation           Katakana
+    │                    │
+  Food          Dakuten & Handakuten
+    │                    │
+Shopping              Yōon
     │
   Help
 ```
 
 `Japanese` is the starting interchange between the Japan and Speech lines. It
-introduces Ling and the network itself, then opens two kinds of territory: the
-always-available Japan line continues down the first column, while Speech
-continues right to `Vowels` and the existing Speech and Kana territory.
+introduces Ling and the network itself, then opens two kinds of territory:
+Speech continues directly to `Kana`, while the always-available Japan line
+continues directly to `Visit`. `Rōmaji` forms an irregular branch between
+`Japanese`, `Visit`, and `Kana`. Its three short links are neutral local
+connections rather than named line segments, and Rōmaji uses a standard local
+station marker rather than a major-interchange marker.
 
-Japan is a reference line rather than a progression chain. `Visit`, `Rōmaji`,
+Japan is a reference line rather than a progression chain. `Rōmaji`, `Visit`,
 `Introductions`, `Navigation`, `Food`, `Shopping`, and `Help` are always visible and
 directly accessible. They do not store completion or gate another station.
 
-`Vowels` introduces Kana through Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
+`Kana` is the interchange between Speech and Script. It introduces Hiragana and
+Katakana as two ways to write the same sounds. `Vowels` begins the Script line
+with the five shared Japanese vowels:
 
 ```text
 あ / ア  い / イ  う / ウ  え / エ  お / オ
@@ -120,7 +125,7 @@ The chart places Hiragana and Katakana in separate rows beneath the same five so
 
 This seed is a valid piece of the eventual network, not a disposable prototype.
 The Japan line remains visible as a stable reference. The learning territory still
-represents where the learner has traveled: Vowels reveals the Kana segment to
+represents where the learner has traveled: Vowels reveals the Script segment to
 `Hiragana`, extends to `Katakana` after Hiragana is known, then reaches
 `Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is
 completed. Completing Yōon reveals `Mora Timing` on the Speech line, and
@@ -158,7 +163,13 @@ stations have a shuffled flashcard test but no score, progress, completion,
 scheduling, or persistence. `Help` covers urgent assistance, illness, emergency
 services, a lost passport, and finding an English speaker.
 
-`Vowels` provides the orientation needed before either Kana system is studied in full. It defines Kana, explains the different roles of Hiragana and Katakana, and introduces their five shared vowel sounds in one chart. Each of the ten Kana opens a flashcard with bundled pronunciation, a playable example, and a translation.
+`Kana` defines the two phonetic scripts and explains the different roles of
+Hiragana and Katakana. It is the always-available interchange between Speech
+and Script.
+
+`Vowels` begins Script study with the five sounds shared by Hiragana and
+Katakana. Each of the ten Kana opens a flashcard with bundled pronunciation, a
+playable example, and a translation.
 
 `Hiragana` presents the complete 46-character basic chart under five approximate English vowel-sound headings. Every Kana opens a flashcard that reveals its pronunciation and translation alongside a playable Japanese example. Self-reported knowledge is saved privately and reflected in the chart and station progress ring.
 

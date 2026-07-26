@@ -36,7 +36,7 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /DESKTOP_KANA_X\s*=\s*DESKTOP_JAPANESE_X \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /MOBILE_JAPANESE_X\s*=\s*NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /MOBILE_KANA_X\s*=\s*MOBILE_JAPANESE_X \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*1170/);
+  assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*1530/);
   assert.match(source, /data-line="travel"/);
   assert.match(source, /aria-label="Speech line"[\s\S]*className="network-line network-line-sound"[\s\S]*x1=\{japaneseX \+ NETWORK_INTERCHANGE_NODE_OFFSET\}[\s\S]*x2=\{kanaX - kanaLineOffset\}/);
   assert.doesNotMatch(source, /network-line-connection|Japanese network connection/);
@@ -47,30 +47,38 @@ test("the network keeps the approved desktop and mobile geography", async () => 
 
   for (const slug of [
     "japanese",
-    "japan",
-    "greetings",
+    "visit",
+    "romaji",
+    "introductions",
     "navigation",
     "food",
     "shopping",
+    "help",
   ]) {
     assert.match(source, new RegExp(`${slug}:\\s*"\\/stations\\/${slug}"`));
   }
 
   for (const label of [
     "Japanese",
-    "Japan",
-    "Greetings",
+    "Visit",
+    "Rōmaji",
+    "Introductions",
     "Navigation",
     "Food",
     "Shopping",
+    "Help",
   ]) {
     assert.match(source, new RegExp(`label="${label}"`));
   }
 
   assert.match(source, /getStoredStationFocus\(\): StationFocus \{[\s\S]*\?\? "japanese"/);
   assert.match(source, /getServerStationFocus\(\): StationFocus \{[\s\S]*return "japanese"/);
-  assert.match(source, /japanese:\s*\{ ArrowDown: "japan", ArrowRight: "kana" \}/);
-  assert.match(source, /shopping:\s*\{ ArrowUp: "food" \}/);
+  assert.match(source, /japanese:\s*\{ ArrowDown: "visit", ArrowRight: "kana" \}/);
+  assert.match(source, /visit:\s*\{ ArrowDown: "romaji", ArrowUp: "japanese" \}/);
+  assert.match(source, /romaji:\s*\{ ArrowDown: "introductions", ArrowUp: "visit" \}/);
+  assert.match(source, /introductions:\s*\{ ArrowDown: "navigation", ArrowUp: "romaji" \}/);
+  assert.match(source, /shopping:\s*\{ ArrowDown: "help", ArrowUp: "food" \}/);
+  assert.match(source, /help:\s*\{ ArrowUp: "shopping" \}/);
   assert.match(source, /kana:\s*\{ ArrowDown: "hiragana", ArrowLeft: "japanese", ArrowRight: "mora" \}/);
   assert.match(styles, /network-mobile-track-kana[\s\S]*translateX\(-50%\)/);
   assert.match(styles, /network-mobile-track-mora\s*\{[^}]*translateX\(-100%\)/s);
@@ -85,11 +93,13 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /NETWORK_LINE_NODE_OFFSET\s*=\s*18/);
   assert.match(source, /NETWORK_INTERCHANGE_NODE_OFFSET\s*=\s*31/);
   assert.match(source, /SOUND_Y\s*=\s*180/);
-  assert.match(source, /JAPAN_Y\s*=\s*SOUND_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /GREETINGS_Y\s*=\s*JAPAN_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /NAVIGATION_Y\s*=\s*GREETINGS_Y \+ NETWORK_SEGMENT_LENGTH/);
+  assert.match(source, /VISIT_Y\s*=\s*SOUND_Y \+ NETWORK_SEGMENT_LENGTH/);
+  assert.match(source, /ROMAJI_Y\s*=\s*VISIT_Y \+ NETWORK_SEGMENT_LENGTH/);
+  assert.match(source, /INTRODUCTIONS_Y\s*=\s*ROMAJI_Y \+ NETWORK_SEGMENT_LENGTH/);
+  assert.match(source, /NAVIGATION_Y\s*=\s*INTRODUCTIONS_Y \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /FOOD_Y\s*=\s*NAVIGATION_Y \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /SHOPPING_Y\s*=\s*FOOD_Y \+ NETWORK_SEGMENT_LENGTH/);
+  assert.match(source, /HELP_Y\s*=\s*SHOPPING_Y \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /HIRAGANA_Y\s*=\s*SOUND_Y \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /KATAKANA_Y\s*=\s*HIRAGANA_Y \+ NETWORK_SEGMENT_LENGTH/);
   assert.match(source, /SOUND_MARKS_Y\s*=\s*KATAKANA_Y \+ NETWORK_SEGMENT_LENGTH/);
@@ -111,7 +121,8 @@ test("the network keeps the approved desktop and mobile geography", async () => 
 
   assert.match(source, /import \{ NavigationLink, useRouteReady \} from "\.\/navigation-feedback"/);
   assert.doesNotMatch(source, /import Link from "next\/link"|import \{ useRouter \} from "next\/navigation"/);
-  assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*loadingStation=\{label\}[\s\S]*prefetch/);
+  assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*href=\{href\}[\s\S]*prefetch/);
+  assert.doesNotMatch(source, /loadingStation=\{label\}/);
   assert.doesNotMatch(source, /window\.location\.assign|<a[^>]*className="network-station-link"/);
 
   assert.match(source, /MOBILE_SWIPE_THRESHOLD\s*=\s*40/);
@@ -130,6 +141,8 @@ test("the network keeps the approved desktop and mobile geography", async () => 
   assert.match(source, /window\.dispatchEvent\(new Event\(STATION_FOCUS_EVENT\)\)/);
   assert.match(source, /window\.addEventListener\("storage", onStoreChange\)/);
   assert.match(source, /new URLSearchParams\(window\.location\.search\)\.get\("focus"\)/);
+  assert.match(source, /storedFocus === "japan"\) return "visit"/);
+  assert.match(source, /requestedFocus === "japan"[\s\S]*\? "visit"/);
   assert.match(source, /const requestedStationFocus = selectedStationFocus \?\? storedStationFocus/);
   assert.match(source, /const mobileFocus: MobileFocus = stationFocus/);
 
@@ -168,7 +181,7 @@ test("station map glyphs reflect each station's network position", async () => {
   const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const japaneseGlyph = source.slice(
     source.indexOf('if (position === "japanese")'),
-    source.indexOf('if (\n    position === "japan"'),
+    source.indexOf('if (\n    position === "visit"'),
   );
   const kanaGlyph = source.slice(
     source.indexOf('if (position === "kana")'),
@@ -178,8 +191,9 @@ test("station map glyphs reflect each station's network position", async () => {
   assert.match(japaneseGlyph, /station-map-travel[\s\S]*station-map-sound[\s\S]*station-map-interchange/);
   assert.match(japaneseGlyph, /d="M14 8v14"[\s\S]*d="M14 8h14"/);
   assert.doesNotMatch(japaneseGlyph, /station-map-connection/);
-  assert.match(source, /position === "japan"[\s\S]*position === "food"[\s\S]*station-map-travel/);
-  assert.match(source, /position === "shopping"[\s\S]*data-terminal="true"[\s\S]*station-map-travel/);
+  assert.match(source, /position === "visit"[\s\S]*position === "romaji"[\s\S]*position === "food"[\s\S]*station-map-travel/);
+  assert.match(source, /position === "shopping"[\s\S]*station-map-travel/);
+  assert.match(source, /position === "help"[\s\S]*data-terminal="true"[\s\S]*station-map-travel/);
   assert.match(kanaGlyph, /station-map-sound[\s\S]*station-map-writing[\s\S]*station-map-interchange/);
   assert.match(kanaGlyph, /d="M6 8h28"[\s\S]*d="M20 8v14"/);
   assert.match(source, /position === "hiragana"[\s\S]*station-map-writing/);
@@ -581,7 +595,7 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.match(styles, /\.station-practice-word\s*\{[^}]*min-height:\s*3\.75rem[^}]*border:\s*0[^}]*font-size:\s*1\.35rem/s);
   assert.doesNotMatch(styles, /\.station-practice-word\s*\{[^}]*border-bottom:/s);
   assert.match(styles, /\.station-practice-word\[data-known="true"\]\s*\{[^}]*color:\s*var\(--known\)/s);
-  assert.match(styles, /\.station-practice-word:hover\s*\{[^}]*color:\s*var\(--sound\)/s);
+  assert.match(styles, /\.station-practice-word:hover\s*\{[^}]*color:\s*var\(--muted\)/s);
   assert.match(styles, /\.station-membership::before\s*\{[^}]*background:\s*currentColor[^}]*content:\s*""/s);
   assert.match(styles, /\.mora-example\[data-playing="true"\] \.mora-audio-indicator span\s*\{[^}]*animation:\s*hiragana-test-sound-pulse/s);
   assert.doesNotMatch(styles, /@media \(max-width: 600px\)[\s\S]*\.mora-example-list\s*\{/s);

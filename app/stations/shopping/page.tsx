@@ -6,10 +6,11 @@ export default function ShoppingPage() {
   return (
     <main className="shell station-shell">
       <StationTopbar current="Shopping" mapPosition="shopping" />
-      <div className="station-page station-page-travel">
+      <div className="station-page station-page-travel station-page-shopping">
         <TravelStation
-          intro={["Use these to ask about price, choose an item, find another option, or confirm payment. Tap any phrase to hear it."]}
           items={TRAVEL_PHRASES.shopping}
+          review
+          showPronunciation
           title="Shopping"
         />
       </div>

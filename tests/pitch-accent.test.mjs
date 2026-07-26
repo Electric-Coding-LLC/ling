@@ -99,7 +99,7 @@ test("Pitch Accent is listening-first, mora-aligned, compact, and privately pers
   assert.match(styles, /\.station-practice-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
   assert.match(styles, /\.station-practice-word\s*\{[^}]*border:\s*0/s);
   assert.doesNotMatch(styles, /\.station-practice-word\s*\{[^}]*border-bottom:/s);
-  assert.match(styles, /\.station-practice-word:hover\s*\{[^}]*color:\s*var\(--sound\)/s);
+  assert.match(styles, /\.station-practice-word:hover\s*\{[^}]*color:\s*var\(--muted\)/s);
   assert.doesNotMatch(styles, /\.station-practice-word:hover\s*\{[^}]*background:/s);
   assert.match(styles, /\.pitch-contour-point\[data-active="true"\]\s*\{[^}]*fill:\s*var\(--sound\)/s);
   assert.doesNotMatch(mobileStyles, /\.pitch-example-list\s*\{/s);

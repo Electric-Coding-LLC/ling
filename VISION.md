@@ -55,7 +55,7 @@ Suggestions may quietly use prior evidence to direct attention, but they are an 
 
 - Build from real study needs, one useful increment at a time.
 - Pursue mastery through teaching, active recall, correction, and retesting.
-- Present Japanese through Japanese writing and sound. Do not use romaji as a pronunciation subtitle or global fallback; show it only when encountered Latin-letter writing is itself the subject.
+- Present Japanese through Japanese writing and sound. Teach rōmaji once as a readable notation on the Japan line, then use compact rōmaji beneath later Japan-line phrases; do not use IPA or English respellings.
 - Treat replayable pronunciation and concise linguistic insight as core learning material.
 - Prefer direct testing over passive lesson consumption.
 - Let the learner browse and test any mapped territory.
@@ -80,30 +80,34 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-The current mapped network has three lines, a Japanese entrance, and thirteen
+The current mapped network has three lines, a Japanese entrance, and fifteen
 stations:
 
 ```text
 Japanese ───────── Vowels ───────── Mora Timing ───────── Pitch Accent
     │                 │
-  Japan            Hiragana
+  Visit            Hiragana
     │                 │
-Greetings          Katakana
+ Rōmaji            Katakana
     │                 │
-Navigation         Dakuten & Handakuten
+Introductions      Dakuten & Handakuten
     │                 │
-  Food             Yōon
+Navigation         Yōon
+    │
+  Food
     │
 Shopping
+    │
+  Help
 ```
 
-`Japanese` is the starting interchange between the Travel and Speech lines. It
+`Japanese` is the starting interchange between the Japan and Speech lines. It
 introduces Ling and the network itself, then opens two kinds of territory: the
-always-available Travel line continues down the first column, while Speech
+always-available Japan line continues down the first column, while Speech
 continues right to `Vowels` and the existing Speech and Kana territory.
 
-Travel is a reference line rather than a progression chain. `Japan`,
-`Greetings`, `Navigation`, `Food`, and `Shopping` are always visible and
+Japan is a reference line rather than a progression chain. `Visit`, `Rōmaji`,
+`Introductions`, `Navigation`, `Food`, `Shopping`, and `Help` are always visible and
 directly accessible. They do not store completion or gate another station.
 
 `Vowels` introduces Kana through Hiragana and Katakana as two ways to write the same sounds, beginning with the five Japanese vowels:
@@ -115,7 +119,7 @@ directly accessible. They do not store completion or gate another station.
 The chart places Hiragana and Katakana in separate rows beneath the same five sounds. Each Kana opens a flashcard with its pronunciation, a playable Japanese example word, and a translation.
 
 This seed is a valid piece of the eventual network, not a disposable prototype.
-Travel remains visible as a stable reference. The learning territory still
+The Japan line remains visible as a stable reference. The learning territory still
 represents where the learner has traveled: Vowels reveals the Kana segment to
 `Hiragana`, extends to `Katakana` after Hiragana is known, then reaches
 `Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is
@@ -131,15 +135,28 @@ for speculative stations.
 It explains lines, stations, listening, and revisiting without imposing a
 course route.
 
-`Japan` introduces `日本` and frames Travel as a small visitor reference. It
+`Visit` introduces `日本` and frames the Japan line as a small visitor reference. It
 briefly acknowledges that real-world Japan uses kanji, kana, and romaji while
-keeping Japanese writing and sound primary in Ling.
+keeping Japanese writing and sound primary in Ling. Its three starter
+expressions include short English sound cues because Rōmaji has not yet been
+introduced.
 
-`Greetings`, `Navigation`, `Food`, and `Shopping` each present six
-source-checked practical phrases. Every row shows Japanese, a concise English
-meaning, an essential usage note only when needed, and immediate bundled audio.
-These stations have no review deck, score, progress, completion, scheduling, or
-persistence.
+`Rōmaji` presents the basic and combined Japanese sound charts in the same
+five-column form used by Hiragana and Katakana. Each cell shows only the
+Rōmaji being learned and opens the shared hidden-answer flashcard flow; reveal
+plays the Japanese sound and shows its short English sound cue, while
+self-reported knowledge is saved privately. Compact follow-up rows explain
+doubled consonants and long vowels without introducing Kana.
+
+`Introductions` presents independently useful, source-checked first-meeting
+phrases covering a name, origin, and questions about speaking Japanese and
+English.
+`Introductions`, `Food`, `Shopping`, and `Help` each present eight source-checked
+practical phrases; `Navigation` presents six. Every row shows Japanese, a concise English meaning, an essential
+usage note only when needed, compact rōmaji, and immediate bundled audio. These
+stations have a shuffled flashcard test but no score, progress, completion,
+scheduling, or persistence. `Help` covers urgent assistance, illness, emergency
+services, a lost passport, and finding an English speaker.
 
 `Vowels` provides the orientation needed before either Kana system is studied in full. It defines Kana, explains the different roles of Hiragana and Katakana, and introduces their five shared vowel sounds in one chart. Each of the ten Kana opens a flashcard with bundled pronunciation, a playable example, and a translation.
 
@@ -159,7 +176,7 @@ All pronunciation is bundled synthetic speech played at its authored speed. Stat
 
 ## Not Yet
 
-The complete Japanese network, further Travel depth, a global romaji setting,
+The complete Japanese network, further Japan-line depth, a global romaji setting,
 generic graph infrastructure, automated recommendations or routing, deck
 management, automated scheduling, speech evaluation, content-management
 tooling, metrics, and a generic multilingual model wait until direct use

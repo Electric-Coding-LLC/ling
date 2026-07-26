@@ -96,7 +96,10 @@ test("Safari installation bypasses the private Sites asset perimeter", async () 
 });
 
 test("the standalone wordmark uses fixed vector outlines", async () => {
-  const wordmark = await readFile(new URL("public/brand/ling-wordmark.svg", root), "utf8");
+  const [wordmark, brandComponent] = await Promise.all([
+    readFile(new URL("public/brand/ling-wordmark.svg", root), "utf8"),
+    readFile(new URL("app/brand.tsx", root), "utf8"),
+  ]);
 
   assert.match(wordmark, /data-brand="ling-wordmark"/);
   assert.match(wordmark, /data-glyph-style="concept-b-primary"/);
@@ -106,6 +109,10 @@ test("the standalone wordmark uses fixed vector outlines", async () => {
   assert.doesNotMatch(wordmark, /prefers-color-scheme/);
   assert.doesNotMatch(wordmark, /<text\b/i);
   assert.equal((wordmark.match(/<use\b/g) ?? []).length, 4);
+  assert.match(brandComponent, /aria-label="Ling"[\s\S]*role="img"/);
+  assert.match(brandComponent, /data-brand="ling-wordmark"/);
+  assert.equal((brandComponent.match(/transform="translate\(/g) ?? []).length, 4);
+  assert.doesNotMatch(brandComponent, /next\/image|ling-wordmark\.svg|<Image/);
 });
 
 test("the app shell is fullscreen at every viewport", async () => {
@@ -127,9 +134,14 @@ test("the server-rendered boot screen remains until the current route is ready",
     readFile(new URL("app/network-map.tsx", root), "utf8"),
   ]);
 
-  assert.match(layout, /<LoadingScreen boot overlay \/>/);
+  assert.doesNotMatch(layout, /<LoadingScreen boot overlay \/>/);
   assert.match(layout, /<BootReady \/>/);
-  assert.match(loading, /html\[data-ling-ready="true"\] \.loading-shell-boot\s*\{[^}]*display:\s*none/s);
+  assert.doesNotMatch(navigation, /LoadingScreen|showBootLoader/);
+  assert.match(network, /<LoadingScreen boot overlay \/>/);
+  assert.match(
+    loading,
+    /html\[data-ling-ready="true"\] \.loading-shell-boot,\s*\.loading-shell-boot\[data-ling-departing="true"\]\s*\{[^}]*opacity:\s*0[^}]*visibility:\s*hidden/s,
+  );
   assert.match(hydrated, /performance\.mark\(HYDRATION_MARK\)/);
   assert.doesNotMatch(hydrated, /dataset\.lingReady/);
   assert.match(navigation, /document\.documentElement\.dataset\.lingReady = "true"/);

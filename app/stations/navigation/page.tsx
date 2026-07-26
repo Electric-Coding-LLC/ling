@@ -6,10 +6,11 @@ export default function NavigationPage() {
   return (
     <main className="shell station-shell">
       <StationTopbar current="Navigation" mapPosition="navigation" />
-      <div className="station-page station-page-travel">
+      <div className="station-page station-page-travel station-page-navigation">
         <TravelStation
-          intro={["Use these to find a place, confirm a route, or show someone where you need to go. Tap any phrase to hear it."]}
           items={TRAVEL_PHRASES.navigation}
+          review
+          showPronunciation
           title="Navigation"
         />
       </div>

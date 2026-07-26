@@ -61,6 +61,18 @@ export const katakanaKnowledge = sqliteTable(
   (table) => [primaryKey({ columns: [table.userId, table.kana] })],
 );
 
+export const romajiKnowledge = sqliteTable(
+  "romaji_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kana: text("kana").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.kana] })],
+);
+
 export const kanaExtensionKnowledge = sqliteTable(
   "kana_extension_knowledge",
   {

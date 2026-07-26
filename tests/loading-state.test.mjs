@@ -8,6 +8,7 @@ test("the root route has a branded, accessible loading state", async () => {
   const source = await readFile(new URL("app/loading.tsx", root), "utf8");
   const screen = await readFile(new URL("app/loading-screen.tsx", root), "utf8");
   const loadingStyles = await readFile(new URL("app/styles/loading.css", root), "utf8");
+  const shellStyles = await readFile(new URL("app/styles/shell.css", root), "utf8");
   const globalStyles = await readFile(new URL("app/globals.css", root), "utf8");
   const kanaLoading = await readFile(new URL("app/stations/kana/loading.tsx", root), "utf8");
   const extensionsLoading = await readFile(
@@ -26,10 +27,19 @@ test("the root route has a branded, accessible loading state", async () => {
     new URL("app/stations/pitch-accent/loading.tsx", root),
     "utf8",
   );
+  const romajiLoading = await readFile(
+    new URL("app/stations/romaji/loading.tsx", root),
+    "utf8",
+  );
+  const visitLoading = await readFile(
+    new URL("app/stations/visit/loading.tsx", root),
+    "utf8",
+  );
   const navigationFeedback = await readFile(
     new URL("app/navigation-feedback.tsx", root),
     "utf8",
   );
+  const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
 
   assert.match(source, /<LoadingScreen \/>/);
   assert.match(screen, /aria-busy="true"/);
@@ -42,31 +52,68 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(screen, /loading-track/);
   assert.doesNotMatch(screen, /<svg|loading-network|spinner/i);
   assert.match(kanaLoading, /<LoadingScreen station="Vowels" \/>/);
-  assert.match(loadingStyles, /data-station="vowels"/);
   assert.match(extensionsLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(soundMarksLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(combinedSoundsLoading, /<LoadingScreen station="Yōon" \/>/);
   assert.match(pitchAccentLoading, /<LoadingScreen station="Pitch Accent" \/>/);
-  assert.match(loadingStyles, /data-station="kana-extensions"/);
-  assert.match(loadingStyles, /data-station="sound-marks"/);
-  assert.match(loadingStyles, /data-station="combined-sounds"/);
-  assert.match(loadingStyles, /data-station="pitch-accent"/);
-  assert.match(navigationFeedback, /<NavigationFeedbackContext value=\{beginNavigation\}>/);
+  assert.match(romajiLoading, /<LoadingScreen station="Rōmaji" \/>/);
+  assert.match(visitLoading, /<LoadingScreen station="Visit" \/>/);
+  assert.doesNotMatch(loadingStyles, /--loading-accent|\.loading-shell\[data-station=/);
   assert.match(navigationFeedback, /<RouteReadyContext value=\{completeNavigation\}>/);
+  assert.match(navigationFeedback, /const pathname = usePathname\(\)/);
+  assert.doesNotMatch(navigationFeedback, /LoadingScreen|showBootLoader|hasReachedReadyRoute/);
+  assert.match(networkMap, /<LoadingScreen boot overlay \/>/);
+  assert.match(
+    navigationFeedback,
+    /<div className="route-transition-surface" key=\{pathname\}>/,
+  );
   assert.match(navigationFeedback, /<NavigationCompletion onComplete=\{completeNavigation\} \/>/);
   assert.match(navigationFeedback, /useLayoutEffect\(\(\) => \{/);
-  assert.match(navigationFeedback, /if \(pathname === "\/"\)[\s\S]*removeAttribute\("data-ling-ready"\)/);
+  assert.match(
+    navigationFeedback,
+    /if \(pathname === "\/"\)[\s\S]*removeAttribute\("data-ling-ready"\)[\s\S]*else \{[\s\S]*dataset\.lingReady = "true"/,
+  );
   assert.match(navigationFeedback, /if \(pathname !== "\/"\) onComplete\(\)/);
   assert.match(navigationFeedback, /document\.documentElement\.dataset\.lingReady = "true"/);
-  assert.match(navigationFeedback, /flushSync\(\(\) => startNavigation\(loadingStation\)\)/);
-  assert.match(navigationFeedback, /event\.metaKey[\s\S]*event\.ctrlKey[\s\S]*event\.shiftKey[\s\S]*event\.altKey/);
-  assert.match(navigationFeedback, /pending \? <LoadingScreen overlay station=\{pending\.station\} \/> : null/);
+  assert.match(
+    navigationFeedback,
+    /\.querySelector\("\.loading-shell-boot"\)[\s\S]*\.setAttribute\("data-ling-departing", "true"\)/,
+  );
+  assert.match(navigationFeedback, /if \(\s*event\.defaultPrevented/);
+  assert.match(
+    navigationFeedback,
+    /event\.metaKey[\s\S]*event\.ctrlKey[\s\S]*event\.shiftKey[\s\S]*event\.altKey[\s\S]*target !== "_self"/,
+  );
+  assert.doesNotMatch(
+    navigationFeedback,
+    /NavigationFeedbackContext|pending|loadingVisible|flushSync/,
+  );
 
   assert.match(loadingStyles, /\.loading-shell\s*\{[^}]*min-height:\s*100dvh/s);
-  assert.match(loadingStyles, /\.loading-shell-overlay\s*\{[^}]*position:\s*fixed/s);
+  assert.match(
+    loadingStyles,
+    /\.loading-shell-overlay\s*\{[^}]*position:\s*fixed[^}]*opacity:\s*1[^}]*transition:[^}]*opacity 180ms ease-out/s,
+  );
+  assert.match(
+    loadingStyles,
+    /html\[data-ling-ready="true"\] \.loading-shell-boot,\s*\.loading-shell-boot\[data-ling-departing="true"\]\s*\{[^}]*opacity:\s*0[^}]*visibility:\s*hidden/s,
+  );
+  const hiddenBootRule = loadingStyles.match(
+    /html\[data-ling-ready="true"\] \.loading-shell-boot,\s*\.loading-shell-boot\[data-ling-departing="true"\]\s*\{[^}]*\}/s,
+  )?.[0] ?? "";
+  assert.doesNotMatch(hiddenBootRule, /pointer-events/);
+  assert.match(
+    shellStyles,
+    /\.route-transition-surface\s*\{[^}]*animation:\s*route-content-enter 180ms ease-out both/s,
+  );
+  assert.match(shellStyles, /@keyframes route-content-enter\s*\{[\s\S]*opacity:\s*0\.25[\s\S]*opacity:\s*1/s);
   assert.match(loadingStyles, /@keyframes loading-track-sweep/);
   assert.match(
+    loadingStyles,
+    /\.loading-track::after\s*\{[^}]*background:\s*var\(--foreground\)/s,
+  );
+  assert.match(
     globalStyles,
-    /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.loading-track::after\s*\{[^}]*animation:\s*none/s,
+    /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.loading-shell-overlay\s*\{[^}]*transition:\s*none[\s\S]*\.route-transition-surface\s*\{[^}]*animation:\s*none[\s\S]*\.loading-track::after\s*\{[^}]*animation:\s*none/s,
   );
 });

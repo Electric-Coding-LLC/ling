@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import {
+  VISIT_STARTER_PHRASES,
   TRAVEL_ORIENTATION,
   TRAVEL_PHRASES,
 } from "../src/modules/travel.ts";
@@ -56,13 +57,14 @@ function parsePcmWave(buffer) {
 
 const items = [
   TRAVEL_ORIENTATION.japanese,
-  TRAVEL_ORIENTATION.japan,
+  TRAVEL_ORIENTATION.visit,
+  ...VISIT_STARTER_PHRASES,
   ...Object.values(TRAVEL_PHRASES).flat(),
 ];
 const audioPaths = items.map(({ audio }) => audio);
 
-assert.equal(items.length, 26, "Travel manifest should contain 26 audio items");
-assert.equal(new Set(audioPaths).size, items.length, "Travel audio paths must be unique");
+assert.equal(items.length, 43, "Japan-line manifest should contain 43 audio items");
+assert.equal(new Set(audioPaths).size, items.length, "Japan-line audio paths must be unique");
 
 const report = [];
 for (const item of items) {

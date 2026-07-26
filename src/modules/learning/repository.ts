@@ -6,6 +6,7 @@ import {
   katakanaKnowledge,
   moraTimingKnowledge,
   pitchAccentKnowledge,
+  romajiKnowledge,
   stationIntroductions,
 } from "@/db/schema";
 import {
@@ -42,6 +43,11 @@ import {
   type PitchAccentItemId,
 } from "./pitch-accent";
 import {
+  isRomajiKana,
+  ROMAJI_KANA,
+  type RomajiKana,
+} from "../romaji";
+import {
   VOWEL_HIRAGANA,
   VOWEL_KATAKANA,
 } from "./vowels";
@@ -49,6 +55,7 @@ import {
 const HIRAGANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 const KANA_EXTENSION_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 const KATAKANA_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
+const ROMAJI_KNOWLEDGE_ROWS_PER_STATEMENT = 30;
 
 export async function listStationIntroductions(
   userId: string,
@@ -290,6 +297,88 @@ export async function setAllKatakanaKnown(
         .values(kana.map((value) => ({ userId, kana: value, knownAt })))
         .onConflictDoUpdate({
           target: [katakanaKnowledge.userId, katakanaKnowledge.kana],
+          set: { knownAt },
+        }),
+    );
+  }
+
+  const [firstStatement, ...remainingStatements] = statements;
+  if (!firstStatement) return;
+
+  await db.batch([firstStatement, ...remainingStatements]);
+}
+
+export async function listKnownRomajiKana(
+  userId: string,
+): Promise<RomajiKana[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ kana: romajiKnowledge.kana })
+    .from(romajiKnowledge)
+    .where(eq(romajiKnowledge.userId, userId));
+
+  return rows.map((row) => row.kana).filter(isRomajiKana);
+}
+
+export async function setRomajiKanaKnown(
+  userId: string,
+  kana: RomajiKana,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(romajiKnowledge)
+      .where(
+        and(
+          eq(romajiKnowledge.userId, userId),
+          eq(romajiKnowledge.kana, kana),
+        ),
+      );
+    return;
+  }
+
+  await db
+    .insert(romajiKnowledge)
+    .values({ userId, kana, knownAt: new Date() })
+    .onConflictDoUpdate({
+      target: [romajiKnowledge.userId, romajiKnowledge.kana],
+      set: { knownAt: new Date() },
+    });
+}
+
+export async function setAllRomajiKanaKnown(
+  userId: string,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(romajiKnowledge)
+      .where(eq(romajiKnowledge.userId, userId));
+    return;
+  }
+
+  const knownAt = new Date();
+  const statements = [];
+
+  for (
+    let start = 0;
+    start < ROMAJI_KANA.length;
+    start += ROMAJI_KNOWLEDGE_ROWS_PER_STATEMENT
+  ) {
+    const kana = ROMAJI_KANA.slice(
+      start,
+      start + ROMAJI_KNOWLEDGE_ROWS_PER_STATEMENT,
+    );
+    statements.push(
+      db
+        .insert(romajiKnowledge)
+        .values(kana.map((value) => ({ userId, kana: value, knownAt })))
+        .onConflictDoUpdate({
+          target: [romajiKnowledge.userId, romajiKnowledge.kana],
           set: { knownAt },
         }),
     );

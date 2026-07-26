@@ -1,6 +1,4 @@
 .loading-shell {
-  --loading-accent: var(--foreground);
-
   display: grid;
   min-height: 100dvh;
   place-items: center;
@@ -16,44 +14,25 @@
   position: fixed;
   z-index: 100;
   inset: 0;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 180ms ease-out,
+    visibility 0s linear 180ms;
 }
 
 .loading-shell-boot {
   z-index: 200;
 }
 
-html[data-ling-ready="true"] .loading-shell-boot {
-  display: none;
+html[data-ling-ready="true"] .loading-shell-boot,
+.loading-shell-boot[data-ling-departing="true"] {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .network-load-error {
   z-index: 300;
-}
-
-.loading-shell[data-station="vowels"] {
-  --loading-accent: linear-gradient(90deg, var(--sound), var(--writing));
-}
-
-.loading-shell[data-station="hiragana"],
-.loading-shell[data-station="katakana"],
-.loading-shell[data-station="kana-extensions"],
-.loading-shell[data-station="sound-marks"],
-.loading-shell[data-station="combined-sounds"] {
-  --loading-accent: var(--writing);
-}
-
-.loading-shell[data-station="mora-timing"],
-.loading-shell[data-station="pitch-accent"] {
-  --loading-accent: var(--sound);
-}
-
-.loading-shell[data-station="japanese"],
-.loading-shell[data-station="japan"],
-.loading-shell[data-station="greetings"],
-.loading-shell[data-station="navigation"],
-.loading-shell[data-station="food"],
-.loading-shell[data-station="shopping"] {
-  --loading-accent: var(--travel);
 }
 
 .loading-lockup {
@@ -127,7 +106,7 @@ html[data-ling-ready="true"] .loading-shell-boot {
   display: block;
   width: 42%;
   height: 100%;
-  background: var(--loading-accent);
+  background: var(--foreground);
   content: "";
   transform: translateX(-110%);
   animation: loading-track-sweep 1s cubic-bezier(0.65, 0, 0.35, 1) infinite;

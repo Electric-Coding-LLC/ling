@@ -17,7 +17,7 @@ export async function POST() {
   await recordStationIntroduction(user.id, "vowels");
 
   return Response.json(
-    { available: ["hiragana"] },
+    { recorded: true },
     { headers: privateNoStoreHeaders() },
   );
 }

@@ -28,10 +28,10 @@ function wavDuration(audio) {
   return dataSize / byteRate;
 }
 
-test("Pitch Accent content keeps one verified contour and bundled asset per word", async () => {
-  assert.equal(PITCH_ACCENT_ITEMS.length, 10);
-  assert.equal(PITCH_ACCENT_ITEM_IDS.length, 10);
-  assert.equal(new Set(PITCH_ACCENT_ITEM_IDS).size, 10);
+test("Pitch content keeps one verified contour and bundled asset per word", async () => {
+  assert.equal(PITCH_ACCENT_ITEMS.length, 6);
+  assert.equal(PITCH_ACCENT_ITEM_IDS.length, 6);
+  assert.equal(new Set(PITCH_ACCENT_ITEM_IDS).size, 6);
   assert.match(PITCH_ACCENT_SOURCE_URL, /^https:\/\/www\.gavo\.t\.u-tokyo\.ac\.jp\/ojad\//);
 
   const representedShapes = new Set();
@@ -54,7 +54,7 @@ test("Pitch Accent content keeps one verified contour and bundled asset per word
   );
 });
 
-test("Pitch Accent is listening-first, mora-aligned, compact, and privately persisted", async () => {
+test("Pitch is listening-first, mora-aligned, compact, and privately persisted", async () => {
   const guide = await readFile(
     new URL("app/stations/pitch-accent/pitch-accent-guide.tsx", root),
     "utf8",
@@ -71,7 +71,7 @@ test("Pitch Accent is listening-first, mora-aligned, compact, and privately pers
   );
   const mobileStyles = styles.slice(styles.lastIndexOf("@media (max-width: 600px)"));
 
-  assert.match(guide, /<h1>Pitch Accent<\/h1>/);
+  assert.match(guide, /<h1>Pitch<\/h1>/);
   assert.match(guide, /Japanese words move between low and high pitch/);
   assert.match(guide, /Pitch can stay high/);
   assert.match(guide, /Pitch can fall early/);
@@ -82,6 +82,7 @@ test("Pitch Accent is listening-first, mora-aligned, compact, and privately pers
   assert.match(guide, /pitch\.map\(\(level, index\) =>/);
   assert.match(guide, /className="pitch-contour-morae"/);
   assert.doesNotMatch(guide, /pitch-example-word|pitch-review-word/);
+  assert.match(guide, /className="pitch-example"[\s\S]*className="pitch-example-meaning"[\s\S]*<PitchContour/);
   assert.match(guide, /aria-labelledby="pitch-practice-title" className="station-practice"/);
   assert.match(guide, /className="station-practice-word"[\s\S]*<span lang="ja">\{item\.word\}<\/span>/);
   assert.match(guide, /<StationOptions[\s\S]*stationId="pitch-accent"/);
@@ -95,7 +96,13 @@ test("Pitch Accent is listening-first, mora-aligned, compact, and privately pers
   assert.match(guide, /method: "PUT"/);
   assert.match(guide, /method: "PATCH"/);
 
-  assert.match(styles, /\.pitch-example-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
+  assert.match(styles, /\.pitch-example-list\s*\{[^}]*display:\s*grid[^}]*gap:\s*0\.75rem/s);
+  assert.doesNotMatch(styles, /\.pitch-example-list\s*\{[^}]*grid-template-columns:/s);
+  assert.match(styles, /\.pitch-example\s*\{[^}]*position:\s*relative[^}]*display:\s*grid[^}]*width:\s*100%[^}]*align-content:\s*center[^}]*justify-items:\s*start[^}]*padding:\s*1rem 2\.75rem 1rem 1rem[^}]*border:\s*0[^}]*background:\s*transparent[^}]*text-align:\s*left/s);
+  assert.match(styles, /\.romaji-rule-example,\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example,[\s\S]*\{[^}]*border-radius:\s*0\.55rem[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 4%, transparent\)/s);
+  assert.match(styles, /\.station-page-pitch-accent \.pitch-example\s*\{[^}]*min-height:\s*6\.25rem[^}]*border:\s*0/s);
+  assert.match(styles, /\.pitch-example\[data-playing="true"\]\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--sound\) 8%, transparent\)[^}]*box-shadow:\s*inset 0 0 0 1px var\(--sound\)/s);
+  assert.match(styles, /@media \(hover: hover\) and \(pointer: fine\)[\s\S]*\.station-page-pitch-accent \.pitch-example:hover:not\(\[data-playing="true"\]\)\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 7%, transparent\)/s);
   assert.match(styles, /\.station-practice-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
   assert.match(styles, /\.station-practice-word\s*\{[^}]*border:\s*0/s);
   assert.doesNotMatch(styles, /\.station-practice-word\s*\{[^}]*border-bottom:/s);
@@ -103,10 +110,10 @@ test("Pitch Accent is listening-first, mora-aligned, compact, and privately pers
   assert.doesNotMatch(styles, /\.station-practice-word:hover\s*\{[^}]*background:/s);
   assert.match(styles, /\.pitch-contour-point\[data-active="true"\]\s*\{[^}]*fill:\s*var\(--sound\)/s);
   assert.doesNotMatch(mobileStyles, /\.pitch-example-list\s*\{/s);
+  assert.doesNotMatch(mobileStyles, /\.pitch-example\s*\{/s);
 
-  assert.match(page, /isStationAvailableToCurrentUser\("pitch-accent"\)/);
-  assert.match(page, /redirect\("\/\?focus=pitch-accent"\)/);
-  assert.match(page, /StationTopbar current="Pitch Accent" mapPosition="pitch-accent"/);
+  assert.doesNotMatch(page, /isStationAvailableToCurrentUser|redirect\(/);
+  assert.match(page, /StationTopbar current="Pitch" mapPosition="pitch-accent"/);
   assert.match(introductionApi, /recordStationIntroduction\(user\.id, "pitch-accent"\)/);
   assert.match(introductionApi, /private, no-store/);
   assert.match(knowledgeApi, /export async function GET/);

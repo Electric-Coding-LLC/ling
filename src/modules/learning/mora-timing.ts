@@ -2,13 +2,12 @@ export const MORA_TIMING_REVIEW_IDS = [
   "basic-neko",
   "basic-sakana",
   "nasal-pan",
-  "nasal-pyon",
+  "yoon-kyou",
   "yoon-shashin",
-  "yoon-ryokou",
-  "small-tsu-zakku",
-  "small-tsu-shop",
-  "long-mark-soup",
-  "long-mark-guitar",
+  "small-tsu-kitte",
+  "small-tsu-robotto",
+  "long-mark-keeki",
+  "long-mark-suupu",
 ] as const;
 
 export type MoraTimingReviewId = (typeof MORA_TIMING_REVIEW_IDS)[number];

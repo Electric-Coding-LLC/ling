@@ -147,8 +147,8 @@ test("the server-rendered boot screen remains until the current route is ready",
   assert.match(navigation, /document\.documentElement\.dataset\.lingReady = "true"/);
   assert.match(navigation, /if \(pathname === "\/"\)[\s\S]*removeAttribute\("data-ling-ready"\)/);
   assert.match(navigation, /if \(pathname !== "\/"\) onComplete\(\)/);
-  assert.match(network, /setAvailabilityStatus\("ready"\);\s*routeReady\(\)/);
-  assert.match(network, /if \(!controller\.signal\.aborted\) setAvailabilityStatus\("error"\)/);
+  assert.match(network, /useEffect\(\(\) => \{\s*routeReady\(\);\s*\}, \[routeReady\]\)/);
+  assert.doesNotMatch(network, /AvailabilityStatus|\/api\/stations\/availability/);
 });
 
 test("the retirement worker removes the legacy offline shell", async () => {

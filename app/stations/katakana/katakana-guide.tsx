@@ -354,7 +354,7 @@ export function KatakanaGuide() {
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Script
+              Writing
             </span>
           </div>
           <div className="station-heading-actions">
@@ -551,7 +551,7 @@ export function KatakanaGuide() {
         >
           <div className="station-confirm-modal">
             <h2 id="katakana-reset-title">Reset Katakana?</h2>
-            <p>This marks all 46 Katakana as incomplete. Later stations will stay hidden until Katakana is complete again.</p>
+            <p>This marks all 46 Katakana as incomplete. Your station access will not change.</p>
             <div className="hiragana-test-actions">
               <button className="hiragana-test-answer hiragana-test-answer-no" disabled={bulkKnowledgeAction !== null} onClick={() => resetDialogRef.current?.close()} type="button">
                 <svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16">

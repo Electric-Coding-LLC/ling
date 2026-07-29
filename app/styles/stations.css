@@ -52,6 +52,11 @@
   stroke-width: 3;
 }
 
+.station-map-vocabulary {
+  stroke: var(--vocabulary);
+  stroke-width: 3;
+}
+
 .station-map-travel {
   stroke: var(--travel);
   stroke-width: 3;
@@ -84,6 +89,7 @@
 
 .station-page-mora .station-heading,
 .station-page-pitch-accent .station-heading,
+.station-page-vocabulary .station-heading,
 .station-page-kana .station-heading,
 .station-page-hiragana .station-heading,
 .station-page-katakana .station-heading,
@@ -276,6 +282,10 @@
   color: var(--writing);
 }
 
+.station-membership-vocabulary {
+  color: var(--vocabulary);
+}
+
 .station-membership-travel {
   color: var(--travel);
 }
@@ -293,6 +303,7 @@
 
 .mora-guide audio,
 .pitch-accent-guide audio,
+.vocabulary-guide audio,
 .travel-guide audio,
 .kana-guide audio,
 .hiragana-guide audio,
@@ -649,6 +660,8 @@
 }
 
 .romaji-rule-example,
+.station-page-mora .mora-example,
+.station-page-pitch-accent .pitch-example,
 .station-page-visit .travel-reference-item[data-framed="true"],
 .station-page-introductions .travel-reference-item[data-framed="true"],
 .station-page-navigation .travel-reference-item[data-framed="true"],
@@ -664,7 +677,9 @@
 .station-page-navigation .travel-reference-item[data-framed="true"],
 .station-page-food .travel-reference-item[data-framed="true"],
 .station-page-shopping .travel-reference-item[data-framed="true"],
-.station-page-help .travel-reference-item[data-framed="true"] {
+.station-page-help .travel-reference-item[data-framed="true"],
+.station-page-mora .mora-example,
+.station-page-pitch-accent .pitch-example {
   min-height: 6.25rem;
   border: 0;
 }
@@ -982,36 +997,31 @@
 
 .mora-example-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
 .mora-example {
-  display: flex;
+  position: relative;
+  display: grid;
   width: 100%;
-  min-height: 6.75rem;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: 1rem;
+  align-content: center;
+  justify-items: start;
+  gap: 0.2rem;
+  padding: 1rem 2.75rem 1rem 1rem;
+  border: 0;
   color: var(--foreground);
   appearance: none;
-  background: var(--surface);
+  background: transparent;
   cursor: pointer;
   font: inherit;
-  text-align: center;
+  text-align: left;
   transition:
-    border-color 120ms ease,
-    background 120ms ease;
+    background 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .mora-example:only-child {
-  width: calc((100% - 0.75rem) / 2);
-  grid-column: 1 / -1;
-  justify-self: center;
+  width: 100%;
 }
 
 .hiragana-button {
@@ -1031,7 +1041,8 @@
 
 .mora-audio-indicator {
   position: absolute;
-  left: calc(100% + 0.5rem);
+  top: 1rem;
+  right: 1rem;
   display: inline-flex;
   height: 1rem;
   align-items: center;
@@ -1066,6 +1077,11 @@
   animation-delay: -200ms;
 }
 
+.mora-example[data-playing="true"] {
+  background: color-mix(in srgb, var(--sound) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--sound);
+}
+
 .mora-example:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
@@ -1078,7 +1094,7 @@
 
 .mora-meaning {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .mora-beats {
@@ -1086,8 +1102,8 @@
   align-items: baseline;
   gap: 0.35rem;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 1.75rem;
-  line-height: 1.2;
+  font-size: 1.35rem;
+  line-height: 1.35;
   white-space: nowrap;
 }
 
@@ -1103,16 +1119,12 @@
 .mora-pronunciation {
   display: inline-flex;
   color: color-mix(in srgb, var(--foreground) 72%, transparent);
-  font-size: 0.75rem;
-  line-height: 1.2;
+  font-size: 0.8rem;
+  line-height: 1.25;
 }
 
 .mora-pronunciation-beat {
   transition: color 120ms ease;
-}
-
-.mora-pronunciation-beat + .mora-pronunciation-beat:not([data-connected="true"]) {
-  margin-left: 0.35rem;
 }
 
 .mora-pronunciation-beat[data-active="true"] {
@@ -1148,9 +1160,8 @@
     background: color-mix(in srgb, var(--foreground) 7%, transparent);
   }
 
-  .mora-example:hover {
-    border-color: rgb(242 241 235 / 0.22);
-    background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
+  .station-page-mora .mora-example:hover:not([data-playing="true"]) {
+    background: color-mix(in srgb, var(--foreground) 7%, transparent);
   }
 
   .station-practice-word:hover {
@@ -2108,36 +2119,33 @@
 
 .pitch-example-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
 .pitch-example {
-  display: flex;
+  position: relative;
+  display: grid;
   width: 100%;
-  min-height: 8.75rem;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 1rem;
-  border: 1px solid var(--line);
-  border-radius: 1rem;
+  align-content: center;
+  justify-items: start;
+  gap: 0.2rem;
+  padding: 1rem 2.75rem 1rem 1rem;
+  border: 0;
   color: var(--foreground);
   appearance: none;
-  background: var(--surface);
+  background: transparent;
   cursor: pointer;
   font: inherit;
-  text-align: center;
+  text-align: left;
   transition:
-    border-color 120ms ease,
-    background 120ms ease;
+    background 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .pitch-example-meaning,
 .pitch-review-meaning {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .pitch-contour {
@@ -2172,6 +2180,11 @@
 .pitch-contour-point[data-active="true"] {
   fill: var(--sound);
   r: 6px;
+}
+
+.pitch-example[data-playing="true"] {
+  background: color-mix(in srgb, var(--sound) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--sound);
 }
 
 .pitch-contour-morae {
@@ -2214,10 +2227,126 @@
   font-size: clamp(1.75rem, 9vw, 2.5rem);
 }
 
+.vocabulary-intro {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.vocabulary-intro p {
+  margin: 0;
+}
+
+.vocabulary-reference-list {
+  display: grid;
+  width: min(100%, 38rem);
+  gap: 0.75rem;
+}
+
+.vocabulary-reference-item {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 7rem;
+  align-content: center;
+  justify-items: start;
+  gap: 0.2rem;
+  padding: 1rem 2.75rem 1rem 1rem;
+  border: 0;
+  border-radius: 0.55rem;
+  color: var(--foreground);
+  appearance: none;
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.vocabulary-reference-meaning {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.vocabulary-reference-word {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.65rem;
+  line-height: 1.35;
+}
+
+.vocabulary-reference-romaji,
+.vocabulary-review-romaji {
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  font-size: 0.85rem;
+}
+
+.vocabulary-reference-group {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: var(--vocabulary);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.vocabulary-reference-item[data-known="true"] .vocabulary-reference-word {
+  color: var(--known);
+}
+
+.vocabulary-reference-item[data-playing="true"] {
+  background: color-mix(in srgb, var(--vocabulary) 10%, transparent);
+  box-shadow: inset 0 0 0 1px var(--vocabulary);
+}
+
+.vocabulary-reference-item:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.vocabulary-review-content {
+  display: flex;
+  width: 100%;
+  min-height: 12rem;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.vocabulary-review-prompt {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.vocabulary-review-answer-slot {
+  display: grid;
+  min-height: 6rem;
+  place-items: center;
+}
+
+.vocabulary-review-answer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.vocabulary-review-word {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: clamp(2.5rem, 12vw, 4rem);
+  line-height: 1.1;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .pitch-example:hover {
-    border-color: rgb(242 241 235 / 0.22);
-    background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
+  .station-page-pitch-accent .pitch-example:hover:not([data-playing="true"]) {
+    background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  }
+
+  .vocabulary-reference-item:hover:not([data-playing="true"]) {
+    background: color-mix(in srgb, var(--foreground) 7%, transparent);
   }
 
 }
@@ -2233,6 +2362,7 @@
 
   .station-page-mora .station-heading,
   .station-page-pitch-accent .station-heading,
+  .station-page-vocabulary .station-heading,
   .station-page-kana .station-heading,
   .station-page-hiragana .station-heading,
   .station-page-katakana .station-heading,
@@ -2262,15 +2392,6 @@
 
   .pitch-concept-heading p {
     font-size: 0.85rem;
-  }
-
-  .pitch-example {
-    min-height: 8.25rem;
-    padding-inline: 0.75rem;
-  }
-
-  .mora-beats {
-    font-size: 1.5rem;
   }
 
   .station-notes {

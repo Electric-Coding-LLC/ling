@@ -1,136 +1,74 @@
-export type NetworkPosition =
-  | "combined-sounds"
-  | "food"
-  | "help"
-  | "introductions"
-  | "hiragana"
-  | "japanese"
-  | "kana"
-  | "katakana"
-  | "mora-timing"
-  | "navigation"
-  | "pitch-accent"
-  | "romaji"
-  | "shopping"
-  | "sound-marks"
-  | "visit"
-  | "vowels";
+import {
+  NETWORK_GLYPH_DEFINITIONS,
+  NETWORK_GLYPH_RADII,
+  NETWORK_GLYPH_TOPOLOGIES,
+  NETWORK_GLYPH_VIEWBOX,
+  type NetworkGlyphLineRole,
+  type NetworkGlyphPoint,
+  type NetworkPosition,
+} from "./network-glyph-model";
+
+export type { NetworkPosition } from "./network-glyph-model";
 
 export type NetworkStationKind =
+  | "foundation"
   | "interchange"
   | "local"
   | "sound"
+  | "sound-vocabulary-interchange"
   | "travel"
   | "travel-interchange"
+  | "vocabulary"
   | "writing";
 
 export function NetworkGlyph({ position }: { position: NetworkPosition }) {
-  if (position === "japanese") {
-    return (
-      <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
-        <path className="station-map-travel" d="M14 8v14" />
-        <path className="station-map-sound" d="M14 8h14" />
-        <circle className="station-map-current station-map-interchange" cx="14" cy="8" r="5" />
-      </svg>
-    );
-  }
-
-  if (position === "romaji") {
-    return (
-      <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
-        <path className="station-map-local" d="M10 2 20 12 10 22M20 12 30 2" />
-        <circle className="station-map-current" cx="20" cy="12" r="4" />
-      </svg>
-    );
-  }
-
-  if (
-    position === "visit"
-    || position === "introductions"
-    || position === "navigation"
-    || position === "food"
-    || position === "shopping"
-  ) {
-    return (
-      <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
-        <path className="station-map-travel" d="M20 2v20" />
-        <circle className="station-map-current" cx="20" cy="12" r="4" />
-      </svg>
-    );
-  }
-
-  if (position === "help") {
-    return (
-      <svg
-        aria-hidden="true"
-        data-position={position}
-        data-terminal="true"
-        viewBox="0 0 40 24"
-      >
-        <path className="station-map-travel" d="M20 2v17" />
-        <circle className="station-map-current" cx="20" cy="19" r="4" />
-      </svg>
-    );
-  }
-
-  if (position === "kana") {
-    return (
-      <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
-        <path className="station-map-sound" d="M6 8h28" />
-        <path className="station-map-writing" d="M20 8v14" />
-        <circle className="station-map-current station-map-interchange" cx="20" cy="8" r="5" />
-      </svg>
-    );
-  }
-
-  if (position === "vowels" || position === "hiragana") {
-    return (
-      <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
-        <path className="station-map-writing" d="M20 2v20" />
-        <circle className="station-map-current" cx="20" cy="12" r="4" />
-      </svg>
-    );
-  }
-
-  if (position === "katakana" || position === "sound-marks") {
-    return (
-      <svg aria-hidden="true" data-position={position} viewBox="0 0 40 24">
-        <path className="station-map-writing" d="M20 2v20" />
-        <circle className="station-map-current" cx="20" cy="12" r="4" />
-      </svg>
-    );
-  }
-
-  if (position === "combined-sounds") {
-    return (
-      <svg
-        aria-hidden="true"
-        data-position={position}
-        data-terminal="true"
-        viewBox="0 0 40 24"
-      >
-        <path className="station-map-writing" d="M20 2v17" />
-        <circle className="station-map-current" cx="20" cy="19" r="4" />
-      </svg>
-    );
-  }
+  const definition = NETWORK_GLYPH_DEFINITIONS[position];
+  const geometry = NETWORK_GLYPH_TOPOLOGIES[definition.topology];
+  const [currentX, currentY] = geometry.current;
 
   return (
     <svg
       aria-hidden="true"
       data-position={position}
-      data-terminal="true"
-      viewBox="0 0 40 24"
+      data-terminal={geometry.terminal ? "true" : undefined}
+      viewBox={NETWORK_GLYPH_VIEWBOX}
     >
-      <path className="station-map-sound" d="M2 12h30" />
-      <circle className="station-map-current" cx="32" cy="12" r="4" />
+      {geometry.paths.map((path, index) => (
+        <path
+          className={lineClassName(definition.lines, path.role)}
+          d={pathData(path.points)}
+          key={`${path.role}-${index}`}
+        />
+      ))}
+      <circle
+        className={`station-map-current${geometry.interchange ? " station-map-interchange" : ""}`}
+        cx={currentX}
+        cy={currentY}
+        r={geometry.interchange ? NETWORK_GLYPH_RADII.interchange : NETWORK_GLYPH_RADII.station}
+      />
     </svg>
   );
 }
 
+function lineClassName(
+  lines: Readonly<Partial<Record<NetworkGlyphLineRole, string>>>,
+  role: NetworkGlyphLineRole,
+) {
+  const className = lines[role];
+  if (!className) throw new Error(`Network glyph is missing its ${role} line`);
+  return className;
+}
+
+function pathData(points: readonly NetworkGlyphPoint[]) {
+  return points
+    .map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`)
+    .join("");
+}
+
 export function NetworkStationSymbol({ kind }: { kind: NetworkStationKind }) {
   const interchange = kind === "interchange"
-    || kind === "travel-interchange";
+    || kind === "travel-interchange"
+    || kind === "sound-vocabulary-interchange";
 
   if (interchange) {
     return (

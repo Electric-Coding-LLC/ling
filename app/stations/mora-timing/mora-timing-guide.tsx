@@ -3,16 +3,14 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
+  getJapaneseMoraRomaji,
+  getJapaneseWordRomaji,
+} from "@/src/modules/romaji";
+import {
   isMoraTimingReviewId,
   MORA_TIMING_REVIEW_IDS,
   type MoraTimingReviewId,
 } from "@/src/modules/learning/mora-timing";
-import {
-  getJapaneseMoraSoundCueSeparator,
-  getJapaneseMoraSoundCues,
-  getJapaneseWordSoundCue,
-  splitJapaneseMorae,
-} from "@/src/modules/learning/japanese-sound-cues";
 import { FlashcardCountdown, FlashcardReview } from "../flashcard-review";
 import { StationOptions } from "../station-options";
 
@@ -51,16 +49,16 @@ const MORA_CONCEPTS: readonly MoraConcept[] = [
   {
     description: "Most Kana take one beat each. Keep every beat the same length.",
     examples: [
-      { meaning: "dog", morae: ["い", "ぬ"], word: "いぬ", wordAudio: "/audio/ja-inu.wav" },
-      { meaning: "morning", morae: ["あ", "さ"], word: "あさ", wordAudio: "/audio/ja-asa.wav" },
+      { meaning: "cat", morae: ["ね", "こ"], word: "ねこ", wordAudio: "/audio/ja-neko.wav" },
+      { meaning: "fish", morae: ["さ", "か", "な"], word: "さかな", wordAudio: "/audio/ja-sakana.wav" },
     ],
     title: "One Kana, one beat",
   },
   {
     description: "The final ん is a complete timing unit. Give it the same space as the Kana before it.",
     examples: [
-      { meaning: "book", morae: ["ほ", "ん"], word: "ほん", wordAudio: "/audio/ja-hon.wav" },
-      { meaning: "wine", morae: ["ワ", "イ", "ン"], word: "ワイン", wordAudio: "/audio/ja-katakana-wain.wav" },
+      { meaning: "bread", morae: ["パ", "ン"], word: "パン", wordAudio: "/audio/ja-katakana-pan.wav" },
+      { meaning: "photograph", morae: ["しゃ", "し", "ん"], word: "しゃしん", wordAudio: "/audio/ja-yoon-hiragana-sha.wav" },
     ],
     title: "ん has its own beat",
   },
@@ -68,7 +66,7 @@ const MORA_CONCEPTS: readonly MoraConcept[] = [
     description: "The small ゃ, ゅ, or ょ combines with the Kana before it. The pair takes one beat, not two.",
     examples: [
       { meaning: "today", morae: ["きょ", "う"], word: "きょう", wordAudio: "/audio/ja-yoon-hiragana-kyo.wav" },
-      { meaning: "guest", morae: ["きゃ", "く"], word: "きゃく", wordAudio: "/audio/ja-kyaku.wav" },
+      { meaning: "photograph", morae: ["しゃ", "し", "ん"], word: "しゃしん", wordAudio: "/audio/ja-yoon-hiragana-sha.wav" },
     ],
     title: "Yōon is one beat",
   },
@@ -84,7 +82,7 @@ const MORA_CONCEPTS: readonly MoraConcept[] = [
     description: "The prolonged sound mark ー, used mainly in Katakana, extends the sound before it for one more beat.",
     examples: [
       { meaning: "cake", morae: ["ケ", "ー", "キ"], word: "ケーキ", wordAudio: "/audio/ja-keeki.wav" },
-      { meaning: "cheese", morae: ["チ", "ー", "ズ"], word: "チーズ", wordAudio: "/audio/ja-katakana-chiizu.wav" },
+      { meaning: "soup", morae: ["ス", "ー", "プ"], word: "スープ", wordAudio: "/audio/ja-katakana-suupu.wav" },
     ],
     title: "ー extends the sound",
   },
@@ -94,13 +92,12 @@ const MORA_REVIEW_CARDS: readonly MoraReviewCard[] = [
   { id: "basic-neko", meaning: "cat", morae: ["ね", "こ"], word: "ねこ", wordAudio: "/audio/ja-neko.wav" },
   { id: "basic-sakana", meaning: "fish", morae: ["さ", "か", "な"], word: "さかな", wordAudio: "/audio/ja-sakana.wav" },
   { id: "nasal-pan", meaning: "bread", morae: ["パ", "ン"], word: "パン", wordAudio: "/audio/ja-katakana-pan.wav" },
-  { id: "nasal-pyon", meaning: "hop", morae: ["ぴょ", "ん"], word: "ぴょん", wordAudio: "/audio/ja-yoon-hiragana-pyo.wav" },
+  { id: "yoon-kyou", meaning: "today", morae: ["きょ", "う"], word: "きょう", wordAudio: "/audio/ja-yoon-hiragana-kyo.wav" },
   { id: "yoon-shashin", meaning: "photograph", morae: ["しゃ", "し", "ん"], word: "しゃしん", wordAudio: "/audio/ja-yoon-hiragana-sha.wav" },
-  { id: "yoon-ryokou", meaning: "travel", morae: ["りょ", "こ", "う"], word: "りょこう", wordAudio: "/audio/ja-yoon-hiragana-ryo.wav" },
-  { id: "small-tsu-zakku", meaning: "backpack", morae: ["ザ", "ッ", "ク"], word: "ザック", wordAudio: "/audio/ja-marks-zakku.wav" },
-  { id: "small-tsu-shop", meaning: "shop", morae: ["ショ", "ッ", "プ"], word: "ショップ", wordAudio: "/audio/ja-yoon-katakana-sho.wav" },
-  { id: "long-mark-soup", meaning: "soup", morae: ["ス", "ー", "プ"], word: "スープ", wordAudio: "/audio/ja-katakana-suupu.wav" },
-  { id: "long-mark-guitar", meaning: "guitar", morae: ["ギ", "タ", "ー"], word: "ギター", wordAudio: "/audio/ja-marks-gitaa.wav" },
+  { id: "small-tsu-kitte", meaning: "stamp", morae: ["き", "っ", "て"], word: "きって", wordAudio: "/audio/ja-kitte.wav" },
+  { id: "small-tsu-robotto", meaning: "robot", morae: ["ロ", "ボ", "ッ", "ト"], word: "ロボット", wordAudio: "/audio/ja-katakana-robotto.wav" },
+  { id: "long-mark-keeki", meaning: "cake", morae: ["ケ", "ー", "キ"], word: "ケーキ", wordAudio: "/audio/ja-keeki.wav" },
+  { id: "long-mark-suupu", meaning: "soup", morae: ["ス", "ー", "プ"], word: "スープ", wordAudio: "/audio/ja-katakana-suupu.wav" },
 ];
 
 export function MoraTimingGuide() {
@@ -238,7 +235,7 @@ export function MoraTimingGuide() {
     resetReviewReveal();
     setKnowledgeError(false);
     setReviewIndex(0);
-    setActiveReview({ cards: shuffle(cards), title: "Mora Timing" });
+    setActiveReview({ cards: shuffle(cards), title: "Mora" });
   }
 
   function closeReview() {
@@ -306,26 +303,26 @@ export function MoraTimingGuide() {
   const knownCount = MORA_REVIEW_CARDS.filter((card) => knownReviews.has(card.id)).length;
   const remainingCount = MORA_REVIEW_CARDS.length - knownCount;
   const reviewLabel = remainingCount === 0
-    ? "Test Mora Timing. Complete."
-    : `Test Mora Timing. ${remainingCount} remaining.`;
+    ? "Test Mora. Complete."
+    : `Test Mora. ${remainingCount} remaining.`;
 
   return (
     <>
       <header className="station-heading">
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-sound" data-line="sound">Speech</span>
+            <span className="station-membership station-membership-sound" data-line="sound">Sound</span>
           </div>
           <div className="station-heading-actions">
             <StationOptions
               allComplete={remainingCount === 0}
-              completeDescription="This marks all 10 Mora Timing words as complete."
+              completeDescription="This marks all 9 Mora words as complete."
               hasProgress={knownCount > 0}
               onError={() => setKnowledgeError(true)}
               onSetComplete={setAllKnowledge}
-              resetDescription="This marks all 10 Mora Timing words as incomplete. Later stations will stay hidden until Mora Timing is complete again."
+              resetDescription="This marks all 9 Mora words as incomplete. Your station access will not change."
               stationId="mora-timing"
-              stationName="Mora Timing"
+              stationName="Mora"
             />
             <span className="hiragana-test-trigger-wrap">
               <button
@@ -348,7 +345,7 @@ export function MoraTimingGuide() {
             </span>
           </div>
         </div>
-        <h1>Mora Timing</h1>
+        <h1>Mora</h1>
       </header>
 
       <section className="mora-guide">
@@ -388,19 +385,19 @@ export function MoraTimingGuide() {
                     })}
                     type="button"
                   >
+                    <span className="mora-meaning">{example.meaning}</span>
                     <span className="mora-example-timing">
                       <MoraBeats
                         activeBeatIndex={audioPlaying && playingWord === example.word ? activeBeatIndex : null}
                         morae={example.morae}
                         word={example.word}
                       />
-                      <MoraAudioIndicator />
                     </span>
                     <MoraPronunciation
                       activeBeatIndex={audioPlaying && playingWord === example.word ? activeBeatIndex : null}
                       word={example.word}
                     />
-                    <span className="mora-meaning">{example.meaning}</span>
+                    <MoraAudioIndicator />
                   </button>
                 ))}
               </div>
@@ -433,7 +430,7 @@ export function MoraTimingGuide() {
         </section>
 
         {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
-        {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Mora Timing progress could not sync. Try again.</p> : null}
+        {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Mora progress could not sync. Try again.</p> : null}
 
         {activeReview && activeCard ? (
           <dialog
@@ -458,7 +455,7 @@ export function MoraTimingGuide() {
                   ? `Replay ${activeCard.word}`
                   : `Reveal timing and play ${activeCard.word}`}
                 announcement={breakdownRevealed
-                  ? `${activeCard.word}: ${getJapaneseWordSoundCue(activeCard.word)}. ${activeCard.morae.length} beats. ${activeCard.meaning}.`
+                  ? `${activeCard.word}: Rōmaji ${getJapaneseWordRomaji(activeCard.word)}. ${activeCard.morae.length} beats. ${activeCard.meaning}.`
                   : ""}
                 key={`${reviewIndex}-${activeCard.id}`}
                 onActivate={activateReviewCard}
@@ -542,29 +539,22 @@ function MoraPronunciation({
   readonly activeBeatIndex: number | null;
   readonly word: string;
 }) {
-  const morae = splitJapaneseMorae(word);
-  const soundCues = getJapaneseMoraSoundCues(word);
+  const romajiMorae = getJapaneseMoraRomaji(word);
 
   return (
     <span
-      aria-label={getJapaneseWordSoundCue(word)}
+      aria-label={`Rōmaji: ${getJapaneseWordRomaji(word)}`}
       className="mora-pronunciation"
     >
-      {soundCues.map((soundCue, index) => {
-        const connected = index > 0
-          && getJapaneseMoraSoundCueSeparator(morae, index) === "";
-
-        return (
-          <span
-            className="mora-pronunciation-beat"
-            data-active={activeBeatIndex === index ? "true" : undefined}
-            data-connected={connected ? "true" : undefined}
-            key={`${word}-sound-${index}`}
-          >
-            {soundCue}
-          </span>
-        );
-      })}
+      {romajiMorae.map((romaji, index) => (
+        <span
+          className="mora-pronunciation-beat"
+          data-active={activeBeatIndex === index ? "true" : undefined}
+          key={`${word}-romaji-${index}`}
+        >
+          {romaji}
+        </span>
+      ))}
     </span>
   );
 }

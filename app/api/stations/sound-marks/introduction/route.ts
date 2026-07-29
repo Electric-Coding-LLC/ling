@@ -9,15 +9,10 @@ export async function POST() {
   if (!identity) return unauthorized();
 
   const user = await getOrCreateUser(identity);
-  if (!(await recordStationIntroduction(user.id, "sound-marks"))) {
-    return Response.json(
-      { error: "station_unavailable" },
-      { status: 403, headers: privateNoStoreHeaders() },
-    );
-  }
+  await recordStationIntroduction(user.id, "sound-marks");
 
   return Response.json(
-    { available: [] },
+    { recorded: true },
     { headers: privateNoStoreHeaders() },
   );
 }

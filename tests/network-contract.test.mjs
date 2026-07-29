@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+  NETWORK_GLYPH_DEFINITIONS,
+  NETWORK_GLYPH_RADII,
+  NETWORK_GLYPH_TOPOLOGIES,
+  NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH,
+} from "../app/network-glyph-model.ts";
 
 const root = new URL("../", import.meta.url);
 
@@ -23,7 +29,7 @@ function wavDuration(audio) {
   return dataSize / byteRate;
 }
 
-test("the network keeps the approved desktop and mobile geography", async () => {
+test("the network uses a vertical Foundations spine with horizontal depth", async () => {
   const source = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
   const styles = await readFile(new URL("app/styles/network.css", root), "utf8");
@@ -32,283 +38,258 @@ test("the network keeps the approved desktop and mobile geography", async () => 
     "utf8",
   );
 
-  assert.match(source, /DESKTOP_JAPANESE_X\s*=\s*250/);
-  assert.match(source, /NETWORK_JUNCTION_SEGMENT_LENGTH\s*=\s*220/);
-  assert.match(source, /DESKTOP_KANA_X\s*=\s*DESKTOP_JAPANESE_X \+ NETWORK_JUNCTION_SEGMENT_LENGTH/);
-  assert.match(source, /MOBILE_JAPANESE_X\s*=\s*140/);
-  assert.match(source, /MOBILE_KANA_X\s*=\s*MOBILE_JAPANESE_X \+ NETWORK_JUNCTION_SEGMENT_LENGTH/);
-  assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*1390/);
-  assert.match(source, /data-line=\{line\}/);
-  assert.match(source, /aria-label="Speech line"[\s\S]*className="network-line network-line-sound"[\s\S]*x1=\{japaneseX \+ NETWORK_INTERCHANGE_NODE_OFFSET\}[\s\S]*x2=\{kanaX - kanaLineOffset\}/);
-  assert.doesNotMatch(source, /network-line-connection|Japanese network connection/);
-  assert.match(source, /className="network-line network-line-travel"/);
-  assert.match(source, /\[japaneseX, SOUND_Y, romajiX, ROMAJI_Y\]/);
-  assert.match(source, /\[romajiX, ROMAJI_Y, japaneseX, VISIT_Y\]/);
-  assert.match(source, /\[SOUND_Y, VISIT_Y\][\s\S]*aria-label="Japan line"[\s\S]*className="network-line network-line-travel"/);
-  assert.match(source, /\[japaneseX, SOUND_Y, romajiX, ROMAJI_Y\][\s\S]*aria-label="Local connection"[\s\S]*className="network-line network-line-local"/);
-  assert.match(source, /aria-label="Local connection"[\s\S]*x1=\{romajiX\}[\s\S]*x2=\{kanaX\}[\s\S]*y1=\{ROMAJI_Y\}[\s\S]*y2=\{SOUND_Y\}/);
-  assert.match(source, /data-line="sound"[\s\S]*textAnchor="end"[\s\S]*x=\{japaneseX - 48\}[\s\S]*y=\{SOUND_Y\}/);
-  assert.match(source, /VERTICAL_LINE_LABEL_Y\s*=\s*72/);
-  assert.match(source, /VERTICAL_LINE_LABEL_STEP\s*=\s*12/);
-  assert.match(source, /function VerticalLineLabel\([\s\S]*Array\.from\(label\.toUpperCase\(\)\)\.map\([\s\S]*x=\{x\}[\s\S]*y=\{firstLetterY \+ index \* VERTICAL_LINE_LABEL_STEP\}/);
-  assert.match(source, /<VerticalLineLabel label="Japan" line="travel" x=\{japaneseX\} \/>/);
-  assert.match(source, /<VerticalLineLabel label="Script" line="writing" x=\{kanaX\} \/>/);
-  assert.match(source, /kind="travel-interchange"[\s\S]*label="Japanese"/);
-  assert.match(source, /kind="local"[\s\S]*label="Rōmaji"[\s\S]*labelPlacement="below-right"/);
-  assert.match(source, /kind="interchange" label="Kana"/);
-  assert.match(source, /id=\{`\$\{backlightId\}-travel-junction`\}/);
+  assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*1680/);
+  assert.match(source, /DESKTOP_SPINE_X\s*=\s*DESKTOP_VIEW_WIDTH \/ 2/);
+  assert.match(source, /MOBILE_SPINE_X\s*=\s*MOBILE_VIEW_WIDTH \/ 2/);
+  assert.match(source, /JAPAN_Y\s*=\s*410/);
+  assert.match(source, /SOUND_Y\s*=\s*780/);
+  assert.match(source, /WRITING_Y\s*=\s*1160/);
+  assert.match(source, /VOCABULARY_Y\s*=\s*1530/);
+  assert.match(source, /Foundations learning network/);
+  assert.match(source, /Scroll down the Foundations spine/);
+  assert.match(source, /d=\{`M\$\{spineX\} \$\{ROOT_Y \+ 30\}V\$\{VOCABULARY_Y\}`\}/);
+  assert.match(source, /label="Foundations"[\s\S]*line="foundation"/);
 
-  for (const slug of [
-    "japanese",
-    "visit",
-    "romaji",
-    "introductions",
-    "navigation",
-    "food",
-    "shopping",
-    "help",
+  for (const [focus, label, line] of [
+    ["japan", "Japan", "travel"],
+    ["sound", "Sound", "sound"],
+    ["writing", "Writing", "writing"],
+    ["vocabulary", "Vocabulary", "vocabulary"],
   ]) {
-    assert.match(source, new RegExp(`${slug}:\\s*"\\/stations\\/${slug}"`));
+    assert.match(
+      source,
+      new RegExp(`<CategoryStation backlightId=\\{backlightId\\} focus="${focus}" label="${label}" line="${line}" onFocus=`),
+    );
+  }
+  assert.match(source, /data-category-station=\{line\}/);
+  assert.match(source, /data-network-focus=\{focus\}[\s\S]*onFocus=\{onFocus\}[\s\S]*tabIndex=\{-1\}/);
+  assert.match(source, /fill=\{`url\(#\$\{backlightId\}-\$\{line\}\)`\}[\s\S]*r="58"/);
+  assert.match(source, /<NetworkStationSymbol kind=\{line\} \/>/);
+  assert.match(source, /className="network-station-label network-station-label-left"/);
+  assert.match(source, /textAnchor="end"[\s\S]*x="-34"[\s\S]*\{label\}/);
+  assert.doesNotMatch(source, /network-category-junction|<rect/);
+  assert.doesNotMatch(source, /network-line-label|network-foundation-title/);
+
+  assert.match(source, /function roundedBranchPath\(/);
+  assert.match(source, /if \(startY === endY\) return `M\$\{startX\} \$\{startY\}H\$\{endX\}`/);
+  assert.match(source, /radius = 16/);
+  assert.match(source, /Q\$\{turnX\} \$\{startY\} \$\{turnX\} \$\{startY \+ direction \* cornerRadius\}/);
+  assert.match(source, /V\$\{endY - direction \* cornerRadius\}/);
+  assert.match(source, /Q\$\{turnX\} \$\{endY\} \$\{turnX \+ cornerRadius\} \$\{endY\}/);
+  assert.match(source, /d=\{roundedBranchPath\(\{/);
+  assert.match(source, /\{japanPeerYs\.map\(\(peerY\) =>/);
+  assert.match(source, /startY: JAPAN_Y,\s*turnX: forkX/);
+  assert.match(source, /className=\{`network-line network-line-\$\{line\}`\}/);
+  assert.match(styles, /\.network-line\s*\{[^}]*stroke-width:\s*4[^}]*stroke-linecap:\s*round[^}]*stroke-linejoin:\s*round/s);
+  assert.match(styles, /\.network-line-foundation\s*\{[^}]*stroke:\s*var\(--foreground\)[^}]*stroke-width:\s*4/s);
+  assert.match(styles, /\.network-station-label\s*\{[^}]*font-size:\s*20px/s);
+  assert.match(styles, /@media \(max-width: 600px\)[\s\S]*\.network-station-label\s*\{[^}]*font-size:\s*18px/s);
+  assert.match(styles, /\.network-home\s*\{[^}]*overflow-x:\s*clip/s);
+  assert.doesNotMatch(styles, /\.network-home\s*\{[^}]*overflow:\s*hidden/s);
+
+  assert.match(source, /focus="japanese" hideLabel kind="interchange" labelPlacement="left"/);
+  assert.match(source, /focus="romaji" kind="foundation" labelPlacement="left"/);
+  assert.match(source, /focus="kana" kind="writing"/);
+  assert.match(source, /focus="words" kind="vocabulary"/);
+  assert.match(source, /type CategoryFocus = "japan" \| "sound" \| "vocabulary" \| "writing"/);
+  assert.match(source, /type LinkedStationFocus = Exclude<StationFocus, CategoryFocus>/);
+  assert.match(source, /ROUTABLE_STATION_HREFS: Record<LinkedStationFocus, string>/);
+  assert.match(source, /return focus && focus in STATION_LABELS/);
+
+  for (const [focus, href] of Object.entries({
+    japanese: "/stations/japanese",
+    romaji: "/stations/romaji",
+    visit: "/stations/visit",
+    introductions: "/stations/introductions",
+    navigation: "/stations/navigation",
+    food: "/stations/food",
+    shopping: "/stations/shopping",
+    help: "/stations/help",
+    vowels: "/stations/vowels",
+    mora: "/stations/mora-timing",
+    pitch: "/stations/pitch-accent",
+    kana: "/stations/kana",
+    hiragana: "/stations/hiragana",
+    katakana: "/stations/katakana",
+    marks: "/stations/sound-marks",
+    combined: "/stations/combined-sounds",
+    words: "/stations/words",
+  })) {
+    assert.match(source, new RegExp(`${focus}:\\s*"${href}"`));
+    assert.match(source, new RegExp(`focus="${focus}"`));
   }
 
-  for (const label of [
-    "Japanese",
-    "Visit",
-    "Rōmaji",
-    "Introductions",
-    "Navigation",
-    "Food",
-    "Shopping",
-    "Help",
-  ]) {
-    assert.match(source, new RegExp(`label="${label}"`));
-  }
+  assert.doesNotMatch(source, /focus="(?:nouns|verbs|adjectives)"/);
+  assert.doesNotMatch(source, /label="(?:Kanji|Grammar|Phrasing)"/);
+  assert.match(source, /focus === "nouns" \|\| focus === "verbs" \|\| focus === "adjectives"\) return "words"/);
+  assert.match(source, /japanese:\s*\{ ArrowDown: "romaji" \}/);
+  assert.match(source, /romaji:\s*\{ ArrowDown: "japan", ArrowUp: "japanese" \}/);
+  assert.match(source, /japan:\s*\{ ArrowDown: "sound", ArrowRight: "visit", ArrowUp: "romaji" \}/);
+  assert.match(source, /visit:\s*\{ ArrowDown: "vowels", ArrowLeft: "japan", ArrowRight: "food" \}/);
+  assert.match(source, /help:\s*\{ ArrowDown: "mora", ArrowLeft: "visit", ArrowUp: "shopping" \}/);
+  assert.match(source, /sound:\s*\{ ArrowDown: "writing", ArrowRight: "vowels", ArrowUp: "japan" \}/);
+  assert.match(source, /vowels:\s*\{ ArrowDown: "kana", ArrowLeft: "sound", ArrowRight: "mora", ArrowUp: "visit" \}/);
+  assert.match(source, /mora:\s*\{ ArrowDown: "hiragana", ArrowLeft: "vowels", ArrowRight: "pitch", ArrowUp: "help" \}/);
+  assert.match(source, /pitch:\s*\{ ArrowDown: "marks", ArrowLeft: "mora" \}/);
+  assert.match(source, /writing:\s*\{ ArrowDown: "vocabulary", ArrowRight: "kana", ArrowUp: "sound" \}/);
+  assert.match(source, /kana:\s*\{ ArrowDown: "words", ArrowLeft: "writing", ArrowRight: "hiragana", ArrowUp: "vowels" \}/);
+  assert.match(source, /hiragana:\s*\{ ArrowDown: "katakana", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "mora" \}/);
+  assert.match(source, /marks:\s*\{ ArrowDown: "combined", ArrowLeft: "hiragana", ArrowUp: "pitch" \}/);
+  assert.match(source, /vocabulary:\s*\{ ArrowRight: "words", ArrowUp: "writing" \}/);
+  assert.match(source, /words:\s*\{ ArrowLeft: "vocabulary", ArrowUp: "kana" \}/);
+  assert.match(styles, /network-mobile-track-introductions,[\s\S]*translateX\(-60%\)/);
+  assert.match(styles, /network-mobile-track-pitch,[\s\S]*translateX\(-115%\)/);
 
-  assert.match(source, /getStoredStationFocus\(\): StationFocus \{[\s\S]*\?\? "japanese"/);
-  assert.match(source, /getServerStationFocus\(\): StationFocus \{[\s\S]*return "japanese"/);
-  assert.match(source, /japanese:\s*\{ ArrowDown: "visit", ArrowRight: "kana" \}/);
-  assert.match(source, /visit:\s*\{ ArrowDown: "introductions", ArrowUp: "japanese" \}/);
-  assert.match(source, /romaji:\s*\{ ArrowDown: "visit", ArrowRight: "kana", ArrowUp: "japanese" \}/);
-  assert.match(source, /introductions:\s*\{ ArrowDown: "navigation", ArrowUp: "visit" \}/);
-  assert.match(source, /shopping:\s*\{ ArrowDown: "help", ArrowUp: "food" \}/);
-  assert.match(source, /help:\s*\{ ArrowUp: "shopping" \}/);
-  assert.match(source, /kana:\s*\{ ArrowDown: "vowels", ArrowLeft: "japanese", ArrowRight: "mora" \}/);
-  assert.match(source, /vowels:\s*\{ ArrowDown: "hiragana", ArrowUp: "kana" \}/);
-  assert.match(styles, /network-mobile-track-kana[\s\S]*translateX\(-50%\)/);
-  assert.match(styles, /network-mobile-track-mora\s*\{[^}]*translateX\(-100%\)/s);
-  assert.match(styles, /network-mobile-track-pitch\s*\{[^}]*translateX\(-150%\)/s);
-  assert.match(styles, /network-line-travel\s*\{[^}]*stroke:\s*var\(--travel\)/s);
-  assert.match(styles, /network-line-writing\s*\{[^}]*stroke:\s*var\(--writing\)/s);
-  assert.match(styles, /network-line-local\s*\{[^}]*stroke:\s*var\(--muted\)[^}]*stroke-opacity:\s*0\.72[^}]*stroke-width:\s*3/s);
+  assert.match(source, /MOBILE_SWIPE_THRESHOLD\s*=\s*40/);
+  assert.match(source, /Math\.abs\(event\.clientX - start\.x\) < MOBILE_SWIPE_THRESHOLD/);
+  assert.match(source, /const direction = distance < 0 \? "ArrowRight" : "ArrowLeft"/);
+  assert.match(source, /STATION_FOCUS_STORAGE_KEY\s*=\s*"ling:network-station-focus"/);
+  assert.match(source, /useSyncExternalStore\(\s*subscribeToStoredStationFocus,\s*getStoredStationFocus,\s*getServerStationFocus/s);
+  assert.match(source, /new URLSearchParams\(window\.location\.search\)\.get\("focus"\)/);
+  assert.match(source, /function onKeyDown\(event: KeyboardEvent<HTMLDivElement>\)/);
+  assert.match(source, /new MouseEvent\("click", \{ bubbles: true, cancelable: true, view: window \}\)/);
+  assert.equal((source.match(/aria-label="Explore the network with the arrow keys"/g) ?? []).length, 2);
+  assert.match(source, /document\.activeElement !== document\.body/);
+  assert.match(source, /window\.matchMedia\("\(max-width: 600px\)"\)\.matches/);
+  assert.match(source, /`\[data-network-focus="\$\{focus\}"\]`/);
+  assert.match(source, /"\[data-network-focus\]:focus"/);
+  assert.match(source, /selectedTarget instanceof SVGAElement/);
+  assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*href=\{ROUTABLE_STATION_HREFS\[focus\]\}[\s\S]*prefetch/);
+  assert.match(styles, /data-desktop-focus="japan"[\s\S]*data-network-focus="japan"[\s\S]*network-station-backlight/);
+  assert.match(styles, /data-mobile-station-focus="vocabulary"[\s\S]*data-network-focus="vocabulary"[\s\S]*network-station-backlight/);
+  assert.match(styles, /\.network-category-station:focus-visible \.network-station-backlight,[\s\S]*\.network-station-link:focus-visible \.network-station-backlight/);
+  assert.doesNotMatch(source, /aria-disabled="true"|data-available=|\/api\/stations\/availability/);
+
   assert.match(foundation, /--sound:\s*#db4e3a/);
   assert.match(foundation, /--travel:\s*#4c689c/);
   assert.match(foundation, /--writing:\s*#d6aa36/);
-
-  assert.match(source, /NETWORK_SEGMENT_LENGTH\s*=\s*180/);
-  assert.match(source, /NETWORK_LINE_NODE_OFFSET\s*=\s*18/);
-  assert.match(source, /NETWORK_INTERCHANGE_NODE_OFFSET\s*=\s*31/);
-  assert.match(source, /SOUND_Y\s*=\s*180/);
-  assert.match(source, /VISIT_Y\s*=\s*SOUND_Y \+ NETWORK_JUNCTION_SEGMENT_LENGTH/);
-  assert.match(source, /const romajiX = \(japaneseX \+ kanaX\) \/ 2/);
-  assert.match(source, /ROMAJI_Y\s*=\s*SOUND_Y \+ NETWORK_JUNCTION_SEGMENT_LENGTH \/ 2/);
-  assert.match(source, /INTRODUCTIONS_Y\s*=\s*VISIT_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /NAVIGATION_Y\s*=\s*INTRODUCTIONS_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /FOOD_Y\s*=\s*NAVIGATION_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /SHOPPING_Y\s*=\s*FOOD_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /HELP_Y\s*=\s*SHOPPING_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /VOWELS_Y\s*=\s*SOUND_Y \+ NETWORK_JUNCTION_SEGMENT_LENGTH/);
-  assert.match(source, /HIRAGANA_Y\s*=\s*VOWELS_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /KATAKANA_Y\s*=\s*HIRAGANA_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /SOUND_MARKS_Y\s*=\s*KATAKANA_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /COMBINED_SOUNDS_Y\s*=\s*SOUND_MARKS_Y \+ NETWORK_SEGMENT_LENGTH/);
-  assert.match(source, /viewBox=\{`0 0 \$\{width\} \$\{NETWORK_VIEW_HEIGHT\}`\}/);
-
-  for (const [focus, href] of [
-    ["kana", "/stations/kana"],
-    ["vowels", "/stations/vowels"],
-    ["hiragana", "/stations/hiragana"],
-    ["katakana", "/stations/katakana"],
-    ["marks", "/stations/sound-marks"],
-    ["combined", "/stations/combined-sounds"],
-    ["mora", "/stations/mora-timing"],
-    ["pitch", "/stations/pitch-accent"],
-  ]) {
-    assert.match(source, new RegExp(`${focus}:\\s*"${href}"`));
-  }
-
-  assert.match(source, /import \{ NavigationLink, useRouteReady \} from "\.\/navigation-feedback"/);
-  assert.doesNotMatch(source, /import Link from "next\/link"|import \{ useRouter \} from "next\/navigation"/);
-  assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*href=\{href\}[\s\S]*prefetch/);
-  assert.doesNotMatch(source, /loadingStation=\{label\}/);
-  assert.doesNotMatch(source, /window\.location\.assign|<a[^>]*className="network-station-link"/);
-
-  assert.match(source, /MOBILE_SWIPE_THRESHOLD\s*=\s*40/);
-  assert.match(source, /onPointerDown/);
-  assert.match(source, /onPointerMove/);
-  assert.match(source, /onPointerUp/);
-  assert.match(source, /Math\.abs\(event\.clientX - start\.x\) < MOBILE_SWIPE_THRESHOLD/);
-  assert.match(source, /dragged\.current = true;\s*event\.currentTarget\.setPointerCapture/s);
-  assert.match(source, /isTravelFocus\(stationFocus\)[\s\S]*selectStation\("kana"\)/);
-  assert.match(source, /stationFocus === "pitch"[\s\S]*selectStation\("mora"\)/);
-  assert.match(source, /!isTravelFocus\(stationFocus\)[\s\S]*selectStation\("japanese"\)/);
-
-  assert.match(source, /STATION_FOCUS_STORAGE_KEY\s*=\s*"ling:network-station-focus"/);
-  assert.match(source, /useSyncExternalStore\(\s*subscribeToStoredStationFocus,\s*getStoredStationFocus,\s*getServerStationFocus/s);
-  assert.match(source, /localStorage\.setItem\(STATION_FOCUS_STORAGE_KEY, focus\)/);
-  assert.match(source, /window\.dispatchEvent\(new Event\(STATION_FOCUS_EVENT\)\)/);
-  assert.match(source, /window\.addEventListener\("storage", onStoreChange\)/);
-  assert.match(source, /new URLSearchParams\(window\.location\.search\)\.get\("focus"\)/);
-  assert.match(source, /storedFocus === "japan"\) return "visit"/);
-  assert.match(source, /requestedFocus === "japan"[\s\S]*\? "visit"/);
-  assert.match(source, /const requestedStationFocus = selectedStationFocus \?\? storedStationFocus/);
-  assert.match(source, /const mobileFocus: MobileFocus = stationFocus/);
-
-  assert.match(source, /hiragana:\s*\{ ArrowDown: "katakana", ArrowUp: "vowels" \}/);
-  assert.match(source, /katakana:\s*\{ ArrowDown: "marks", ArrowUp: "hiragana" \}/);
-  assert.match(source, /marks:\s*\{ ArrowDown: "combined", ArrowUp: "katakana" \}/);
-  assert.match(source, /combined:\s*\{ ArrowUp: "marks" \}/);
-  assert.match(source, /mora:\s*\{ ArrowLeft: "kana", ArrowRight: "pitch" \}/);
-  assert.match(source, /pitch:\s*\{ ArrowLeft: "mora" \}/);
-  assert.equal((source.match(/STATION_NEIGHBORS\[stationFocus\]\[direction\]/g) ?? []).length, 2);
-  assert.match(source, /function onDesktopKeyDown\(event: KeyboardEvent<HTMLDivElement>\)/);
-  assert.match(source, /function onMobileKeyDown\(event: KeyboardEvent<HTMLDivElement>\)/);
-  assert.match(source, /getStationTarget\(event\.currentTarget, nextFocus\)\.focus\(\)/);
-  assert.match(source, /activateStationLink\(getStationTarget\(event\.currentTarget, stationFocus\)\)/);
-  assert.match(source, /new MouseEvent\("click", \{ bubbles: true, cancelable: true, view: window \}\)/);
-
-  assert.match(source, /className="network-desktop-viewport"/);
-  assert.equal((source.match(/aria-label="Explore the network with the arrow keys"/g) ?? []).length, 2);
-  assert.match(source, /data-desktop-focus=\{stationFocus\}/);
-  assert.match(source, /data-mobile-station-focus=\{stationFocus\}/);
-  assert.match(source, /document\.activeElement !== document\.body/);
-  assert.match(source, /window\.matchMedia\("\(max-width: 600px\)"\)\.matches/);
-  assert.equal((source.match(/ref=\{(?:desktop|mobile)Viewport\}/g) ?? []).length, 2);
-  assert.match(styles, /\.network-station-link:hover \.network-station-backlight\s*\{[^}]*opacity:\s*0\.55/s);
-  assert.match(styles, /\.network-station-link:focus-visible \.network-station-backlight/);
-  assert.doesNotMatch(styles, /network-(?:line-hit-|line-|station-)unavailable|aria-disabled/);
-
+  assert.match(foundation, /--vocabulary:\s*#4f8f83/);
   assert.match(page, /dynamic = "force-static"/);
   assert.match(page, /<NetworkMap \/>/);
-  assert.doesNotMatch(source, /aria-disabled="true"|data-available=/);
 });
 
 test("station map glyphs reflect each station's network position", async () => {
   const source = await readFile(new URL("app/network-visuals.tsx", root), "utf8");
   const topbar = await readFile(new URL("app/stations/station-topbar.tsx", root), "utf8");
   const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
-  const japaneseGlyph = source.slice(
-    source.indexOf('if (position === "japanese")'),
-    source.indexOf('if (\n    position === "visit"'),
-  );
-  const kanaGlyph = source.slice(
-    source.indexOf('if (position === "kana")'),
-    source.indexOf('if (position === "hiragana")'),
-  );
 
-  assert.match(japaneseGlyph, /station-map-travel[\s\S]*station-map-sound[\s\S]*station-map-interchange/);
-  assert.match(japaneseGlyph, /d="M14 8v14"[\s\S]*d="M14 8h14"/);
-  assert.doesNotMatch(japaneseGlyph, /station-map-connection/);
-  assert.match(source, /position === "visit"[\s\S]*position === "food"[\s\S]*station-map-travel/);
-  assert.match(source, /position === "romaji"[\s\S]*station-map-local[\s\S]*station-map-current/);
-  assert.match(source, /d="M10 2 20 12 10 22M20 12 30 2"/);
-  assert.doesNotMatch(source.match(/if \(position === "romaji"\)[\s\S]*?\n  \}/)?.[0] ?? "", /station-map-interchange/);
-  assert.match(source, /position === "shopping"[\s\S]*station-map-travel/);
-  assert.match(source, /position === "help"[\s\S]*data-terminal="true"[\s\S]*station-map-travel/);
-  assert.match(kanaGlyph, /station-map-sound[\s\S]*station-map-writing[\s\S]*station-map-interchange/);
-  assert.match(kanaGlyph, /d="M6 8h28"[\s\S]*d="M20 8v14"/);
-  assert.match(source, /position === "vowels" \|\| position === "hiragana"[\s\S]*station-map-writing/);
-  assert.match(source, /position === "katakana"[\s\S]*station-map-writing/);
-  assert.match(source, /position === "katakana" \|\| position === "sound-marks"[\s\S]*station-map-writing/);
-  assert.match(source, /position === "combined-sounds"[\s\S]*data-terminal="true"[\s\S]*station-map-writing/);
+  assert.equal(Object.keys(NETWORK_GLYPH_DEFINITIONS).length, 20);
+  assert.equal(NETWORK_GLYPH_DEFINITIONS["mora-timing"].topology, "horizontal-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS["pitch-accent"].topology, "horizontal-terminal");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.kana.topology, "horizontal-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.words.topology, "horizontal-terminal");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.topology, "vertical-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.vowels.lines.main, "station-map-sound");
+
+  for (const [position, definition] of Object.entries(NETWORK_GLYPH_DEFINITIONS)) {
+    const geometry = NETWORK_GLYPH_TOPOLOGIES[definition.topology];
+    assert.ok(geometry, `${position} should select a shared glyph topology`);
+    for (const path of geometry.paths) {
+      assert.ok(definition.lines[path.role], `${position} should color the ${path.role} line`);
+    }
+  }
+
+  for (const [topology, geometry] of Object.entries(NETWORK_GLYPH_TOPOLOGIES)) {
+    const [currentX, currentY] = geometry.current;
+    const armLengths = geometry.paths
+      .flatMap((path) => [path.points[0], path.points.at(-1)])
+      .map(([x, y]) => Math.hypot(x - currentX, y - currentY))
+      .filter((length) => length > 0);
+    assert.ok(armLengths.length > 0, `${topology} should expose at least one arm`);
+    for (const length of armLengths.slice(1)) {
+      assert.equal(length, armLengths[0], `${topology} arms should have equal lengths`);
+    }
+    const radius = geometry.interchange
+      ? NETWORK_GLYPH_RADII.interchange
+      : NETWORK_GLYPH_RADII.station;
+    for (const length of armLengths) {
+      assert.ok(
+        Math.abs(length - radius - NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH) < Number.EPSILON * 16,
+        `${topology} should use the shared visible segment length`,
+      );
+    }
+  }
+
+  assert.match(source, /NETWORK_GLYPH_DEFINITIONS\[position\]/);
+  assert.match(source, /NETWORK_GLYPH_TOPOLOGIES\[definition\.topology\]/);
+  assert.doesNotMatch(source, /if \(position/);
   assert.match(topbar, /import \{ NetworkGlyph, type NetworkPosition \} from "\.\.\/network-visuals"/);
   assert.match(networkMap, /<NetworkStationSymbol kind=\{kind\} \/>/);
 });
 
-test("the Kana stations reveal in order from account-scoped completion", async () => {
+test("every mapped station is visible and directly accessible without completion", async () => {
   const source = await readFile(new URL("app/network-map.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
-  const moraPage = await readFile(new URL("app/stations/mora-timing/page.tsx", root), "utf8");
-  const pitchPage = await readFile(new URL("app/stations/pitch-accent/page.tsx", root), "utf8");
-  const katakanaPage = await readFile(new URL("app/stations/katakana/page.tsx", root), "utf8");
-  const soundMarksPage = await readFile(new URL("app/stations/sound-marks/page.tsx", root), "utf8");
-  const combinedSoundsPage = await readFile(new URL("app/stations/combined-sounds/page.tsx", root), "utf8");
+  const gatedStationSlugs = [
+    "hiragana",
+    "katakana",
+    "sound-marks",
+    "combined-sounds",
+    "words",
+    "nouns",
+    "verbs",
+    "adjectives",
+    "mora-timing",
+    "pitch-accent",
+  ];
+  const stationPages = await Promise.all(
+    gatedStationSlugs.map((station) =>
+      readFile(new URL(`app/stations/${station}/page.tsx`, root), "utf8"),
+    ),
+  );
   const legacyExtensionsPage = await readFile(new URL("app/stations/kana-extensions/page.tsx", root), "utf8");
   const soundMarksApi = await readFile(new URL("app/api/stations/sound-marks/introduction/route.ts", root), "utf8");
   const combinedSoundsApi = await readFile(new URL("app/api/stations/combined-sounds/introduction/route.ts", root), "utf8");
   const vowels = await readFile(new URL("app/stations/vowels/vowels-guide.tsx", root), "utf8");
   const hiragana = await readFile(new URL("app/stations/hiragana/hiragana-guide.tsx", root), "utf8");
   const vowelsApi = await readFile(new URL("app/api/stations/vowels/introduction/route.ts", root), "utf8");
-  const availabilityApi = await readFile(
-    new URL("app/api/stations/availability/route.ts", root),
-    "utf8",
-  );
   const api = await readFile(new URL("app/api/stations/hiragana/introduction/route.ts", root), "utf8");
   const stations = await readFile(new URL("src/modules/learning/stations.ts", root), "utf8");
   const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
   const schema = await readFile(new URL("db/schema.ts", root), "utf8");
 
-  assert.match(stations, /hiragana: \["vowels"\]/);
-  assert.match(stations, /katakana: \["hiragana"\]/);
-  assert.match(stations, /"sound-marks": \["katakana"\]/);
-  assert.match(stations, /"combined-sounds": \["sound-marks"\]/);
-  assert.match(stations, /"mora-timing": \["combined-sounds"\]/);
-  assert.match(stations, /"pitch-accent": \["mora-timing"\]/);
-  assert.match(stations, /prerequisites\.every/);
+  assert.doesNotMatch(stations, /PREREQUISITE|isStationAvailable|retainPrerequisite/);
   assert.match(schema, /stationIntroductions = sqliteTable\(\s*"station_introductions"/s);
   assert.match(schema, /primaryKey\(\{ columns: \[table\.userId, table\.stationId\] \}\)/);
   assert.match(repository, /where\(eq\(stationIntroductions\.userId, userId\)\)/);
-  assert.match(repository, /const completedStations = await listCompletedStations\(userId\)/);
-  assert.match(repository, /if \(!isStationAvailable\(stationId, completedStations\)\) return false/);
   assert.match(repository, /knownHiragana\.length === BASIC_HIRAGANA\.length/);
   assert.match(repository, /knownKatakana\.length === BASIC_KATAKANA\.length/);
   assert.match(repository, /SOUND_MARK_PATTERN_IDS\.every\(\(patternId\) =>/);
   assert.match(repository, /COMBINED_SOUND_PATTERN_IDS\.every\(\(patternId\) =>/);
   assert.match(repository, /PITCH_ACCENT_ITEM_IDS\.every\(\(itemId\) =>/);
-  assert.match(repository, /retainPrerequisiteCompleteStations\(independentlyCompleted\)/);
+  assert.match(repository, /getVocabularyItemIds\(stationId\)\.every\(\(itemId\) =>/);
+  assert.match(repository, /return independentlyCompleted/);
   assert.match(repository, /onConflictDoNothing\(\)/);
   assert.match(vowelsApi, /recordStationIntroduction\(user\.id, "vowels"\)/);
-  assert.match(vowelsApi, /\{ available: \["hiragana"\] \}/);
+  assert.match(vowelsApi, /\{ recorded: true \}/);
   assert.match(repository, /row\.stationId === "kana" \? "vowels" : row\.stationId/);
   assert.match(api, /recordStationIntroduction\(user\.id, "hiragana"\)/);
-  assert.match(api, /error: "station_unavailable"/);
-  assert.match(api, /status: 403/);
-  assert.match(api, /\{ available: \[\] \}/);
+  assert.match(api, /\{ recorded: true \}/);
+  assert.doesNotMatch(api, /station_unavailable|status: 403/);
   assert.match(page, /dynamic = "force-static"/);
   assert.match(page, /<NetworkMap \/>/);
-  assert.doesNotMatch(page, /Promise\.all|isStationAvailableToCurrentUser|getStationAvailabilityForCurrentUser/);
-  assert.match(source, /fetch\("\/api\/stations\/availability"/);
-  assert.match(source, /setAvailabilityStatus\("ready"\);\s*routeReady\(\)/);
-  assert.match(source, /if \(!controller\.signal\.aborted\) setAvailabilityStatus\("error"\)/);
-  assert.doesNotMatch(source, /\.catch\(\(\) => undefined\)/);
-  assert.match(source, /<NetworkLoadError onRetry=\{retryAvailability\} \/>/);
-  assert.match(source, />\s*Try again\s*</);
+  assert.doesNotMatch(source, /\/api\/stations\/availability|NetworkLoadError|AvailabilityStatus/);
+  assert.doesNotMatch(source, /Available\s*=\s*(?:true|false)/);
+  assert.match(source, /useEffect\(\(\) => \{\s*routeReady\(\);\s*\}, \[routeReady\]\)/);
   assert.match(source, /new URLSearchParams\(window\.location\.search\)/);
-  assert.match(availabilityApi, /getStationAvailabilityForCurrentUser\(\)/);
-  assert.match(availabilityApi, /STATION_IDS\.filter/);
-  assert.match(availabilityApi, /private, no-store/);
-  assert.match(moraPage, /redirect\("\/\?focus=mora-timing"\)/);
-  assert.match(pitchPage, /redirect\("\/\?focus=pitch-accent"\)/);
-  assert.match(katakanaPage, /redirect\("\/\?focus=katakana"\)/);
-  assert.match(soundMarksPage, /redirect\("\/\?focus=sound-marks"\)/);
-  assert.match(combinedSoundsPage, /redirect\("\/\?focus=combined-sounds"\)/);
+  for (const [index, station] of gatedStationSlugs.entries()) {
+    assert.doesNotMatch(
+      stationPages[index],
+      /redirect\(|isStationAvailableToCurrentUser|getStationAvailabilityForCurrentUser/,
+      `${station} should be directly accessible`,
+    );
+  }
   assert.match(legacyExtensionsPage, /redirect\("\/stations\/sound-marks"\)/);
   assert.match(soundMarksApi, /recordStationIntroduction\(user\.id, "sound-marks"\)/);
-  assert.match(soundMarksApi, /\{ available: \[\] \}/);
+  assert.match(soundMarksApi, /\{ recorded: true \}/);
   assert.match(combinedSoundsApi, /recordStationIntroduction\(user\.id, "combined-sounds"\)/);
-  assert.match(combinedSoundsApi, /\{ available: \[\] \}/);
+  assert.match(combinedSoundsApi, /\{ recorded: true \}/);
   assert.match(hiragana, /fetch\("\/api\/stations\/hiragana\/introduction"/);
   assert.match(vowels, /fetch\("\/api\/stations\/vowels\/introduction"/);
   assert.match(hiragana, /useEffect\(\(\) => \{/);
   assert.doesNotMatch(hiragana, /Continue to Mora timing|station-next/);
-  assert.match(source, /\{hiraganaAvailable \? \([\s\S]*?className="network-line-target"/);
-  assert.match(source, /focus === "hiragana" && hiraganaAvailable/);
-  assert.match(source, /focus === "katakana" && katakanaAvailable/);
-  assert.match(source, /focus === "marks" && soundMarksAvailable/);
-  assert.match(source, /focus === "combined" && combinedSoundsAvailable/);
-  assert.match(source, /focus === "pitch" && pitchAccentAvailable/);
-  assert.match(source, /nextFocus && isStationVisible\([\s\S]*?nextFocus,[\s\S]*?hiraganaAvailable,[\s\S]*?katakanaAvailable,[\s\S]*?soundMarksAvailable,[\s\S]*?combinedSoundsAvailable,[\s\S]*?moraTimingAvailable,[\s\S]*?pitchAccentAvailable/);
   assert.doesNotMatch(source, /MORA_UNAVAILABLE_REASON|network-line-unavailable|unavailableReason|aria-disabled/);
-  assert.doesNotMatch(source, /After Hiragana|network-station-dependency/);
+  assert.doesNotMatch(source, /After Hiragana|network-station-dependency|station_unavailable/);
   assert.doesNotMatch(hiragana, /score|streak|timer|progress meter/i);
 });
 
@@ -347,10 +328,10 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
     source.indexOf("const COMBINED_SOUND_FLASHCARD_BY_KANA"),
   );
 
-  assert.match(soundMarksPage, /isStationAvailableToCurrentUser\("sound-marks"\)/);
+  assert.doesNotMatch(soundMarksPage, /isStationAvailableToCurrentUser|redirect\(/);
   assert.match(soundMarksPage, /<StationTopbar current="Dakuten & Handakuten" mapPosition="sound-marks" \/>/);
   assert.match(soundMarksPage, /<SoundMarksGuide \/>/);
-  assert.match(combinedSoundsPage, /isStationAvailableToCurrentUser\("combined-sounds"\)/);
+  assert.doesNotMatch(combinedSoundsPage, /isStationAvailableToCurrentUser|redirect\(/);
   assert.match(combinedSoundsPage, /<StationTopbar current="Yōon" mapPosition="combined-sounds" \/>/);
   assert.match(combinedSoundsPage, /<CombinedSoundsGuide \/>/);
   assert.match(source, /fetch\(`\/api\/stations\/\$\{stationSlug\}\/introduction`/);
@@ -408,8 +389,8 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   assert.match(domain, /SOUND_MARK_PATTERN_IDS/);
   assert.match(domain, /COMBINED_SOUND_PATTERN_IDS/);
   assert.doesNotMatch(domain, /small-tsu|long-vowel/);
-  assert.match(source, /This marks all \{allEntries\.length\} patterns in this station as complete and unlocks \{nextStation\}/);
-  assert.match(source, /Later stations stay hidden until \{stationName\} is complete again/);
+  assert.match(source, /This marks all \{allEntries\.length\} patterns in this station as complete\./);
+  assert.match(source, /Your station access will not change\./);
   assert.match(source, /<FlashcardReview/);
   assert.match(source, /<FlashcardContent/);
   assert.match(source, /example=\{activeCard\.example\}/);
@@ -500,26 +481,27 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   const reviewAudioPaths = [...reviewSource.matchAll(/wordAudio: "(\/audio\/ja-[^"]+\.wav)"/g)].map((match) => match[1]);
 
   assert.deepEqual(teachingAudioPaths, [
-    "/audio/ja-inu.wav",
-    "/audio/ja-asa.wav",
-    "/audio/ja-hon.wav",
-    "/audio/ja-katakana-wain.wav",
+    "/audio/ja-neko.wav",
+    "/audio/ja-sakana.wav",
+    "/audio/ja-katakana-pan.wav",
+    "/audio/ja-yoon-hiragana-sha.wav",
     "/audio/ja-yoon-hiragana-kyo.wav",
-    "/audio/ja-kyaku.wav",
+    "/audio/ja-yoon-hiragana-sha.wav",
     "/audio/ja-kitte.wav",
     "/audio/ja-katakana-robotto.wav",
     "/audio/ja-keeki.wav",
-    "/audio/ja-katakana-chiizu.wav",
+    "/audio/ja-katakana-suupu.wav",
   ]);
-  assert.equal(reviewWords.length, 10);
-  assert.equal(reviewMeanings.length, 10);
-  assert.equal(reviewAudioPaths.length, 10);
-  assert.equal(reviewMoraBreakdowns.length, 10);
+  assert.equal(reviewWords.length, 9);
+  assert.equal(reviewMeanings.length, 9);
+  assert.equal(reviewAudioPaths.length, 9);
+  assert.equal(reviewMoraBreakdowns.length, 9);
   for (const { morae, word } of reviewMoraBreakdowns) {
     assert.equal(morae.join(""), word, `${word} must render from its declared morae`);
   }
   assert.equal(teachingWords.length, 10);
-  assert.equal(new Set([...teachingWords, ...reviewWords]).size, 20);
+  assert.equal(new Set([...teachingWords, ...reviewWords]).size, 9);
+  assert.deepEqual(new Set(reviewWords), new Set(teachingWords));
   assert.match(teachingSource, /title: "One Kana, one beat"/);
   assert.match(teachingSource, /title: "ん has its own beat"/);
   assert.match(teachingSource, /title: "Yōon is one beat"/);
@@ -535,7 +517,7 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.doesNotMatch(reviewSource, /\brule:/);
   assert.match(source, /className="mora-review-card-content"[\s\S]*?aria-label=\{activeCard\.word\}[\s\S]*?className="mora-review-word"[\s\S]*?activeCard\.morae\.map\(\(mora, index\) =>[\s\S]*?className="mora-review-word-beat"[\s\S]*?data-active=\{activeReviewBeatIndex === index \? "true" : undefined\}[\s\S]*?className="mora-review-answer-slot"[\s\S]*?className="mora-review-answer"[\s\S]*?<MoraPronunciation[\s\S]*?className="mora-review-translation"[\s\S]*?\{activeCard\.meaning\}/);
   assert.doesNotMatch(styles, /\.mora-review-translation:not\(\[data-revealed="true"\]\)/);
-  assert.match(source, /announcement=\{breakdownRevealed[\s\S]*?getJapaneseWordSoundCue\(activeCard\.word\)[\s\S]*?activeCard\.morae\.length/);
+  assert.match(source, /announcement=\{breakdownRevealed[\s\S]*?getJapaneseWordRomaji\(activeCard\.word\)[\s\S]*?activeCard\.morae\.length/);
   assert.match(source, /className="mora-review-answer-slot"[\s\S]*?<MoraPronunciation[\s\S]*?word=\{activeCard\.word\}[\s\S]*?\/>/);
   assert.doesNotMatch(source, /className="mora-review-answer-slot"[\s\S]{0,400}?<MoraBeats/);
   assert.match(source, /<FlashcardReview/);
@@ -550,9 +532,9 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.match(styles, /\.flashcard-countdown\s*\{[^}]*width:\s*2\.5rem[^}]*height:\s*2\.5rem[^}]*color:\s*var\(--muted\)/s);
   assert.match(styles, /\.flashcard-countdown-progress\s*\{[^}]*animation:\s*flashcard-countdown-fill var\(--flashcard-countdown-duration\) linear forwards[^}]*stroke:\s*var\(--known\)[^}]*stroke-dashoffset:\s*1/s);
   assert.match(source, /className="hiragana-test-trigger"/);
-  assert.match(source, /Test Mora Timing\. \$\{remainingCount\} remaining\./);
+  assert.match(source, /Test Mora\. \$\{remainingCount\} remaining\./);
   assert.match(source, /<StationOptions/);
-  assert.match(source, /stationName="Mora Timing"/);
+  assert.match(source, /stationName="Mora"/);
   assert.match(source, /onSetComplete=\{setAllKnowledge\}/);
   assert.match(source, /method: "PATCH"/);
   assert.match(stationOptions, /<summary aria-label="Station options">/);
@@ -565,23 +547,26 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.match(source, /const activeReviewBeatIndex = audioPlaying && playingWord === activeCard\?\.word[\s\S]*?\? activeBeatIndex[\s\S]*?: null/);
   assert.match(source, /data-active=\{activeBeatIndex === index \? "true" : undefined\}/);
   assert.match(source, /<MoraAudioIndicator \/>/);
-  assert.match(source, /<button[\s\S]*?aria-label=\{`Play \$\{example\.word\}`\}[\s\S]*?className="mora-example"[\s\S]*?onClick=\{\(\) => void playAudio\(example\.wordAudio[\s\S]*?<span className="mora-example-timing">[\s\S]*?<MoraBeats[\s\S]*?<MoraAudioIndicator \/>[\s\S]*?<MoraPronunciation[\s\S]*?<span className="mora-meaning">/);
+  assert.match(source, /<button[\s\S]*?aria-label=\{`Play \$\{example\.word\}`\}[\s\S]*?className="mora-example"[\s\S]*?onClick=\{\(\) => void playAudio\(example\.wordAudio[\s\S]*?<span className="mora-meaning">[\s\S]*?<span className="mora-example-timing">[\s\S]*?<MoraBeats[\s\S]*?<MoraPronunciation[\s\S]*?<MoraAudioIndicator \/>/);
   assert.doesNotMatch(source, /className="mora-beats-button"/);
   assert.doesNotMatch(source, /className="mora-word"/);
   assert.doesNotMatch(source.slice(source.indexOf('className="mora-example-list"'), source.indexOf("{audioError ?")), /className="mora-count"/);
   assert.doesNotMatch(source, /widestMoraLength|--mora-beat-width/);
   assert.match(styles, /\.mora-concepts\s*\{[^}]*display:\s*grid[^}]*width:\s*min\(100%, 38rem\)[^}]*gap:\s*2rem/s);
   assert.doesNotMatch(styles, /\.mora-concepts\s*\{[^}]*border-top:/s);
-  assert.match(styles, /\.mora-example-list\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)[^}]*gap:\s*0\.75rem/s);
+  assert.match(styles, /\.mora-example-list\s*\{[^}]*display:\s*grid[^}]*gap:\s*0\.75rem/s);
+  assert.doesNotMatch(styles, /\.mora-example-list\s*\{[^}]*grid-template-columns:/s);
   assert.doesNotMatch(styles, /\.mora-example-list\s*\{[^}]*(?:border|border-radius):/s);
   assert.doesNotMatch(styles, /\.mora-example \+ \.mora-example\s*\{[^}]*border-top:/s);
   assert.doesNotMatch(styles, /\.mora-concept\s*\{[^}]*border-bottom:/s);
   assert.doesNotMatch(styles, /\.mora-concept:last-child/);
   assert.match(styles, /\.mora-concept-heading\s*\{[^}]*margin-bottom:\s*0\.875rem/s);
-  assert.match(styles, /\.mora-example\s*\{[^}]*width:\s*100%[^}]*min-height:\s*6\.75rem[^}]*align-items:\s*center[^}]*border:\s*1px solid var\(--line\)[^}]*border-radius:\s*1rem[^}]*cursor:\s*pointer[^}]*text-align:\s*center/s);
-  assert.match(styles, /\.mora-example:only-child\s*\{[^}]*width:\s*calc\(\(100% - 0\.75rem\) \/ 2\)[^}]*grid-column:\s*1 \/ -1[^}]*justify-self:\s*center/s);
+  assert.match(styles, /\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example\s*\{[^}]*min-height:\s*6\.25rem[^}]*border:\s*0/s);
+  assert.match(styles, /\.mora-example\s*\{[^}]*position:\s*relative[^}]*display:\s*grid[^}]*width:\s*100%[^}]*align-content:\s*center[^}]*justify-items:\s*start[^}]*padding:\s*1rem 2\.75rem 1rem 1rem[^}]*border:\s*0[^}]*background:\s*transparent[^}]*cursor:\s*pointer[^}]*text-align:\s*left/s);
+  assert.match(styles, /\.romaji-rule-example,\s*\.station-page-mora \.mora-example,[\s\S]*\{[^}]*border-radius:\s*0\.55rem[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 4%, transparent\)/s);
+  assert.match(styles, /\.mora-example:only-child\s*\{[^}]*width:\s*100%/s);
   assert.match(styles, /\.mora-example-timing\s*\{[^}]*position:\s*relative[^}]*display:\s*inline-grid[^}]*place-items:\s*center/s);
-  assert.match(styles, /\.mora-audio-indicator\s*\{[^}]*position:\s*absolute[^}]*left:\s*calc\(100% \+ 0\.5rem\)/s);
+  assert.match(styles, /\.mora-audio-indicator\s*\{[^}]*position:\s*absolute[^}]*top:\s*1rem[^}]*right:\s*1rem/s);
   assert.match(styles, /\.mora-beats\s*\{[^}]*display:\s*inline-flex[^}]*align-items:\s*baseline[^}]*gap:\s*0\.35rem/s);
   assert.doesNotMatch(styles, /\.mora-beats\s*\{[^}]*justify-self:/s);
   assert.doesNotMatch(styles, /\.mora-beat\s*\{[^}]*(?:width|height|border|background):/s);
@@ -590,16 +575,16 @@ test("the Mora timing station teaches and reviews equal beats with bundled audio
   assert.doesNotMatch(styles, /\.mora-beat\[data-active="true"\]\s*\{[^}]*(?:background|border-color|box-shadow|transform):/s);
   assert.match(styles, /\.mora-review-word-beat\[data-active="true"\]\s*\{[^}]*color:\s*var\(--sound\)/s);
   assert.doesNotMatch(styles, /\.mora-review-word-beat\[data-active="true"\]\s*\{[^}]*(?:background|border-color|box-shadow|transform):/s);
-  assert.match(source, /getJapaneseMoraSoundCues\(word\)/);
+  assert.match(source, /getJapaneseMoraRomaji\(word\)/);
   assert.match(source, /className="mora-pronunciation-beat"[\s\S]*data-active=\{activeBeatIndex === index \? "true" : undefined\}/);
-  assert.match(styles, /\.mora-pronunciation\s*\{[^}]*display:\s*inline-flex[^}]*font-size:\s*0\.75rem/s);
+  assert.match(styles, /\.mora-pronunciation\s*\{[^}]*display:\s*inline-flex[^}]*font-size:\s*0\.8rem/s);
   assert.doesNotMatch(styles, /\.mora-pronunciation\s*\{[^}]*gap:/s);
-  assert.match(source, /getJapaneseMoraSoundCueSeparator\(morae, index\) === ""/);
-  assert.match(source, /aria-label=\{getJapaneseWordSoundCue\(word\)\}/);
-  assert.match(source, /data-connected=\{connected \? "true" : undefined\}/);
-  assert.match(styles, /\.mora-pronunciation-beat \+ \.mora-pronunciation-beat:not\(\[data-connected="true"\]\)\s*\{[^}]*margin-left:\s*0\.35rem/s);
+  assert.match(source, /aria-label=\{`Rōmaji: \$\{getJapaneseWordRomaji\(word\)\}`\}/);
+  assert.doesNotMatch(source, /getJapaneseMoraSoundCue|getJapaneseWordSoundCue|data-connected/);
+  assert.doesNotMatch(styles, /\.mora-pronunciation-beat \+ \.mora-pronunciation-beat/);
   assert.match(styles, /\.mora-pronunciation-beat\[data-active="true"\]\s*\{[^}]*color:\s*var\(--sound\)/s);
-  assert.match(styles, /@media \(hover: hover\) and \(pointer: fine\)[\s\S]*\.mora-example:hover\s*\{[^}]*border-color:\s*rgb\(242 241 235 \/ 0\.22\)[^}]*background:\s*color-mix\(in srgb, var\(--surface\) 97%, var\(--foreground\)\)/s);
+  assert.match(styles, /@media \(hover: hover\) and \(pointer: fine\)[\s\S]*\.station-page-mora \.mora-example:hover:not\(\[data-playing="true"\]\)\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 7%, transparent\)/s);
+  assert.match(styles, /\.mora-example\[data-playing="true"\]\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--sound\) 8%, transparent\)[^}]*box-shadow:\s*inset 0 0 0 1px var\(--sound\)/s);
   assert.match(styles, /\.mora-review-answer-slot\s*\{[^}]*min-height:\s*3\.5rem/s);
   assert.doesNotMatch(styles, /\.mora-review-answer-slot \.mora-pronunciation\s*\{/);
   assert.match(styles, /\.mora-review-answer\s*\{[^}]*display:\s*flex[^}]*flex-direction:\s*column[^}]*gap:\s*0\.35rem/s);
@@ -672,7 +657,7 @@ test("the Vowels station introduces both scripts through the five shared sounds"
   assert.equal(audioPaths.length, 20);
   assert.equal(new Set(audioPaths).size, 15);
   assert.match(page, /dynamic = "force-static"/);
-  assert.match(source, /data-line="writing"/);
+  assert.match(source, /data-line="sound"[^>]*>Sound</);
   assert.match(kanaPage, /Kana is the collective name for Hiragana and Katakana/);
   assert.match(kanaPage, /used to write how Japanese words\s+sound/);
   assert.match(kanaPage, /Both sets represent the same sounds with different shapes/);
@@ -818,9 +803,9 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(source, /setAllKnowledge\(true\)/);
   assert.match(source, /setAllKnowledge\(false\)/);
   assert.match(source, /aria-labelledby="hiragana-complete-title"/);
-  assert.match(source, /This marks all 46 Hiragana as complete and unlocks Katakana/);
+  assert.match(source, /This marks all 46 Hiragana as complete\./);
   assert.match(source, /aria-labelledby="hiragana-reset-title"/);
-  assert.match(source, /Later stations will stay hidden until Hiragana is complete again/);
+  assert.match(source, /Your station access will not change\./);
   assert.match(source, /bulkKnowledgeAction === "complete" \? "Completing…" : "Complete"/);
   assert.match(source, /bulkKnowledgeAction === "reset" \? "Resetting…" : "Reset"/);
   assert.equal((source.match(/className="hiragana-test-answer hiragana-test-answer-no"/g) ?? []).length, 2);
@@ -962,11 +947,11 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.equal(new Set(hiragana).size, 46);
   assert.equal(audioPaths.length, 46);
   assert.equal(exampleAudioPaths.length, 46);
-  assert.match(page, /isStationAvailableToCurrentUser\("katakana"\)/);
+  assert.doesNotMatch(page, /isStationAvailableToCurrentUser|redirect\(/);
   assert.match(source, /data-line="writing"/);
   assert.match(api, /recordStationIntroduction\(user\.id, "katakana"\)/);
-  assert.match(api, /error: "station_unavailable"/);
-  assert.match(api, /status: 403/);
+  assert.match(api, /\{ recorded: true \}/);
+  assert.doesNotMatch(api, /station_unavailable|status: 403/);
   assert.match(source, /Katakana is another way to write the sounds you learned in Hiragana/);
   assert.match(source, /Each Katakana has a Hiragana match/);
   assert.match(source, /ア.*sounds like.*あ.*カ.*sounds like.*か/);

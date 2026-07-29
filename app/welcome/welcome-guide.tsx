@@ -14,9 +14,8 @@ export function WelcomeGuide() {
           words, and useful situations.
         </p>
         <p>
-          Inspired by a transit system, Ling starts with the stations available
-          to you. New connections appear after you learn the foundations they
-          depend on.
+          Inspired by a transit system, Ling shows the entire network from the
+          start. Follow the connections in any order that helps you learn.
         </p>
       </div>
 
@@ -40,7 +39,7 @@ export function WelcomeGuide() {
           </span>
           <span>
             <strong>Stations</strong>
-            Choose an available station to begin. Interchanges connect more than
+            Choose any station to begin. Interchanges connect more than
             one line.
           </span>
         </li>

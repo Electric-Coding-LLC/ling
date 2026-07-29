@@ -1,18 +1,12 @@
-import { redirect } from "next/navigation";
-import { isStationAvailableToCurrentUser } from "../../station-availability";
 import { StationTopbar } from "../station-topbar";
 import { MoraTimingGuide } from "./mora-timing-guide";
 
 export const dynamic = "force-dynamic";
 
-export default async function MoraTimingPage() {
-  if (!(await isStationAvailableToCurrentUser("mora-timing"))) {
-    redirect("/?focus=mora-timing");
-  }
-
+export default function MoraTimingPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Mora Timing" mapPosition="mora-timing" />
+      <StationTopbar current="Mora" mapPosition="mora-timing" />
       <div className="station-page station-page-mora">
         <MoraTimingGuide />
       </div>

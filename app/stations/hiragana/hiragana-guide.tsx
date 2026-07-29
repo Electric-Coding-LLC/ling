@@ -462,7 +462,7 @@ export function HiraganaGuide() {
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Script
+              Writing
             </span>
           </div>
           <div className="station-heading-actions">
@@ -626,7 +626,7 @@ export function HiraganaGuide() {
         >
           <div className="station-confirm-modal">
             <h2 id="hiragana-complete-title">Mark Hiragana complete?</h2>
-            <p>This marks all 46 Hiragana as complete and unlocks Katakana.</p>
+            <p>This marks all 46 Hiragana as complete.</p>
             <div className="hiragana-test-actions">
               <button
                 className="hiragana-test-answer hiragana-test-answer-no"
@@ -664,7 +664,7 @@ export function HiraganaGuide() {
         >
           <div className="station-confirm-modal">
             <h2 id="hiragana-reset-title">Reset Hiragana?</h2>
-            <p>This marks all 46 Hiragana as incomplete. Later stations will stay hidden until Hiragana is complete again.</p>
+            <p>This marks all 46 Hiragana as incomplete. Your station access will not change.</p>
             <div className="hiragana-test-actions">
               <button
                 className="hiragana-test-answer hiragana-test-answer-no"

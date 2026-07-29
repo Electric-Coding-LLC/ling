@@ -27,6 +27,11 @@ test("the root route has a branded, accessible loading state", async () => {
     new URL("app/stations/pitch-accent/loading.tsx", root),
     "utf8",
   );
+  const vocabularyLoadings = await Promise.all(
+    ["words", "nouns", "verbs", "adjectives"].map((station) =>
+      readFile(new URL(`app/stations/${station}/loading.tsx`, root), "utf8"),
+    ),
+  );
   const romajiLoading = await readFile(
     new URL("app/stations/romaji/loading.tsx", root),
     "utf8",
@@ -55,7 +60,10 @@ test("the root route has a branded, accessible loading state", async () => {
   assert.match(extensionsLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(soundMarksLoading, /<LoadingScreen station="Dakuten & Handakuten" \/>/);
   assert.match(combinedSoundsLoading, /<LoadingScreen station="Yōon" \/>/);
-  assert.match(pitchAccentLoading, /<LoadingScreen station="Pitch Accent" \/>/);
+  assert.match(pitchAccentLoading, /<LoadingScreen station="Pitch" \/>/);
+  for (const [index, station] of ["Words", "Nouns", "Verbs", "Adjectives"].entries()) {
+    assert.match(vocabularyLoadings[index], new RegExp(`<LoadingScreen station="${station}" \\/>`));
+  }
   assert.match(romajiLoading, /<LoadingScreen station="Rōmaji" \/>/);
   assert.match(visitLoading, /<LoadingScreen station="Visit" \/>/);
   assert.doesNotMatch(loadingStyles, /--loading-accent|\.loading-shell\[data-station=/);

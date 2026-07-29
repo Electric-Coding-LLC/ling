@@ -1,6 +1,6 @@
 .network-home {
   min-height: calc(100dvh - 3.75rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  overflow: hidden;
+  overflow-x: clip;
 }
 
 .network-topbar {
@@ -55,6 +55,18 @@
   outline: none;
 }
 
+.network-desktop-viewport:focus-visible[data-desktop-focus="vocabulary"]
+  [data-network-focus="vocabulary"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="writing"]
+  [data-network-focus="writing"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="sound"]
+  [data-network-focus="sound"]
+  .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="japan"]
+  [data-network-focus="japan"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="help"]
   [data-station="help"]
   .network-station-backlight,
@@ -85,6 +97,9 @@
 .network-desktop-viewport:focus-visible[data-desktop-focus="pitch"]
   [data-station="pitch-accent"]
   .network-station-backlight,
+.network-desktop-viewport:focus-visible[data-desktop-focus="words"]
+  [data-station="words"]
+  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="combined"]
   [data-station="combined-sounds"]
   .network-station-backlight,
@@ -114,41 +129,24 @@
   display: none;
 }
 
-.network-line-label,
 .network-station-label {
+  fill: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: 20px;
   font-weight: 500;
 }
 
-.network-line-label {
-  font-size: 12px;
-  letter-spacing: 0.14em;
-}
-
-.network-station-label {
-  font-size: 18px;
-}
-
-.network-line-label-sound {
-  fill: var(--sound);
-}
-
-.network-line-label-writing {
-  fill: var(--writing);
-}
-
-.network-line-label-travel {
-  fill: var(--travel);
-}
-
 .network-line {
-  stroke-width: 6;
+  fill: none;
+  stroke-width: 4;
   stroke-linecap: round;
+  stroke-linejoin: round;
   pointer-events: none;
   vector-effect: non-scaling-stroke;
 }
 
 .network-line-hit {
+  fill: none;
   stroke: transparent;
   stroke-width: 24;
   pointer-events: stroke;
@@ -176,18 +174,17 @@
   stroke: var(--writing);
 }
 
+.network-line-vocabulary {
+  stroke: var(--vocabulary);
+}
+
 .network-line-travel {
   stroke: var(--travel);
 }
 
-.network-line-local {
-  stroke: var(--muted);
-  stroke-opacity: 0.72;
-  stroke-width: 3;
-}
-
-.network-station-label {
-  fill: var(--foreground);
+.network-line-foundation {
+  stroke: var(--foreground);
+  stroke-width: 4;
 }
 
 .network-interchange-outer,
@@ -220,8 +217,16 @@
   stroke: var(--muted);
 }
 
+.network-single-station-outer-foundation {
+  stroke: var(--foreground);
+}
+
 .network-single-station-outer-writing {
   stroke: var(--writing);
+}
+
+.network-single-station-outer-vocabulary {
+  stroke: var(--vocabulary);
 }
 
 .network-single-station-outer-travel {
@@ -251,10 +256,15 @@
   outline: none;
 }
 
+.network-category-station:focus-visible {
+  outline: none;
+}
+
 .network-station-link:hover .network-station-backlight {
   opacity: 0.55;
 }
 
+.network-category-station:focus-visible .network-station-backlight,
 .network-station-link:focus-visible .network-station-backlight {
   opacity: 1;
 }
@@ -274,6 +284,18 @@
     outline: none;
   }
 
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="vocabulary"]
+    [data-network-focus="vocabulary"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="writing"]
+    [data-network-focus="writing"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="sound"]
+    [data-network-focus="sound"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="japan"]
+    [data-network-focus="japan"]
+    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="help"]
     [data-station="help"]
     .network-station-backlight,
@@ -303,6 +325,9 @@
     .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="pitch"]
     [data-station="pitch-accent"]
+    .network-station-backlight,
+  .network-mobile-viewport:focus-visible[data-mobile-station-focus="words"]
+    [data-station="words"]
     .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="combined"]
     [data-station="combined-sounds"]
@@ -335,28 +360,25 @@
     transition: transform 220ms ease;
   }
 
-  .network-mobile-track-kana,
-  .network-mobile-track-vowels,
+  .network-mobile-track-introductions,
+  .network-mobile-track-navigation,
+  .network-mobile-track-food,
+  .network-mobile-track-shopping,
+  .network-mobile-track-help,
+  .network-mobile-track-mora,
   .network-mobile-track-hiragana,
-  .network-mobile-track-katakana,
+  .network-mobile-track-katakana {
+    transform: translateX(-60%);
+  }
+
+  .network-mobile-track-pitch,
   .network-mobile-track-marks,
   .network-mobile-track-combined {
-    transform: translateX(-50%);
-  }
-
-  .network-mobile-track-mora {
-    transform: translateX(-100%);
-  }
-
-  .network-mobile-track-pitch {
-    transform: translateX(-150%);
+    transform: translateX(-115%);
   }
 
   .network-station-label {
-    font-size: 16px;
+    font-size: 18px;
   }
 
-  .network-line-label {
-    font-size: 11px;
-  }
 }

@@ -43,12 +43,19 @@ Suggestions may quietly use prior evidence to direct attention, but they are an 
 
 ## Network Visual Grammar
 
+- A named vertical spine organizes a broad level of knowledge; the first spine is Foundations.
+- Moving down a spine reveals the major territories as category stations within that level in a useful conceptual order.
+- Moving right along a territory represents increasing depth, not mandatory completion.
+- Peer concepts fork at the same horizontal depth and use consistent rounded bends when a straight line would imply a false sequence.
+- The Foundations spine is centered, neutral white, and identified by its station names rather than a separate visible line label.
+- Foundations station names sit to the left of the spine; each regular-size category station uses its branch color where the colored horizontal line begins.
 - A single-line station uses that line's color on its outer ring.
 - An interchange shared by multiple visible lines uses a larger neutral white outer ring.
 - Every station keeps a white inner ring as the common affordance for an enterable place.
 - Importance, lesson availability, selection, hover, and learning state do not change the structural ring treatment.
 - A line ending at a station communicates the current endpoint; do not add speculative continuation.
 - A station interior uses a text-free locator glyph that shows one current stop and only its local line topology.
+- Locator glyphs select from shared topology geometry and one visible segment length; stations assign line colors but never define their own coordinates.
 - Activating a station locator returns to the network with that same station focused.
 
 ## Learning Contract
@@ -80,42 +87,47 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-The current mapped network has three lines, a Japanese entrance, and sixteen
-stations:
+The current mapped network is the Foundations spine with four populated
+territories and twenty-one stations:
 
 ```text
-Japanese ────────────── Kana ───────── Mora Timing ───────── Pitch Accent
-    │ ╲                 ╱ │
-    │   ╲   Rōmaji   ╱   │
-    │     ╲       ╱       │
-  Visit                Vowels
-    │                    │
-Introductions         Hiragana
-    │                    │
-Navigation           Katakana
-    │                    │
-  Food          Dakuten & Handakuten
-    │                    │
-Shopping              Yōon
-    │
-  Help
+Japanese
+   │
+ Rōmaji
+   │
+ Japan ─────── Visit ─────┬─ Introductions
+   │                       ├─ Navigation
+   │                       ├─ Food
+   │                       ├─ Shopping
+   │                       └─ Help
+   │
+ Sound ─────── Vowels ────── Mora ────── Pitch
+   │
+ Writing ───── Kana ──────┬─ Hiragana ──┐
+   │                       └─ Katakana ──┴─┬─ Dakuten & Handakuten
+   │                                       └─ Yōon
+   │
+ Vocabulary ── Words
 ```
 
-`Japanese` is the starting interchange between the Japan and Speech lines. It
-introduces Ling and the network itself, then opens two kinds of territory:
-Speech continues directly to `Kana`, while the always-available Japan line
-continues directly to `Visit`. `Rōmaji` forms an irregular branch between
-`Japanese`, `Visit`, and `Kana`. Its three short links are neutral local
-connections rather than named line segments, and Rōmaji uses a standard local
-station marker rather than a major-interchange marker.
+`Japanese` opens the Foundations spine. `Rōmaji` follows as a local orientation
+station before the spine reaches four regular category stations: Japan, Sound,
+Writing, and Vocabulary. These category stations organize their horizontal branches;
+they do not claim lesson interiors of their own. The spine is an organizing
+axis rather than a prerequisite chain.
 
-Japan is a reference line rather than a progression chain. `Rōmaji`, `Visit`,
-`Introductions`, `Navigation`, `Food`, `Shopping`, and `Help` are always visible and
-directly accessible. They do not store completion or gate another station.
+Japan begins with `Visit`, then branches to the peer reference stations
+`Introductions`, `Navigation`, `Food`, `Shopping`, and `Help`. Their shared
+horizontal depth makes clear that one does not need to be completed before
+another.
 
-`Kana` is the interchange between Speech and Script. It introduces Hiragana and
-Katakana as two ways to write the same sounds. `Vowels` begins the Script line
-with the five shared Japanese vowels:
+Sound moves from `Vowels` to `Mora` and `Pitch`. Writing begins at `Kana`, forks
+to `Hiragana` and `Katakana`, then rejoins before the related extensions
+`Dakuten & Handakuten` and `Yōon`. Vocabulary currently stops at `Words`; the
+visible line does not promise Kanji, grammar, or further vocabulary groupings
+before those stations have real interiors.
+
+`Vowels` uses the five shared Japanese vowels:
 
 ```text
 あ / ア  い / イ  う / ウ  え / エ  お / オ
@@ -124,15 +136,12 @@ with the five shared Japanese vowels:
 The chart places Hiragana and Katakana in separate rows beneath the same five sounds. Each Kana opens a flashcard with its pronunciation, a playable Japanese example word, and a translation.
 
 This seed is a valid piece of the eventual network, not a disposable prototype.
-The Japan line remains visible as a stable reference. The learning territory still
-represents where the learner has traveled: Vowels reveals the Script segment to
-`Hiragana`, extends to `Katakana` after Hiragana is known, then reaches
-`Dakuten & Handakuten` and `Yōon` in sequence as each preceding station is
-completed. Completing Yōon reveals `Mora Timing` on the Speech line, and
-completing Mora Timing extends that line once more to `Pitch Accent`. Future
-learning stations and connecting segments stay hidden until their prerequisites
-are complete. Do not use faint or inactive geography, and add no line segments
-for speculative stations.
+The entire mapped network remains visible and directly accessible. Tests and
+self-reported knowledge record personal progress but never unlock, hide, or
+block stations. The map may communicate useful conceptual order through its
+lines and connections without requiring the learner to follow that order.
+Do not use faint or inactive geography, and add no line segments for speculative
+stations.
 
 ## Current Station Interiors
 
@@ -164,10 +173,9 @@ scheduling, or persistence. `Help` covers urgent assistance, illness, emergency
 services, a lost passport, and finding an English speaker.
 
 `Kana` defines the two phonetic scripts and explains the different roles of
-Hiragana and Katakana. It is the always-available interchange between Speech
-and Script.
+Hiragana and Katakana. It begins the Writing territory.
 
-`Vowels` begins Script study with the five sounds shared by Hiragana and
+`Vowels` begins Sound study with the five sounds shared by Hiragana and
 Katakana. Each of the ten Kana opens a flashcard with bundled pronunciation, a
 playable example, and a translation.
 
@@ -179,9 +187,17 @@ playable example, and a translation.
 
 `Yōon` teaches how small `ゃ`, `ゅ`, and `ょ` and their Katakana matches join the Kana before them to make one sound. One complete three-column chart keeps every Hiragana and Katakana combination visible, and every entry opens the same flashcard and private progress interaction used by the preceding Kana stations.
 
-`Mora Timing` first defines a mora as one rhythmic timing unit, then presents playable words with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division. The station remains hidden until Yōon is complete.
+`Words` establishes the small starter vocabulary reused by the pronunciation
+stations. It is a listening-first reference with Japanese, canonical rōmaji,
+meaning, bundled audio, and an explicit flashcard review.
 
-`Pitch Accent` introduces standard Tokyo Japanese word-pitch contours as movement between low and high morae. Concise teaching examples group contours by whether pitch stays high, falls early, or falls later. Each bundled word plays directly beside one mora-aligned contour. Review begins with audio and a quiet listening window, then reveals the Japanese word, contour, and meaning before the learner marks it `Good` or `Not Yet`. The station remains hidden until Mora Timing is complete.
+The earlier `Nouns`, `Verbs`, and `Adjectives` references are not stations on
+the mapped Foundations network. Their routes remain directly addressable while
+their material is reconsidered around more useful real-world groupings.
+
+`Mora` first defines a mora as one rhythmic timing unit, then presents playable words from the Words station with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division.
+
+`Pitch` introduces standard Tokyo Japanese word-pitch contours as movement between low and high morae. Concise teaching examples group contours by whether pitch stays high, falls early, or falls later. Each bundled word comes from Words and plays directly beside one mora-aligned contour. Review begins with audio and a quiet listening window, then reveals the Japanese word, contour, and meaning before the learner marks it `Good` or `Not Yet`.
 
 All pronunciation is bundled synthetic speech played at its authored speed. Stations record no score. Kana chart and extension tests record only the learner's self-reported knowledge and show it through restrained progress rings on the chart and study rows.
 

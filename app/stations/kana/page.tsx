@@ -11,11 +11,8 @@ export default function KanaPage() {
         <header className="station-heading">
           <div className="station-heading-row">
             <div aria-label="Lines" className="station-memberships">
-              <span className="station-membership station-membership-sound" data-line="sound">
-                Speech
-              </span>
               <span className="station-membership station-membership-writing" data-line="writing">
-                Script
+                Writing
               </span>
             </div>
           </div>

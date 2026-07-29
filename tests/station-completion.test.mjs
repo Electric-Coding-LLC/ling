@@ -1,47 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  retainPrerequisiteCompleteStations,
+  isStationId,
   STATION_IDS,
 } from "../src/modules/learning/stations.ts";
 
-test("station completion follows the prerequisite chain", () => {
-  assert.deepEqual(
-    retainPrerequisiteCompleteStations(STATION_IDS),
-    STATION_IDS,
-  );
-
-  assert.deepEqual(
-    retainPrerequisiteCompleteStations([
-      "mora-timing",
-      "combined-sounds",
-      "katakana",
-      "hiragana",
-      "vowels",
-    ]),
-    ["vowels", "hiragana", "katakana"],
-  );
-
-  assert.deepEqual(
-    retainPrerequisiteCompleteStations([
-      "mora-timing",
-      "combined-sounds",
-      "sound-marks",
-      "katakana",
-      "vowels",
-    ]),
-    ["vowels"],
-  );
-
-  assert.deepEqual(
-    retainPrerequisiteCompleteStations([
-      "pitch-accent",
-      "combined-sounds",
-      "sound-marks",
-      "katakana",
-      "hiragana",
-      "vowels",
-    ]),
-    ["vowels", "hiragana", "katakana", "sound-marks", "combined-sounds"],
-  );
+test("all learning stations are independently addressable", () => {
+  assert.equal(new Set(STATION_IDS).size, STATION_IDS.length);
+  for (const stationId of STATION_IDS) assert.equal(isStationId(stationId), true);
+  assert.equal(isStationId("not-a-station"), false);
 });

@@ -408,11 +408,11 @@ test("the Japan line uses one immediate-feedback reference surface without progr
   );
   assert.match(
     styles,
-    /\.romaji-rule-example,\s*\.station-page-visit \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\]\s*\{[^}]*border-radius:\s*0\.55rem[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 4%, transparent\)/s,
+    /\.romaji-rule-example,\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example,\s*\.station-page-visit \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\]\s*\{[^}]*border-radius:\s*0\.55rem[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 4%, transparent\)/s,
   );
   assert.match(
     styles,
-    /\.station-page-visit \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\]\s*\{[^}]*min-height:\s*6\.25rem[^}]*border:\s*0/s,
+    /\.station-page-visit \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\],\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example\s*\{[^}]*min-height:\s*6\.25rem[^}]*border:\s*0/s,
   );
   assert.match(
     styles,

@@ -219,7 +219,6 @@ type KanaPatternGuideProps = {
   readonly chart: (renderCard: (entry: PatternCard) => ReactNode) => ReactNode;
   readonly flashcards: readonly PatternCard[];
   readonly intro: ReactNode;
-  readonly nextStation: string;
   readonly stationName: string;
   readonly stationSlug: "combined-sounds" | "sound-marks";
 };
@@ -230,7 +229,6 @@ export function SoundMarksGuide() {
       chart={(renderCard) => <SoundMarksChart renderCard={renderCard} />}
       flashcards={SOUND_MARK_FLASHCARDS}
       intro={<p>Dakuten and handakuten are marks added to Kana you already know. Each mark changes the sound of the Kana it sits beside.</p>}
-      nextStation="Yōon"
       stationName="Dakuten & Handakuten"
       stationSlug="sound-marks"
     />
@@ -248,7 +246,6 @@ export function CombinedSoundsGuide() {
           <p>For example, <strong lang="ja">き</strong> is <span lang="ja-Latn">ki</span>. With a small <strong lang="ja">ゃ</strong>, <strong lang="ja">きゃ</strong> is <span lang="ja-Latn">kya</span>—not <span lang="ja-Latn">ki-ya</span>. Katakana follows the same pattern with <strong lang="ja">ャ</strong>, <strong lang="ja">ュ</strong>, and <strong lang="ja">ョ</strong>.</p>
         </>
       )}
-      nextStation="Mora Timing"
       stationName="Yōon"
       stationSlug="combined-sounds"
     />
@@ -259,7 +256,6 @@ function KanaPatternGuide({
   chart,
   flashcards,
   intro,
-  nextStation,
   stationName,
   stationSlug,
 }: KanaPatternGuideProps) {
@@ -511,7 +507,7 @@ function KanaPatternGuide({
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
             <span className="station-membership station-membership-writing" data-line="writing">
-              Script
+              Writing
             </span>
           </div>
           <div className="station-heading-actions">
@@ -631,7 +627,7 @@ function KanaPatternGuide({
         <dialog aria-labelledby={`${stationSlug}-complete-title`} className="station-confirm-dialog" onCancel={(event) => { event.preventDefault(); completeDialogRef.current?.close(); }} ref={completeDialogRef}>
           <div className="station-confirm-modal">
             <h2 id={`${stationSlug}-complete-title`}>Mark {stationName} complete?</h2>
-            <p>This marks all {allEntries.length} patterns in this station as complete and unlocks {nextStation}.</p>
+            <p>This marks all {allEntries.length} patterns in this station as complete.</p>
             <div className="hiragana-test-actions">
               <button className="hiragana-test-answer hiragana-test-answer-no" disabled={bulkKnowledgeAction !== null} onClick={() => completeDialogRef.current?.close()} type="button"><svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8" /></svg><span>Cancel</span></button>
               <button className="hiragana-test-answer hiragana-test-answer-yes" disabled={bulkKnowledgeAction !== null} onClick={() => void setAllKnowledge(true)} type="button"><svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16"><path d="m3 8.5 3 3 7-7" /></svg><span>{bulkKnowledgeAction === "complete" ? "Completing…" : "Complete"}</span></button>
@@ -642,7 +638,7 @@ function KanaPatternGuide({
         <dialog aria-labelledby={`${stationSlug}-reset-title`} className="station-confirm-dialog" onCancel={(event) => { event.preventDefault(); resetDialogRef.current?.close(); }} ref={resetDialogRef}>
           <div className="station-confirm-modal">
             <h2 id={`${stationSlug}-reset-title`}>Reset {stationName}?</h2>
-            <p>This marks all {allEntries.length} patterns in this station as incomplete. Later stations stay hidden until {stationName} is complete again.</p>
+            <p>This marks all {allEntries.length} patterns in this station as incomplete. Your station access will not change.</p>
             <div className="hiragana-test-actions">
               <button className="hiragana-test-answer hiragana-test-answer-no" disabled={bulkKnowledgeAction !== null} onClick={() => resetDialogRef.current?.close()} type="button"><svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8" /></svg><span>Cancel</span></button>
               <button className="hiragana-test-answer station-confirm-reset" disabled={bulkKnowledgeAction !== null} onClick={() => void setAllKnowledge(false)} type="button"><svg aria-hidden="true" className="hiragana-test-answer-icon" viewBox="0 0 16 16"><path d="M12.5 5.5A5 5 0 1 0 13 10" /><path d="M12.5 2.5v3h-3" /></svg><span>{bulkKnowledgeAction === "reset" ? "Resetting…" : "Reset"}</span></button>

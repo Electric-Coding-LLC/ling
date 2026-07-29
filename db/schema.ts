@@ -108,3 +108,18 @@ export const pitchAccentKnowledge = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.itemId] })],
 );
+
+export const vocabularyKnowledge = sqliteTable(
+  "vocabulary_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    stationId: text("station_id").notNull(),
+    itemId: text("item_id").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.stationId, table.itemId] }),
+  ],
+);

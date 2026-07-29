@@ -36,6 +36,10 @@ test("generated migrations create the account-scoped learning boundaries", async
     new URL("drizzle/0007_nostalgic_cargill.sql", root),
     "utf8",
   );
+  const vocabularyKnowledgeMigration = await readFile(
+    new URL("drizzle/0008_great_the_twelve.sql", root),
+    "utf8",
+  );
   const database = new DatabaseSync(":memory:");
   database.exec("PRAGMA foreign_keys = ON");
   database.exec(userMigration);
@@ -46,6 +50,7 @@ test("generated migrations create the account-scoped learning boundaries", async
   database.exec(moraTimingKnowledgeMigration);
   database.exec(pitchAccentKnowledgeMigration);
   database.exec(romajiKnowledgeMigration);
+  database.exec(vocabularyKnowledgeMigration);
 
   const tables = database
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
@@ -61,6 +66,7 @@ test("generated migrations create the account-scoped learning boundaries", async
     "station_introductions",
     "user_identities",
     "users",
+    "vocabulary_knowledge",
   ]);
 
   const foreignKeys = database.prepare("PRAGMA foreign_key_list(user_identities)").all();
@@ -110,6 +116,13 @@ test("generated migrations create the account-scoped learning boundaries", async
   assert.equal(pitchAccentKnowledgeForeignKeys[0].table, "users");
   assert.equal(pitchAccentKnowledgeForeignKeys[0].on_delete, "CASCADE");
 
+  const vocabularyKnowledgeForeignKeys = database
+    .prepare("PRAGMA foreign_key_list(vocabulary_knowledge)")
+    .all();
+  assert.equal(vocabularyKnowledgeForeignKeys.length, 1);
+  assert.equal(vocabularyKnowledgeForeignKeys[0].table, "users");
+  assert.equal(vocabularyKnowledgeForeignKeys[0].on_delete, "CASCADE");
+
   const romajiKnowledgeForeignKeys = database
     .prepare("PRAGMA foreign_key_list(romaji_knowledge)")
     .all();
@@ -137,6 +150,18 @@ test("generated migrations create the account-scoped learning boundaries", async
       "INSERT INTO pitch_accent_knowledge (user_id, item_id, known_at) VALUES (?, ?, ?)",
     ).run("learner-1", "ame-candy", 13);
   }, /UNIQUE constraint failed/);
+
+  database.prepare(
+    "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "words", "neko", 16);
+  assert.throws(() => {
+    database.prepare(
+      "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
+    ).run("learner-1", "words", "neko", 17);
+  }, /UNIQUE constraint failed/);
+  database.prepare(
+    "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "nouns", "neko", 18);
 
   database.prepare(
     "INSERT INTO mora_timing_knowledge (user_id, review_id, known_at) VALUES (?, ?, ?)",
@@ -206,6 +231,10 @@ test("generated migrations create the account-scoped learning boundaries", async
   );
   assert.equal(
     database.prepare("SELECT COUNT(*) AS count FROM pitch_accent_knowledge").get().count,
+    0,
+  );
+  assert.equal(
+    database.prepare("SELECT COUNT(*) AS count FROM vocabulary_knowledge").get().count,
     0,
   );
   assert.equal(

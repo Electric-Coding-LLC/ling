@@ -232,7 +232,7 @@ export function VowelsGuide() {
       <header className="station-heading">
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-writing" data-line="writing">Script</span>
+            <span className="station-membership station-membership-sound" data-line="sound">Sound</span>
           </div>
           <div className="station-heading-actions">
             <StationOptions

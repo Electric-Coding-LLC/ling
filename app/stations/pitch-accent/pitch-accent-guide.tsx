@@ -126,7 +126,7 @@ export function PitchAccentGuide() {
     setAnswerRevealed(false);
     setKnowledgeError(false);
     setReviewIndex(0);
-    setActiveReview({ cards: nextCards, title: "Pitch Accent" });
+    setActiveReview({ cards: nextCards, title: "Pitch" });
     playItem(nextCards[0]);
   }
 
@@ -206,26 +206,26 @@ export function PitchAccentGuide() {
   const knownCount = PITCH_ACCENT_ITEMS.filter((item) => knownItems.has(item.id)).length;
   const remainingCount = PITCH_ACCENT_ITEMS.length - knownCount;
   const reviewLabel = remainingCount === 0
-    ? "Test Pitch Accent. Complete."
-    : `Test Pitch Accent. ${remainingCount} remaining.`;
+    ? "Test Pitch. Complete."
+    : `Test Pitch. ${remainingCount} remaining.`;
 
   return (
     <>
       <header className="station-heading">
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-sound" data-line="sound">Speech</span>
+            <span className="station-membership station-membership-sound" data-line="sound">Sound</span>
           </div>
           <div className="station-heading-actions">
             <StationOptions
               allComplete={remainingCount === 0}
-              completeDescription="This marks all 10 Pitch Accent words as complete."
+              completeDescription="This marks all 6 Pitch words as complete."
               hasProgress={knownCount > 0}
               onError={() => setKnowledgeError(true)}
               onSetComplete={setAllKnowledge}
-              resetDescription="This marks all 10 Pitch Accent words as incomplete."
+              resetDescription="This marks all 6 Pitch words as incomplete."
               stationId="pitch-accent"
-              stationName="Pitch Accent"
+              stationName="Pitch"
             />
             <span className="hiragana-test-trigger-wrap">
               <button
@@ -248,7 +248,7 @@ export function PitchAccentGuide() {
             </span>
           </div>
         </div>
-        <h1>Pitch Accent</h1>
+        <h1>Pitch</h1>
       </header>
 
       <section className="pitch-accent-guide">
@@ -274,7 +274,7 @@ export function PitchAccentGuide() {
               <div className="pitch-example-list">
                 {concept.itemIds.map((id) => {
                   const item = ITEM_BY_ID.get(id);
-                  if (!item) throw new Error(`Missing Pitch Accent item ${id}`);
+                  if (!item) throw new Error(`Missing Pitch item ${id}`);
                   const index = itemIndex(item);
                   const playing = audioPlaying && activeAudioIndex === index;
 
@@ -287,13 +287,13 @@ export function PitchAccentGuide() {
                       onClick={() => playItem(item)}
                       type="button"
                     >
+                      <span className="pitch-example-meaning">{item.meaning}</span>
                       <PitchContour
                         activeMoraIndex={playing ? activeBeatIndex : null}
                         morae={item.morae}
                         pitch={item.pitch}
                         word={item.word}
                       />
-                      <span className="pitch-example-meaning">{item.meaning}</span>
                     </button>
                   );
                 })}
@@ -327,7 +327,7 @@ export function PitchAccentGuide() {
         </section>
 
         {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
-        {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Pitch Accent progress could not sync. Try again.</p> : null}
+        {knowledgeError ? <p className="station-knowledge-error" role="alert">Your Pitch progress could not sync. Try again.</p> : null}
 
         {activeReview && activeCard ? (
           <dialog

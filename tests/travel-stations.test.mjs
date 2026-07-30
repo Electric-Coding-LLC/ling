@@ -12,7 +12,7 @@ import {
   ROMAJI_RULES,
 } from "../src/modules/romaji.ts";
 import {
-  VISIT_STARTER_PHRASES,
+  JAPAN_STARTER_PHRASES,
   TRAVEL_ORIENTATION,
   TRAVEL_PHRASES,
 } from "../src/modules/travel.ts";
@@ -78,9 +78,9 @@ test("the Japan line keeps a compact, source-noted Japanese-first manifest", () 
     }
   }
 
-  assert.equal(VISIT_STARTER_PHRASES.length, 3);
+  assert.equal(JAPAN_STARTER_PHRASES.length, 3);
   assert.deepEqual(
-    VISIT_STARTER_PHRASES.map(({ soundCue }) => soundCue),
+    JAPAN_STARTER_PHRASES.map(({ soundCue }) => soundCue),
     [
       "soo mee mah seh nn",
       "ah ree gah toh oo goh zah ee mah s",
@@ -165,13 +165,13 @@ test("the Japan line keeps a compact, source-noted Japanese-first manifest", () 
   );
   assert.equal(
     new Set([
-      ...VISIT_STARTER_PHRASES,
+      ...JAPAN_STARTER_PHRASES,
       ...TRAVEL_PHRASES.introductions,
     ].map(({ id }) => id)).size,
-    VISIT_STARTER_PHRASES.length + TRAVEL_PHRASES.introductions.length,
+    JAPAN_STARTER_PHRASES.length + TRAVEL_PHRASES.introductions.length,
   );
   assert.equal(TRAVEL_ORIENTATION.japanese.japanese, "日本語");
-  assert.equal(TRAVEL_ORIENTATION.visit.japanese, "日本");
+  assert.equal(TRAVEL_ORIENTATION.japan.japanese, "日本");
 });
 
 test("Rōmaji mirrors the Kana chart and tests each hidden reading", async () => {
@@ -349,7 +349,7 @@ test("the Japan line uses one immediate-feedback reference surface without progr
     new URL("app/styles/stations.css", root),
     "utf8",
   );
-  const stations = ["japanese", "visit", "introductions", "navigation", "food", "shopping", "help"];
+  const stations = ["japanese", "japan", "introductions", "navigation", "food", "shopping", "help"];
 
   assert.match(component, /useFlashcardAudio\(\)/);
   assert.match(component, /onClick=\{\(\) => playAudio\(\{\s*index,\s*src: item\.audio/);
@@ -408,15 +408,15 @@ test("the Japan line uses one immediate-feedback reference surface without progr
   );
   assert.match(
     styles,
-    /\.romaji-rule-example,\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example,\s*\.station-page-visit \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\]\s*\{[^}]*border-radius:\s*0\.55rem[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 4%, transparent\)/s,
+    /\.romaji-rule-example,\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example,\s*\.station-page-japan \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\]\s*\{[^}]*border-radius:\s*0\.55rem[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 4%, transparent\)/s,
   );
   assert.match(
     styles,
-    /\.station-page-visit \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\],\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example\s*\{[^}]*min-height:\s*6\.25rem[^}]*border:\s*0/s,
+    /\.station-page-japan \.travel-reference-item\[data-framed="true"\],\s*\.station-page-introductions \.travel-reference-item\[data-framed="true"\],\s*\.station-page-navigation \.travel-reference-item\[data-framed="true"\],\s*\.station-page-food \.travel-reference-item\[data-framed="true"\],\s*\.station-page-shopping \.travel-reference-item\[data-framed="true"\],\s*\.station-page-help \.travel-reference-item\[data-framed="true"\],\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example\s*\{[^}]*min-height:\s*6\.25rem[^}]*border:\s*0/s,
   );
   assert.match(
     styles,
-    /\.station-page-visit\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-introductions\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-navigation\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-food\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-shopping\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-help\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\)\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 7%, transparent\)/s,
+    /\.station-page-japan\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-introductions\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-navigation\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-food\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-shopping\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\),\s*\.station-page-help\s*\.travel-reference-item\[data-framed="true"\]:hover:not\(\[data-playing="true"\]\)\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 7%, transparent\)/s,
   );
 
   for (const station of stations) {
@@ -437,14 +437,14 @@ test("the Japan line uses one immediate-feedback reference surface without progr
     if (station === "japanese") {
       assert.doesNotMatch(page, /items=\{/);
     } else {
-      assert.match(page, /items=\{(?:TRAVEL_PHRASES\.|VISIT_STARTER_PHRASES\})/);
+      assert.match(page, /items=\{(?:TRAVEL_PHRASES\.|JAPAN_STARTER_PHRASES\})/);
     }
     if (["introductions", "navigation", "food", "shopping", "help"].includes(station)) {
       assert.match(page, /showPronunciation/);
     } else {
       assert.doesNotMatch(page, /showPronunciation/);
     }
-    if (station === "visit") {
+    if (station === "japan") {
       assert.match(page, /<TravelStation\s+framed/);
       assert.match(page, /showSoundCues/);
     } else {
@@ -462,8 +462,8 @@ test("the Japan line uses one immediate-feedback reference surface without progr
 test("every Japan line transcript has a playable bundled PCM asset", async () => {
   const items = [
     TRAVEL_ORIENTATION.japanese,
-    TRAVEL_ORIENTATION.visit,
-    ...VISIT_STARTER_PHRASES,
+    TRAVEL_ORIENTATION.japan,
+    ...JAPAN_STARTER_PHRASES,
     ...Object.values(TRAVEL_PHRASES).flat(),
   ];
   assert.equal(items.length, 43);

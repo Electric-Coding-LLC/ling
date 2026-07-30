@@ -206,9 +206,12 @@ export function RomajiGuide({
     <>
       <header className="station-heading">
         <div className="station-heading-row">
-          <div aria-label="Network role" className="station-memberships">
-            <span className="station-membership station-membership-connector">
-              Connector
+          <div aria-label="Network line" className="station-memberships">
+            <span
+              className="station-membership station-membership-foundation"
+              data-line="foundation"
+            >
+              Foundations
             </span>
           </div>
           <div className="station-heading-actions">

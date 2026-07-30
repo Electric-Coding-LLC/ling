@@ -36,8 +36,8 @@ test("the root route has a branded, accessible loading state", async () => {
     new URL("app/stations/romaji/loading.tsx", root),
     "utf8",
   );
-  const visitLoading = await readFile(
-    new URL("app/stations/visit/loading.tsx", root),
+  const japanLoading = await readFile(
+    new URL("app/stations/japan/loading.tsx", root),
     "utf8",
   );
   const navigationFeedback = await readFile(
@@ -65,11 +65,17 @@ test("the root route has a branded, accessible loading state", async () => {
     assert.match(vocabularyLoadings[index], new RegExp(`<LoadingScreen station="${station}" \\/>`));
   }
   assert.match(romajiLoading, /<LoadingScreen station="Rōmaji" \/>/);
-  assert.match(visitLoading, /<LoadingScreen station="Visit" \/>/);
+  assert.match(japanLoading, /<LoadingScreen station="Japan" \/>/);
   assert.doesNotMatch(loadingStyles, /--loading-accent|\.loading-shell\[data-station=/);
-  assert.match(navigationFeedback, /<RouteReadyContext value=\{completeNavigation\}>/);
+  assert.match(
+    navigationFeedback,
+    /<NavigationFeedbackContext value=\{beginNavigation\}>[\s\S]*<RouteReadyContext value=\{completeNavigation\}>/,
+  );
   assert.match(navigationFeedback, /const pathname = usePathname\(\)/);
-  assert.doesNotMatch(navigationFeedback, /LoadingScreen|showBootLoader|hasReachedReadyRoute/);
+  assert.match(
+    navigationFeedback,
+    /\{pending \? <LoadingScreen overlay station=\{pending\.station\} \/> : null\}/,
+  );
   assert.match(networkMap, /<LoadingScreen boot overlay \/>/);
   assert.match(
     navigationFeedback,
@@ -83,6 +89,11 @@ test("the root route has a branded, accessible loading state", async () => {
   );
   assert.match(navigationFeedback, /if \(pathname !== "\/"\) onComplete\(\)/);
   assert.match(navigationFeedback, /document\.documentElement\.dataset\.lingReady = "true"/);
+  assert.match(navigationFeedback, /setPending\(null\)/);
+  assert.match(
+    navigationFeedback,
+    /flushSync\(\(\) => startNavigation\(loadingStation\)\)/,
+  );
   assert.match(
     navigationFeedback,
     /\.querySelector\("\.loading-shell-boot"\)[\s\S]*\.setAttribute\("data-ling-departing", "true"\)/,
@@ -92,10 +103,7 @@ test("the root route has a branded, accessible loading state", async () => {
     navigationFeedback,
     /event\.metaKey[\s\S]*event\.ctrlKey[\s\S]*event\.shiftKey[\s\S]*event\.altKey[\s\S]*target !== "_self"/,
   );
-  assert.doesNotMatch(
-    navigationFeedback,
-    /NavigationFeedbackContext|pending|loadingVisible|flushSync/,
-  );
+  assert.doesNotMatch(navigationFeedback, /loadingVisible|showBootLoader|hasReachedReadyRoute/);
 
   assert.match(loadingStyles, /\.loading-shell\s*\{[^}]*min-height:\s*100dvh/s);
   assert.match(

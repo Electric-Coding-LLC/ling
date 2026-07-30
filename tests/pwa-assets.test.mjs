@@ -35,8 +35,8 @@ test("manifest declares a standalone app with content-addressed icons", async ()
   assert.equal(manifest.start_url, "/");
   assert.equal(manifest.scope, "/");
   assert.equal(manifest.display, "standalone");
-  assert.equal(manifest.background_color, "#11110f");
-  assert.equal(manifest.theme_color, "#11110f");
+  assert.equal(manifest.background_color, "#171714");
+  assert.equal(manifest.theme_color, "#171714");
 
   for (const icon of manifest.icons) {
     const bytes = await readPublicAsset(icon.src);
@@ -46,6 +46,36 @@ test("manifest declares a standalone app with content-addressed icons", async ()
     assert.equal(bytes.readUInt32BE(16), expectedWidth);
     assert.equal(bytes.readUInt32BE(20), expectedHeight);
   }
+});
+
+test("Safari cold launches use content-addressed Ling startup artwork", async () => {
+  const layout = await readFile(new URL("app/layout.tsx", root), "utf8");
+  const startupImageBase = layout.match(
+    /safariStartupImageBase\s*=\s*"(https:\/\/raw\.githubusercontent\.com\/[^"]+)"/,
+  );
+  const startupImages = [...layout.matchAll(
+    /url:\s*`\$\{safariStartupImageBase\}\/([^`]+)`,\s*media:\s*"\(device-width: (\d+)px\) and \(device-height: (\d+)px\) and \(-webkit-device-pixel-ratio: (\d+)\)"/g,
+  )];
+
+  assert.match(layout, /startupImage:\s*safariStartupImages/);
+  assert.equal(
+    startupImageBase?.[1],
+    "https://raw.githubusercontent.com/Electric-Coding-LLC/ling/main/public/launch",
+  );
+  assert.equal(startupImages.length, 13);
+  assert.equal(new Set(startupImages.map((match) => match[1])).size, 13);
+
+  for (const [, filename, logicalWidth, logicalHeight, pixelRatio] of startupImages) {
+    const path = `/launch/${filename}`;
+    assert.match(path, /^\/launch\/ling-launch-\d+x\d+-\d+x-[a-f0-9]{8}\.png$/);
+
+    const bytes = await readPublicAsset(path);
+    assertContentAddressed(path, bytes, ".png");
+    assert.equal(bytes.readUInt32BE(16), Number(logicalWidth) * Number(pixelRatio));
+    assert.equal(bytes.readUInt32BE(20), Number(logicalHeight) * Number(pixelRatio));
+  }
+
+  assert.match(layout, /themeColor:\s*"#171714"/);
 });
 
 test("browser icons use content-addressed Ling branding", async () => {

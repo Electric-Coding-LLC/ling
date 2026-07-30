@@ -62,13 +62,20 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     );
   }
   assert.match(source, /data-category-station=\{line\}/);
-  assert.match(source, /data-network-focus=\{focus\}[\s\S]*onFocus=\{onFocus\}[\s\S]*tabIndex=\{-1\}/);
+  assert.match(
+    source,
+    /data-network-focus=\{href \? undefined : focus\}[\s\S]*onFocus=\{href \? undefined : onFocus\}[\s\S]*tabIndex=\{href \? undefined : -1\}/,
+  );
   assert.match(source, /fill=\{`url\(#\$\{backlightId\}-\$\{line\}\)`\}[\s\S]*r="58"/);
   assert.match(source, /<NetworkStationSymbol kind=\{line\} \/>/);
   assert.match(source, /className="network-station-label network-station-label-left"/);
   assert.match(source, /textAnchor="end"[\s\S]*x="-34"[\s\S]*\{label\}/);
+  assert.match(
+    source,
+    /className="network-station-label network-foundation-title"[\s\S]*textAnchor="middle"[\s\S]*x=\{spineX\}[\s\S]*y="52"[\s\S]*Foundations/,
+  );
   assert.doesNotMatch(source, /network-category-junction|<rect/);
-  assert.doesNotMatch(source, /network-line-label|network-foundation-title/);
+  assert.doesNotMatch(source, /network-line-label/);
 
   assert.match(source, /function roundedBranchPath\(/);
   assert.match(source, /if \(startY === endY\) return `M\$\{startX\} \$\{startY\}H\$\{endX\}`/);
@@ -78,12 +85,42 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /Q\$\{turnX\} \$\{endY\} \$\{turnX \+ cornerRadius\} \$\{endY\}/);
   assert.match(source, /d=\{roundedBranchPath\(\{/);
   assert.match(source, /\{japanPeerYs\.map\(\(peerY\) =>/);
-  assert.match(source, /startY: JAPAN_Y,\s*turnX: forkX/);
+  assert.match(source, /const japanStationX = depthOneX \+ 60/);
+  assert.match(source, /const japanForkX = spineX \+ 92/);
+  assert.match(source, /const japanBranchStartX = japanForkX - 16/);
+  assert.match(
+    source,
+    /endX: japanStationX,[\s\S]*startX: japanBranchStartX,[\s\S]*startY: JAPAN_Y,[\s\S]*turnX: japanForkX/,
+  );
+  assert.match(
+    styles,
+    /\.network-mobile-track-japan,[\s\S]*\.network-mobile-track-help\s*\{[^}]*transform:\s*translateX\(-28%\)/s,
+  );
   assert.match(source, /className=\{`network-line network-line-\$\{line\}`\}/);
   assert.match(styles, /\.network-line\s*\{[^}]*stroke-width:\s*4[^}]*stroke-linecap:\s*round[^}]*stroke-linejoin:\s*round/s);
   assert.match(styles, /\.network-line-foundation\s*\{[^}]*stroke:\s*var\(--foreground\)[^}]*stroke-width:\s*4/s);
   assert.match(styles, /\.network-station-label\s*\{[^}]*font-size:\s*20px/s);
+  assert.match(
+    styles,
+    /\.network-foundation-title\s*\{[^}]*font-size:\s*24px[^}]*font-weight:\s*600/s,
+  );
   assert.match(styles, /@media \(max-width: 600px\)[\s\S]*\.network-station-label\s*\{[^}]*font-size:\s*18px/s);
+  assert.match(
+    styles,
+    /@media \(max-width: 600px\)[\s\S]*\.network-foundation-title\s*\{[^}]*font-size:\s*22px/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-outer\s*\{[^}]*r:\s*20px/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-inner\s*\{[^}]*r:\s*9\.5px/s,
+  );
+  assert.match(
+    styles,
+    /\.network-topbar\s*\{[^}]*position:\s*sticky[^}]*z-index:\s*20[^}]*top:\s*0[^}]*background:\s*var\(--surface\)/s,
+  );
   assert.match(styles, /\.network-home\s*\{[^}]*overflow-x:\s*clip/s);
   assert.doesNotMatch(styles, /\.network-home\s*\{[^}]*overflow:\s*hidden/s);
 
@@ -94,12 +131,20 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /type CategoryFocus = "japan" \| "sound" \| "vocabulary" \| "writing"/);
   assert.match(source, /type LinkedStationFocus = Exclude<StationFocus, CategoryFocus>/);
   assert.match(source, /ROUTABLE_STATION_HREFS: Record<LinkedStationFocus, string>/);
+  assert.match(source, /if \(focus === "visit"\) return "japan"/);
   assert.match(source, /return focus && focus in STATION_LABELS/);
+  assert.match(
+    source,
+    /<CategoryStation[\s\S]*focus="japan"[\s\S]*href="\/stations\/japan"/,
+  );
+  assert.match(
+    source,
+    /\{href \? <circle className="network-station-hit" r="48" \/> : null\}/,
+  );
 
   for (const [focus, href] of Object.entries({
     japanese: "/stations/japanese",
     romaji: "/stations/romaji",
-    visit: "/stations/visit",
     introductions: "/stations/introductions",
     navigation: "/stations/navigation",
     food: "/stations/food",
@@ -124,11 +169,10 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /focus === "nouns" \|\| focus === "verbs" \|\| focus === "adjectives"\) return "words"/);
   assert.match(source, /japanese:\s*\{ ArrowDown: "romaji" \}/);
   assert.match(source, /romaji:\s*\{ ArrowDown: "japan", ArrowUp: "japanese" \}/);
-  assert.match(source, /japan:\s*\{ ArrowDown: "sound", ArrowRight: "visit", ArrowUp: "romaji" \}/);
-  assert.match(source, /visit:\s*\{ ArrowDown: "vowels", ArrowLeft: "japan", ArrowRight: "food" \}/);
-  assert.match(source, /help:\s*\{ ArrowDown: "mora", ArrowLeft: "visit", ArrowUp: "shopping" \}/);
+  assert.match(source, /japan:\s*\{ ArrowDown: "sound", ArrowRight: "food", ArrowUp: "romaji" \}/);
+  assert.match(source, /help:\s*\{ ArrowDown: "mora", ArrowLeft: "japan", ArrowUp: "shopping" \}/);
   assert.match(source, /sound:\s*\{ ArrowDown: "writing", ArrowRight: "vowels", ArrowUp: "japan" \}/);
-  assert.match(source, /vowels:\s*\{ ArrowDown: "kana", ArrowLeft: "sound", ArrowRight: "mora", ArrowUp: "visit" \}/);
+  assert.match(source, /vowels:\s*\{ ArrowDown: "kana", ArrowLeft: "sound", ArrowRight: "mora", ArrowUp: "japan" \}/);
   assert.match(source, /mora:\s*\{ ArrowDown: "hiragana", ArrowLeft: "vowels", ArrowRight: "pitch", ArrowUp: "help" \}/);
   assert.match(source, /pitch:\s*\{ ArrowDown: "marks", ArrowLeft: "mora" \}/);
   assert.match(source, /writing:\s*\{ ArrowDown: "vocabulary", ArrowRight: "kana", ArrowUp: "sound" \}/);
@@ -154,7 +198,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /`\[data-network-focus="\$\{focus\}"\]`/);
   assert.match(source, /"\[data-network-focus\]:focus"/);
   assert.match(source, /selectedTarget instanceof SVGAElement/);
-  assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*href=\{ROUTABLE_STATION_HREFS\[focus\]\}[\s\S]*prefetch/);
+  assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*href=\{ROUTABLE_STATION_HREFS\[focus\]\}[\s\S]*loadingStation=\{label\}[\s\S]*prefetch/);
   assert.match(styles, /data-desktop-focus="japan"[\s\S]*data-network-focus="japan"[\s\S]*network-station-backlight/);
   assert.match(styles, /data-mobile-station-focus="vocabulary"[\s\S]*data-network-focus="vocabulary"[\s\S]*network-station-backlight/);
   assert.match(styles, /\.network-category-station:focus-visible \.network-station-backlight,[\s\S]*\.network-station-link:focus-visible \.network-station-backlight/);
@@ -179,6 +223,9 @@ test("station map glyphs reflect each station's network position", async () => {
   assert.equal(NETWORK_GLYPH_DEFINITIONS.kana.topology, "horizontal-through");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.words.topology, "horizontal-terminal");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.topology, "vertical-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.lines.main, "station-map-foundation");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.romaji.lines.main, "station-map-foundation");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.topology, "horizontal-through");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.vowels.lines.main, "station-map-sound");
 
   for (const [position, definition] of Object.entries(NETWORK_GLYPH_DEFINITIONS)) {

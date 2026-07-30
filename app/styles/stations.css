@@ -62,8 +62,8 @@
   stroke-width: 3;
 }
 
-.station-map-local {
-  stroke: var(--muted);
+.station-map-foundation {
+  stroke: var(--foreground);
   stroke-width: 3;
 }
 
@@ -290,8 +290,8 @@
   color: var(--travel);
 }
 
-.station-membership-connector::before {
-  height: 0.125rem;
+.station-membership-foundation {
+  color: var(--foreground);
 }
 
 .station-heading h1 {
@@ -397,7 +397,7 @@
   font-weight: 600;
 }
 
-.station-page-visit .travel-reference,
+.station-page-japan .travel-reference,
 .station-page-introductions .travel-reference,
 .station-page-navigation .travel-reference,
 .station-page-food .travel-reference,
@@ -408,7 +408,7 @@
   margin-top: 0;
 }
 
-.station-page-visit .travel-reference-list,
+.station-page-japan .travel-reference-list,
 .station-page-introductions .travel-reference-list,
 .station-page-navigation .travel-reference-list,
 .station-page-food .travel-reference-list,
@@ -662,7 +662,7 @@
 .romaji-rule-example,
 .station-page-mora .mora-example,
 .station-page-pitch-accent .pitch-example,
-.station-page-visit .travel-reference-item[data-framed="true"],
+.station-page-japan .travel-reference-item[data-framed="true"],
 .station-page-introductions .travel-reference-item[data-framed="true"],
 .station-page-navigation .travel-reference-item[data-framed="true"],
 .station-page-food .travel-reference-item[data-framed="true"],
@@ -672,7 +672,7 @@
   background: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
-.station-page-visit .travel-reference-item[data-framed="true"],
+.station-page-japan .travel-reference-item[data-framed="true"],
 .station-page-introductions .travel-reference-item[data-framed="true"],
 .station-page-navigation .travel-reference-item[data-framed="true"],
 .station-page-food .travel-reference-item[data-framed="true"],
@@ -1145,7 +1145,7 @@
     background: color-mix(in srgb, var(--surface) 97%, var(--foreground));
   }
 
-  .station-page-visit
+  .station-page-japan
     .travel-reference-item[data-framed="true"]:hover:not([data-playing="true"]),
   .station-page-introductions
     .travel-reference-item[data-framed="true"]:hover:not([data-playing="true"]),

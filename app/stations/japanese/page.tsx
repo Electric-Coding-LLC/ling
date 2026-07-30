@@ -60,13 +60,16 @@ export default function JapanesePage() {
                 Visiting Japan? Start with{" "}
                 <NavigationLink
                   href="/stations/romaji"
+                  loadingStation="Rōmaji"
                 >
                   Rōmaji
                 </NavigationLink>{" "}
-                on the Japan line, then use it to read the phrases that follow.
+                on the Foundations spine, then use it to read the phrases that
+                follow.
               </p>
             </section>,
           ]}
+          line="Foundations"
           title="Japanese"
         />
       </div>

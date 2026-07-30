@@ -59,7 +59,11 @@ test("server-renders the Ling network home", async () => {
     );
     assert.match(html, new RegExp(`>${station}<`, "i"));
   }
-  assert.doesNotMatch(html, /<text[^>]*class="network-line-label|<text[^>]*class="network-foundation-title|>FOUNDATIONS<\/text>/i);
+  assert.match(
+    html,
+    /<text[^>]*class="network-station-label network-foundation-title"[^>]*>Foundations<\/text>/i,
+  );
+  assert.doesNotMatch(html, /<text[^>]*class="network-line-label/i);
   assert.match(html, /data-network-view="desktop"/i);
   assert.match(html, /class="network-desktop-viewport"[^>]*tabindex="0"/i);
   assert.doesNotMatch(html, /class="network-map network-map-desktop"[^>]*tabindex=/i);
@@ -73,7 +77,7 @@ test("server-renders the Ling network home", async () => {
   assert.doesNotMatch(html, /data-station="kana-extensions"/i);
   for (const station of [
     "japanese",
-    "visit",
+    "japan",
     "romaji",
     "introductions",
     "navigation",
@@ -118,18 +122,17 @@ test("server-renders the Ling network home", async () => {
 });
 
 test("station documents do not render the map boot overlay", async () => {
-  const response = await request("/stations/visit");
+  const response = await request("/stations/japan");
   assert.equal(response.status, 200);
 
   const html = await response.text();
   assert.doesNotMatch(html, /class="loading-shell loading-shell-overlay loading-shell-boot"/i);
-  assert.match(html, /<h1>Visit<\/h1>/);
+  assert.match(html, /<h1>Japan<\/h1>/);
 });
 
-test("the retired Japan station route leads to Visit", async () => {
-  const response = await request("/stations/japan");
-  assert.ok([307, 308].includes(response.status));
-  assert.match(response.headers.get("location") ?? "", /\/stations\/visit$/i);
+test("the removed Visit station route is not addressable", async () => {
+  const response = await request("/stations/visit");
+  assert.equal(response.status, 404);
 });
 
 test("server-renders the reusable Welcome to Ling guide outside the station network", async () => {
@@ -169,10 +172,10 @@ test("server-renders the complete network without private availability", async (
   assert.doesNotMatch(html, /\/api\/stations\/availability|Network unavailable/i);
 });
 
-test("the Japan area stations and Connector are always available without progression", async () => {
+test("the Foundations and Japan area stations are always available without progression", async () => {
   for (const station of [
     "japanese",
-    "visit",
+    "japan",
     "romaji",
     "introductions",
     "navigation",
@@ -190,17 +193,17 @@ test("the Japan area stations and Connector are always available without progres
         ? "Rōmaji"
         : station[0].toUpperCase() + station.slice(1);
     assert.match(html, new RegExp(`<h1>${title}</h1>`, "i"));
-    if (station === "romaji") {
-      assert.match(html, /aria-label="Network role"/);
-      assert.match(html, /station-membership station-membership-connector/);
-      assert.match(html, /station-membership station-membership-connector">Connector<\/span>/);
+    if (station === "japanese" || station === "romaji") {
+      assert.match(html, /aria-label="Network line"/);
+      assert.match(html, /station-membership station-membership-foundation/);
+      assert.match(html, /data-line="foundation">Foundations<\/span>/);
       assert.doesNotMatch(html, /station-membership station-membership-travel/);
-      assert.doesNotMatch(html, /station-membership station-membership-writing/);
+      assert.doesNotMatch(html, />Connector<\/span>/);
     } else {
       assert.match(html, /station-membership station-membership-travel/);
-      assert.match(html, /station-membership station-membership-travel">Japan<\/span>/);
+      assert.match(html, /data-line="travel">Japan<\/span>/);
     }
-    if (station === "japanese" || station === "visit") {
+    if (station === "japanese" || station === "japan") {
       if (station === "japanese") {
         assert.doesNotMatch(html, /travel-reference/);
         assert.match(html, /station-page station-page-travel station-page-japanese/);
@@ -225,7 +228,7 @@ test("the Japan area stations and Connector are always available without progres
         assert.doesNotMatch(html, /<dt>Rōmaji<\/dt>/i);
         assert.match(html, /Visiting Japan\? Start with/);
         assert.match(html, /<a href="\/stations\/romaji">Rōmaji<\/a>/);
-        assert.match(html, /on the Japan line, then use it to read the phrases that follow\./);
+        assert.match(html, /on the Foundations spine, then use it to read the phrases that follow\./);
         assert.doesNotMatch(html, /As you continue, you’ll encounter:|Sounds, listening, and spoken Japanese|Hiragana, katakana, and written Japanese/);
         assert.doesNotMatch(html, /Sound, writing, and context|Listen for a steady rhythm|日本語のクラス|ありがとうございます/i);
       } else {

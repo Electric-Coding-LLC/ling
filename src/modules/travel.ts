@@ -23,14 +23,14 @@ export const TRAVEL_ORIENTATION = {
     japanese: "日本語",
     meaning: "Japanese",
   },
-  visit: {
+  japan: {
     audio: "/audio/ja-travel-nihon.wav",
     japanese: "日本",
     meaning: "Japan",
   },
 } as const;
 
-export const VISIT_STARTER_PHRASES: readonly TravelPhrase[] = [
+export const JAPAN_STARTER_PHRASES: readonly TravelPhrase[] = [
   {
     id: "sumimasen",
     japanese: "すみません",

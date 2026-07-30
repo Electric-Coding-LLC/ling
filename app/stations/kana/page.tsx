@@ -35,7 +35,9 @@ export default function KanaPage() {
 
           <p className="kana-table-intro">
             Begin with the five shared sounds at{" "}
-            <NavigationLink href="/stations/vowels">Vowels</NavigationLink>.
+            <NavigationLink href="/stations/vowels" loadingStation="Vowels">
+              Vowels
+            </NavigationLink>.
           </p>
         </section>
       </div>

@@ -19,6 +19,7 @@ export function TravelStation({
   framed = false,
   intro = [],
   items = [],
+  line = "Japan",
   review = false,
   showPronunciation = false,
   showSoundCues = false,
@@ -27,6 +28,7 @@ export function TravelStation({
   framed?: boolean;
   intro?: readonly (string | ReactElement)[];
   items?: readonly TravelReferenceItem[];
+  line?: "Foundations" | "Japan";
   review?: boolean;
   showPronunciation?: boolean;
   showSoundCues?: boolean;
@@ -92,9 +94,16 @@ export function TravelStation({
     <section className="travel-guide">
       <header className="station-heading">
         <div className="station-heading-row">
-          <div className="station-memberships">
-            <span className="station-membership station-membership-travel">
-              Japan
+          <div aria-label="Network line" className="station-memberships">
+            <span
+              className={`station-membership ${
+                line === "Foundations"
+                  ? "station-membership-foundation"
+                  : "station-membership-travel"
+              }`}
+              data-line={line === "Foundations" ? "foundation" : "travel"}
+            >
+              {line}
             </span>
           </div>
           {review ? (

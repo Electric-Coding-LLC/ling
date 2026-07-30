@@ -4,8 +4,12 @@
 }
 
 .network-topbar {
+  position: sticky;
+  z-index: 20;
+  top: 0;
   justify-content: space-between;
   gap: 1rem;
+  background: var(--surface);
 }
 
 .network-help-link {
@@ -85,9 +89,6 @@
 .network-desktop-viewport:focus-visible[data-desktop-focus="romaji"]
   [data-station="romaji"]
   .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="visit"]
-  [data-station="visit"]
-  .network-station-backlight,
 .network-desktop-viewport:focus-visible[data-desktop-focus="japanese"]
   [data-station="japanese"]
   .network-station-backlight,
@@ -134,6 +135,12 @@
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   font-size: 20px;
   font-weight: 500;
+}
+
+.network-foundation-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .network-line {
@@ -314,9 +321,6 @@
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="romaji"]
     [data-station="romaji"]
     .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="visit"]
-    [data-station="visit"]
-    .network-station-backlight,
   .network-mobile-viewport:focus-visible[data-mobile-station-focus="japanese"]
     [data-station="japanese"]
     .network-station-backlight,
@@ -360,11 +364,15 @@
     transition: transform 220ms ease;
   }
 
+  .network-mobile-track-japan,
   .network-mobile-track-introductions,
   .network-mobile-track-navigation,
   .network-mobile-track-food,
   .network-mobile-track-shopping,
-  .network-mobile-track-help,
+  .network-mobile-track-help {
+    transform: translateX(-28%);
+  }
+
   .network-mobile-track-mora,
   .network-mobile-track-hiragana,
   .network-mobile-track-katakana {
@@ -379,6 +387,18 @@
 
   .network-station-label {
     font-size: 18px;
+  }
+
+  .network-foundation-title {
+    font-size: 22px;
+  }
+
+  .network-map-mobile .network-single-station-outer {
+    r: 20px;
+  }
+
+  .network-map-mobile .network-single-station-inner {
+    r: 9.5px;
   }
 
 }

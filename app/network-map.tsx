@@ -23,7 +23,6 @@ export type StationFocus =
   | "romaji"
   | "shopping"
   | "sound"
-  | "visit"
   | "vowels"
   | "vocabulary"
   | "writing"
@@ -53,7 +52,6 @@ const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
 const ROUTABLE_STATION_HREFS: Record<LinkedStationFocus, string> = {
   japanese: "/stations/japanese",
   romaji: "/stations/romaji",
-  visit: "/stations/visit",
   introductions: "/stations/introductions",
   navigation: "/stations/navigation",
   food: "/stations/food",
@@ -74,7 +72,6 @@ const STATION_LABELS: Record<StationFocus, string> = {
   japanese: "Japanese",
   romaji: "Rōmaji",
   japan: "Japan",
-  visit: "Visit",
   introductions: "Introductions",
   navigation: "Navigation",
   food: "Food",
@@ -100,15 +97,14 @@ const STATION_NEIGHBORS: Record<
 > = {
   japanese: { ArrowDown: "romaji" },
   romaji: { ArrowDown: "japan", ArrowUp: "japanese" },
-  japan: { ArrowDown: "sound", ArrowRight: "visit", ArrowUp: "romaji" },
-  visit: { ArrowDown: "vowels", ArrowLeft: "japan", ArrowRight: "food" },
-  introductions: { ArrowDown: "navigation", ArrowLeft: "visit" },
-  navigation: { ArrowDown: "food", ArrowLeft: "visit", ArrowUp: "introductions" },
-  food: { ArrowDown: "shopping", ArrowLeft: "visit", ArrowUp: "navigation" },
-  shopping: { ArrowDown: "help", ArrowLeft: "visit", ArrowUp: "food" },
-  help: { ArrowDown: "mora", ArrowLeft: "visit", ArrowUp: "shopping" },
+  japan: { ArrowDown: "sound", ArrowRight: "food", ArrowUp: "romaji" },
+  introductions: { ArrowDown: "navigation", ArrowLeft: "japan" },
+  navigation: { ArrowDown: "food", ArrowLeft: "japan", ArrowUp: "introductions" },
+  food: { ArrowDown: "shopping", ArrowLeft: "japan", ArrowUp: "navigation" },
+  shopping: { ArrowDown: "help", ArrowLeft: "japan", ArrowUp: "food" },
+  help: { ArrowDown: "mora", ArrowLeft: "japan", ArrowUp: "shopping" },
   sound: { ArrowDown: "writing", ArrowRight: "vowels", ArrowUp: "japan" },
-  vowels: { ArrowDown: "kana", ArrowLeft: "sound", ArrowRight: "mora", ArrowUp: "visit" },
+  vowels: { ArrowDown: "kana", ArrowLeft: "sound", ArrowRight: "mora", ArrowUp: "japan" },
   mora: { ArrowDown: "hiragana", ArrowLeft: "vowels", ArrowRight: "pitch", ArrowUp: "help" },
   pitch: { ArrowDown: "marks", ArrowLeft: "mora" },
   writing: { ArrowDown: "vocabulary", ArrowRight: "kana", ArrowUp: "sound" },
@@ -130,6 +126,7 @@ type NetworkViewProps = {
 };
 
 function normalizeStationFocus(focus: string | null): StationFocus | null {
+  if (focus === "visit") return "japan";
   if (focus === "pitch-accent") return "pitch";
   if (focus === "mora-timing") return "mora";
   if (focus === "sound-marks" || focus === "kana-extensions") return "marks";
@@ -216,6 +213,7 @@ function LinkedStation({
       className="network-station-link"
       data-network-focus={focus}
       href={ROUTABLE_STATION_HREFS[focus]}
+      loadingStation={label}
       onFocus={onFocus}
       onPointerLeave={onPointerLeave}
       prefetch
@@ -337,6 +335,7 @@ function CategoryStation({
   focus,
   label,
   line,
+  href,
   onFocus,
   spineX,
   y,
@@ -345,18 +344,21 @@ function CategoryStation({
   focus: CategoryFocus;
   label: string;
   line: Exclude<LineRole, "foundation">;
+  href?: string;
   onFocus: () => void;
   spineX: number;
   y: number;
 }) {
-  return (
+  const station = (
     <g
       aria-label={`${label} station`}
       className="network-category-station"
       data-category-station={line}
-      data-network-focus={focus}
-      onFocus={onFocus}
-      tabIndex={-1}
+      data-network-focus={href ? undefined : focus}
+      data-station={href ? focus : undefined}
+      data-station-kind={href ? "single-line" : undefined}
+      onFocus={href ? undefined : onFocus}
+      tabIndex={href ? undefined : -1}
       transform={`translate(${spineX} ${y})`}
     >
       <circle
@@ -374,7 +376,24 @@ function CategoryStation({
       >
         {label}
       </text>
+      {href ? <circle className="network-station-hit" r="48" /> : null}
     </g>
+  );
+
+  if (!href) return station;
+
+  return (
+    <NavigationLink
+      aria-label={`Open ${label}`}
+      className="network-station-link"
+      data-network-focus={focus}
+      href={href}
+      loadingStation={label}
+      onFocus={onFocus}
+      prefetch
+    >
+      {station}
+    </NavigationLink>
   );
 }
 
@@ -398,7 +417,10 @@ function NetworkView({
   const writingLowerY = WRITING_Y + 70;
   const writingFinalUpperY = WRITING_Y - 54;
   const writingFinalLowerY = WRITING_Y + 54;
-  const forkX = depthOneX + 92;
+  const japanStationX = depthOneX + 60;
+  const japanForkX = spineX + 92;
+  const japanBranchStartX = japanForkX - 16;
+  const writingForkX = depthOneX + 92;
   const mergeX = depthTwoX + 88;
 
   const network = (
@@ -411,7 +433,7 @@ function NetworkView({
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={`M${spineX} ${JAPAN_Y}H${depthOneX}`}
+        d={`M${spineX} ${JAPAN_Y}H${japanBranchStartX}`}
         label="Japan territory"
         line="travel"
         onLinePointerLeave={onLinePointerLeave}
@@ -420,11 +442,11 @@ function NetworkView({
       {japanPeerYs.map((peerY) => (
         <RoutePath
           d={roundedBranchPath({
-            endX: depthTwoX,
+            endX: japanStationX,
             endY: peerY,
-            startX: depthOneX,
+            startX: japanBranchStartX,
             startY: JAPAN_Y,
-            turnX: forkX,
+            turnX: japanForkX,
           })}
           key={peerY}
           label="Japan territory"
@@ -453,7 +475,7 @@ function NetworkView({
           endY: writingUpperY,
           startX: depthOneX,
           startY: WRITING_Y,
-          turnX: forkX,
+          turnX: writingForkX,
         })}
         label="Writing territory"
         line="writing"
@@ -466,7 +488,7 @@ function NetworkView({
           endY: writingLowerY,
           startX: depthOneX,
           startY: WRITING_Y,
-          turnX: forkX,
+          turnX: writingForkX,
         })}
         label="Writing territory"
         line="writing"
@@ -533,7 +555,15 @@ function NetworkView({
         onTooltipPointerMove={onTooltipPointerMove}
       />
 
-      <CategoryStation backlightId={backlightId} focus="japan" label="Japan" line="travel" onFocus={() => onStationFocus("japan")} spineX={spineX} y={JAPAN_Y} />
+      <text
+        className="network-station-label network-foundation-title"
+        textAnchor="middle"
+        x={spineX}
+        y="52"
+      >
+        Foundations
+      </text>
+      <CategoryStation backlightId={backlightId} focus="japan" label="Japan" line="travel" onFocus={() => onStationFocus("japan")} href="/stations/japan" spineX={spineX} y={JAPAN_Y} />
       <CategoryStation backlightId={backlightId} focus="sound" label="Sound" line="sound" onFocus={() => onStationFocus("sound")} spineX={spineX} y={SOUND_Y} />
       <CategoryStation backlightId={backlightId} focus="writing" label="Writing" line="writing" onFocus={() => onStationFocus("writing")} spineX={spineX} y={WRITING_Y} />
       <CategoryStation backlightId={backlightId} focus="vocabulary" label="Vocabulary" line="vocabulary" onFocus={() => onStationFocus("vocabulary")} spineX={spineX} y={VOCABULARY_Y} />
@@ -541,12 +571,11 @@ function NetworkView({
       <LinkedStation backlightId={backlightId} focus="japanese" hideLabel kind="interchange" labelPlacement="left" onFocus={() => onStationFocus("japanese")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROOT_Y} />
       <LinkedStation backlightId={backlightId} focus="romaji" kind="foundation" labelPlacement="left" onFocus={() => onStationFocus("romaji")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROMAJI_Y} />
 
-      <LinkedStation backlightId={backlightId} focus="visit" kind="travel" labelPlacement="above" onFocus={() => onStationFocus("visit")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={JAPAN_Y} />
-      <LinkedStation backlightId={backlightId} focus="introductions" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("introductions")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={japanPeerYs[0]} />
-      <LinkedStation backlightId={backlightId} focus="navigation" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("navigation")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={japanPeerYs[1]} />
-      <LinkedStation backlightId={backlightId} focus="food" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("food")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={japanPeerYs[2]} />
-      <LinkedStation backlightId={backlightId} focus="shopping" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("shopping")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={japanPeerYs[3]} />
-      <LinkedStation backlightId={backlightId} focus="help" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("help")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={japanPeerYs[4]} />
+      <LinkedStation backlightId={backlightId} focus="introductions" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("introductions")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[0]} />
+      <LinkedStation backlightId={backlightId} focus="navigation" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("navigation")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[1]} />
+      <LinkedStation backlightId={backlightId} focus="food" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("food")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[2]} />
+      <LinkedStation backlightId={backlightId} focus="shopping" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("shopping")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[3]} />
+      <LinkedStation backlightId={backlightId} focus="help" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("help")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[4]} />
 
       <LinkedStation backlightId={backlightId} focus="vowels" kind="sound" labelPlacement="above" onFocus={() => onStationFocus("vowels")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={SOUND_Y} />
       <LinkedStation backlightId={backlightId} focus="mora" kind="sound" labelPlacement="above" onFocus={() => onStationFocus("mora")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={SOUND_Y} />

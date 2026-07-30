@@ -15,13 +15,13 @@ export type NetworkPosition =
   | "romaji"
   | "shopping"
   | "sound-marks"
-  | "visit"
+  | "japan"
   | "verbs"
   | "vowels"
   | "words";
 
 export type NetworkGlyphLine =
-  | "station-map-local"
+  | "station-map-foundation"
   | "station-map-sound"
   | "station-map-travel"
   | "station-map-vocabulary"
@@ -204,7 +204,7 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
   hiragana: WRITING_THROUGH,
   introductions: TRAVEL_TERMINAL,
   japanese: {
-    lines: { main: "station-map-travel" },
+    lines: { main: "station-map-foundation" },
     topology: "vertical-through",
   },
   kana: {
@@ -222,7 +222,7 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     topology: "horizontal-terminal",
   },
   romaji: {
-    lines: { main: "station-map-local" },
+    lines: { main: "station-map-foundation" },
     topology: "vertical-through",
   },
   shopping: TRAVEL_TERMINAL,
@@ -231,7 +231,7 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     topology: "horizontal-terminal",
   },
   verbs: VOCABULARY_TERMINAL,
-  visit: {
+  japan: {
     lines: { main: "station-map-travel" },
     topology: "horizontal-through",
   },

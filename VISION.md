@@ -62,7 +62,7 @@ Suggestions may quietly use prior evidence to direct attention, but they are an 
 
 - Build from real study needs, one useful increment at a time.
 - Pursue mastery through teaching, active recall, correction, and retesting.
-- Present Japanese through Japanese writing and sound. Teach rōmaji once as a readable notation on the Japan line, then use compact rōmaji beneath later Japan-line phrases; do not use IPA or English respellings.
+- Present Japanese through Japanese writing and sound. Teach rōmaji once as a readable notation on the Foundations spine, then use compact rōmaji beneath later Japan-line phrases; do not use IPA or English respellings.
 - Treat replayable pronunciation and concise linguistic insight as core learning material.
 - Prefer direct testing over passive lesson consumption.
 - Let the learner browse and test any mapped territory.
@@ -88,18 +88,18 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 ## Current Seed Network
 
 The current mapped network is the Foundations spine with four populated
-territories and twenty-one stations:
+territories and twenty stations:
 
 ```text
 Japanese
    │
  Rōmaji
    │
- Japan ─────── Visit ─────┬─ Introductions
-   │                       ├─ Navigation
-   │                       ├─ Food
-   │                       ├─ Shopping
-   │                       └─ Help
+ Japan ──────────────────┬─ Introductions
+   │                     ├─ Navigation
+   │                     ├─ Food
+   │                     ├─ Shopping
+   │                     └─ Help
    │
  Sound ─────── Vowels ────── Mora ────── Pitch
    │
@@ -110,16 +110,15 @@ Japanese
  Vocabulary ── Words
 ```
 
-`Japanese` opens the Foundations spine. `Rōmaji` follows as a local orientation
+`Japanese` opens the Foundations spine. `Rōmaji` follows as an orientation
 station before the spine reaches four regular category stations: Japan, Sound,
-Writing, and Vocabulary. These category stations organize their horizontal branches;
-they do not claim lesson interiors of their own. The spine is an organizing
-axis rather than a prerequisite chain.
+Writing, and Vocabulary. These category stations organize their horizontal
+branches. Japan also provides the visitor orientation at its station interior.
+The spine is an organizing axis rather than a prerequisite chain.
 
-Japan begins with `Visit`, then branches to the peer reference stations
-`Introductions`, `Navigation`, `Food`, `Shopping`, and `Help`. Their shared
-horizontal depth makes clear that one does not need to be completed before
-another.
+Japan branches to the peer reference stations `Introductions`, `Navigation`,
+`Food`, `Shopping`, and `Help`. Their shared horizontal depth makes clear that
+one does not need to be completed before another.
 
 Sound moves from `Vowels` to `Mora` and `Pitch`. Writing begins at `Kana`, forks
 to `Hiragana` and `Katakana`, then rejoins before the related extensions
@@ -149,11 +148,10 @@ stations.
 It explains lines, stations, listening, and revisiting without imposing a
 course route.
 
-`Visit` introduces `日本` and frames the Japan line as a small visitor reference. It
-briefly acknowledges that real-world Japan uses kanji, kana, and romaji while
-keeping Japanese writing and sound primary in Ling. Its three starter
-expressions include short English sound cues because Rōmaji has not yet been
-introduced.
+`Japan` introduces `日本`, gives a concise orientation to the country, and
+frames the Japan line as a small visitor reference. Its three starter
+expressions include short English sound cues so the orientation remains usable
+without first completing Rōmaji.
 
 `Rōmaji` presents the basic and combined Japanese sound charts in the same
 five-column form used by Hiragana and Katakana. Each cell shows only the

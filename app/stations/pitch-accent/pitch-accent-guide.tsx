@@ -6,9 +6,9 @@ import {
   isPitchAccentItemId,
   PITCH_ACCENT_ITEMS,
   type PitchAccentItemId,
-  type PitchLevel,
 } from "@/src/modules/learning/pitch-accent";
 import { FlashcardReview } from "../flashcard-review";
+import { PitchContour, pitchLabel } from "../pitch-contour";
 import { StationOptions } from "../station-options";
 import { useFlashcardAudio } from "../use-flashcard-audio";
 
@@ -379,61 +379,6 @@ export function PitchAccentGuide() {
       </section>
     </>
   );
-}
-
-function PitchContour({
-  activeMoraIndex,
-  morae,
-  pitch,
-  word,
-}: {
-  readonly activeMoraIndex: number | null;
-  readonly morae: readonly string[];
-  readonly pitch: readonly PitchLevel[];
-  readonly word: string;
-}) {
-  const width = morae.length * 48;
-  const points = pitch
-    .map((level, index) => `${24 + index * 48},${level === "high" ? 14 : 42}`)
-    .join(" ");
-
-  return (
-    <span
-      aria-label={`${word}: ${pitchLabel(pitch)}`}
-      className="pitch-contour"
-      role="img"
-      style={{ "--pitch-mora-count": morae.length } as CSSProperties}
-    >
-      <svg aria-hidden="true" className="pitch-contour-line" viewBox={`0 0 ${width} 56`}>
-        <polyline points={points} />
-        {pitch.map((level, index) => (
-          <circle
-            className="pitch-contour-point"
-            cx={24 + index * 48}
-            cy={level === "high" ? 14 : 42}
-            data-active={activeMoraIndex === index ? "true" : undefined}
-            key={`${word}-${index}-${level}`}
-            r="4"
-          />
-        ))}
-      </svg>
-      <span aria-hidden="true" className="pitch-contour-morae">
-        {morae.map((mora, index) => (
-          <span
-            data-active={activeMoraIndex === index ? "true" : undefined}
-            key={`${word}-${index}`}
-            lang="ja"
-          >
-            {mora}
-          </span>
-        ))}
-      </span>
-    </span>
-  );
-}
-
-function pitchLabel(pitch: readonly PitchLevel[]) {
-  return `${pitch.join(", ")} pitch`;
 }
 
 function shuffle<T>(entries: readonly T[]): T[] {

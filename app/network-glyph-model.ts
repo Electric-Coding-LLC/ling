@@ -14,10 +14,13 @@ export type NetworkPosition =
   | "pitch-accent"
   | "romaji"
   | "shopping"
+  | "sound"
   | "sound-marks"
   | "japan"
   | "verbs"
   | "vowels"
+  | "vocabulary"
+  | "writing"
   | "words";
 
 export type NetworkGlyphLine =
@@ -226,6 +229,10 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     topology: "vertical-through",
   },
   shopping: TRAVEL_TERMINAL,
+  sound: {
+    lines: { main: "station-map-sound" },
+    topology: "horizontal-through",
+  },
   "sound-marks": {
     lines: { main: "station-map-writing" },
     topology: "horizontal-terminal",
@@ -239,6 +246,11 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     lines: { main: "station-map-sound" },
     topology: "horizontal-through",
   },
+  vocabulary: {
+    lines: { main: "station-map-vocabulary" },
+    topology: "horizontal-through",
+  },
+  writing: WRITING_THROUGH,
   words: {
     ...VOCABULARY_TERMINAL,
   },

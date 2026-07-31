@@ -189,7 +189,7 @@ test("example vocabulary introduces no writing concepts ahead of its station", a
   }
 });
 
-test("every Kana station flashcard and example has approved Rōmaji", async () => {
+test("every Kana flashcard and remaining example has approved Rōmaji", async () => {
   const sources = await Promise.all([
     readFile(new URL("../app/stations/vowels/vowels-guide.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/stations/hiragana/hiragana-guide.tsx", import.meta.url), "utf8"),
@@ -204,6 +204,8 @@ test("every Kana station flashcard and example has approved Rōmaji", async () =
     [...source.matchAll(/\bexample: "([^"]+)"/g)].map((match) => match[1])
   ));
 
+  assert.doesNotMatch(sources[1], /\bexample: "/);
+  assert.doesNotMatch(sources[2], /\bexample: "/);
   assert.ok(kana.length > 200);
   for (const characters of new Set(kana)) {
     assert.doesNotThrow(
@@ -212,7 +214,7 @@ test("every Kana station flashcard and example has approved Rōmaji", async () =
     );
   }
 
-  assert.ok(examples.length > 200);
+  assert.ok(examples.length > 100);
   for (const example of new Set(examples)) {
     assert.doesNotThrow(
       () => getJapaneseWordRomaji(example),

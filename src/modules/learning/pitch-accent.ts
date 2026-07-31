@@ -1,5 +1,24 @@
 export type PitchLevel = "high" | "low";
 
+export function getPitchLevels(
+  moraCount: number,
+  accentDrop: number,
+): PitchLevel[] {
+  if (!Number.isInteger(moraCount) || moraCount < 1) {
+    throw new Error("Pitch needs at least one mora");
+  }
+  if (!Number.isInteger(accentDrop) || accentDrop < 0 || accentDrop > moraCount) {
+    throw new Error(`Pitch drop ${accentDrop} does not fit ${moraCount} morae`);
+  }
+
+  return Array.from({ length: moraCount }, (_, index) => {
+    if (accentDrop === 1) return index === 0 ? "high" : "low";
+    if (index === 0) return "low";
+    if (accentDrop === 0 || accentDrop === moraCount) return "high";
+    return index < accentDrop ? "high" : "low";
+  });
+}
+
 export type PitchAccentItem = {
   readonly audio: string;
   readonly id: string;

@@ -2,12 +2,21 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  getPitchLevels,
   PITCH_ACCENT_ITEMS,
   PITCH_ACCENT_ITEM_IDS,
   PITCH_ACCENT_SOURCE_URL,
 } from "../src/modules/learning/pitch-accent.ts";
 
 const root = new URL("../", import.meta.url);
+
+test("Pitch levels are derived from a standard accent drop", () => {
+  assert.deepEqual(getPitchLevels(3, 0), ["low", "high", "high"]);
+  assert.deepEqual(getPitchLevels(3, 1), ["high", "low", "low"]);
+  assert.deepEqual(getPitchLevels(4, 2), ["low", "high", "low", "low"]);
+  assert.deepEqual(getPitchLevels(3, 3), ["low", "high", "high"]);
+  assert.throws(() => getPitchLevels(2, 3), /does not fit/);
+});
 
 function wavDuration(audio) {
   let byteRate;
@@ -59,6 +68,10 @@ test("Pitch is listening-first, mora-aligned, compact, and privately persisted",
     new URL("app/stations/pitch-accent/pitch-accent-guide.tsx", root),
     "utf8",
   );
+  const contour = await readFile(
+    new URL("app/stations/pitch-contour.tsx", root),
+    "utf8",
+  );
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
   const page = await readFile(new URL("app/stations/pitch-accent/page.tsx", root), "utf8");
   const introductionApi = await readFile(
@@ -77,10 +90,10 @@ test("Pitch is listening-first, mora-aligned, compact, and privately persisted",
   assert.match(guide, /Pitch can fall early/);
   assert.match(guide, /Pitch can fall later/);
   assert.match(guide, /<PitchContour[\s\S]*morae=\{item\.morae\}[\s\S]*pitch=\{item\.pitch\}/);
-  assert.match(guide, /className="pitch-contour"[\s\S]*role="img"/);
-  assert.match(guide, /<polyline points=\{points\} \/>/);
-  assert.match(guide, /pitch\.map\(\(level, index\) =>/);
-  assert.match(guide, /className="pitch-contour-morae"/);
+  assert.match(contour, /className="pitch-contour"[\s\S]*role="img"/);
+  assert.match(contour, /<polyline points=\{points\} \/>/);
+  assert.match(contour, /pitch\.map\(\(level, index\) =>/);
+  assert.match(contour, /className="pitch-contour-morae"/);
   assert.doesNotMatch(guide, /pitch-example-word|pitch-review-word/);
   assert.match(guide, /className="pitch-example"[\s\S]*className="pitch-example-meaning"[\s\S]*<PitchContour/);
   assert.match(guide, /aria-labelledby="pitch-practice-title" className="station-practice"/);
@@ -101,14 +114,14 @@ test("Pitch is listening-first, mora-aligned, compact, and privately persisted",
   assert.match(styles, /\.pitch-example\s*\{[^}]*position:\s*relative[^}]*display:\s*grid[^}]*width:\s*100%[^}]*align-content:\s*center[^}]*justify-items:\s*start[^}]*padding:\s*1rem 2\.75rem 1rem 1rem[^}]*border:\s*0[^}]*background:\s*transparent[^}]*text-align:\s*left/s);
   assert.match(styles, /\.romaji-rule-example,\s*\.station-page-mora \.mora-example,\s*\.station-page-pitch-accent \.pitch-example,[\s\S]*\{[^}]*border-radius:\s*0\.55rem[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 4%, transparent\)/s);
   assert.match(styles, /\.station-page-pitch-accent \.pitch-example\s*\{[^}]*min-height:\s*6\.25rem[^}]*border:\s*0/s);
-  assert.match(styles, /\.pitch-example\[data-playing="true"\]\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--sound\) 8%, transparent\)[^}]*box-shadow:\s*inset 0 0 0 1px var\(--sound\)/s);
+  assert.match(styles, /\.pitch-example\[data-playing="true"\]\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--audio\) 8%, transparent\)[^}]*box-shadow:\s*inset 0 0 0 1px var\(--audio\)/s);
   assert.match(styles, /@media \(hover: hover\) and \(pointer: fine\)[\s\S]*\.station-page-pitch-accent \.pitch-example:hover:not\(\[data-playing="true"\]\)\s*\{[^}]*background:\s*color-mix\(in srgb, var\(--foreground\) 7%, transparent\)/s);
   assert.match(styles, /\.station-practice-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
   assert.match(styles, /\.station-practice-word\s*\{[^}]*border:\s*0/s);
   assert.doesNotMatch(styles, /\.station-practice-word\s*\{[^}]*border-bottom:/s);
   assert.match(styles, /\.station-practice-word:hover\s*\{[^}]*color:\s*var\(--muted\)/s);
   assert.doesNotMatch(styles, /\.station-practice-word:hover\s*\{[^}]*background:/s);
-  assert.match(styles, /\.pitch-contour-point\[data-active="true"\]\s*\{[^}]*fill:\s*var\(--sound\)/s);
+  assert.match(styles, /\.pitch-contour-point\[data-active="true"\]\s*\{[^}]*fill:\s*var\(--audio\)/s);
   assert.doesNotMatch(mobileStyles, /\.pitch-example-list\s*\{/s);
   assert.doesNotMatch(mobileStyles, /\.pitch-example\s*\{/s);
 

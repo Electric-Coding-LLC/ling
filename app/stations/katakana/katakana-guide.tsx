@@ -4,104 +4,94 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   getJapaneseRomaji,
-  getJapaneseWordRomaji,
   JAPANESE_ROMAJI_VOWELS,
 } from "@/src/modules/romaji";
-import {
-  splitJapaneseMorae,
-} from "@/src/modules/learning/japanese-sound-cues";
-import { FlashcardContent, FlashcardReview } from "../flashcard-review";
+import { FlashcardReview, KanaFlashcardContent } from "../flashcard-review";
 import { useFlashcardAudio } from "../use-flashcard-audio";
 
 type KanaEntry = {
   readonly audio: string;
-  readonly example: string;
-  readonly exampleAudio: string;
   readonly hiragana: string;
   readonly katakana: string;
-  readonly translation: string;
 };
 
 const KATAKANA_ROWS: readonly (readonly (KanaEntry | null)[])[] = [
   [
-    { audio: "/audio/ja-a.wav", example: "アニメ", exampleAudio: "/audio/ja-katakana-anime.wav", hiragana: "あ", katakana: "ア", translation: "anime" },
-    { audio: "/audio/ja-i.wav", example: "イカ", exampleAudio: "/audio/ja-katakana-ika.wav", hiragana: "い", katakana: "イ", translation: "squid" },
-    { audio: "/audio/ja-u.wav", example: "ウニ", exampleAudio: "/audio/ja-katakana-uni.wav", hiragana: "う", katakana: "ウ", translation: "sea urchin" },
-    { audio: "/audio/ja-e.wav", example: "エアコン", exampleAudio: "/audio/ja-katakana-eakon.wav", hiragana: "え", katakana: "エ", translation: "air conditioner" },
-    { audio: "/audio/ja-o.wav", example: "オセロ", exampleAudio: "/audio/ja-katakana-osero.wav", hiragana: "お", katakana: "オ", translation: "Othello" },
+    { audio: "/audio/ja-a.wav", hiragana: "あ", katakana: "ア" },
+    { audio: "/audio/ja-i.wav", hiragana: "い", katakana: "イ" },
+    { audio: "/audio/ja-u.wav", hiragana: "う", katakana: "ウ" },
+    { audio: "/audio/ja-e.wav", hiragana: "え", katakana: "エ" },
+    { audio: "/audio/ja-o.wav", hiragana: "お", katakana: "オ" },
   ],
   [
-    { audio: "/audio/ja-ka.wav", example: "カメラ", exampleAudio: "/audio/ja-katakana-kamera.wav", hiragana: "か", katakana: "カ", translation: "camera" },
-    { audio: "/audio/ja-ki.wav", example: "キロ", exampleAudio: "/audio/ja-katakana-kiro.wav", hiragana: "き", katakana: "キ", translation: "kilogram" },
-    { audio: "/audio/ja-ku.wav", example: "クラス", exampleAudio: "/audio/ja-katakana-kurasu.wav", hiragana: "く", katakana: "ク", translation: "class" },
-    { audio: "/audio/ja-ke.wav", example: "ケア", exampleAudio: "/audio/ja-katakana-kea.wav", hiragana: "け", katakana: "ケ", translation: "care" },
-    { audio: "/audio/ja-ko.wav", example: "ココア", exampleAudio: "/audio/ja-katakana-kokoa.wav", hiragana: "こ", katakana: "コ", translation: "cocoa" },
+    { audio: "/audio/ja-ka.wav", hiragana: "か", katakana: "カ" },
+    { audio: "/audio/ja-ki.wav", hiragana: "き", katakana: "キ" },
+    { audio: "/audio/ja-ku.wav", hiragana: "く", katakana: "ク" },
+    { audio: "/audio/ja-ke.wav", hiragana: "け", katakana: "ケ" },
+    { audio: "/audio/ja-ko.wav", hiragana: "こ", katakana: "コ" },
   ],
   [
-    { audio: "/audio/ja-sa.wav", example: "サイ", exampleAudio: "/audio/ja-katakana-sai.wav", hiragana: "さ", katakana: "サ", translation: "rhinoceros" },
-    { audio: "/audio/ja-shi.wav", example: "シカ", exampleAudio: "/audio/ja-katakana-shika.wav", hiragana: "し", katakana: "シ", translation: "deer" },
-    { audio: "/audio/ja-su.wav", example: "スイス", exampleAudio: "/audio/ja-katakana-suisu.wav", hiragana: "す", katakana: "ス", translation: "Switzerland" },
-    { audio: "/audio/ja-se.wav", example: "セミ", exampleAudio: "/audio/ja-katakana-semi.wav", hiragana: "せ", katakana: "セ", translation: "cicada" },
-    { audio: "/audio/ja-so.wav", example: "ソロ", exampleAudio: "/audio/ja-katakana-soro.wav", hiragana: "そ", katakana: "ソ", translation: "solo" },
+    { audio: "/audio/ja-sa.wav", hiragana: "さ", katakana: "サ" },
+    { audio: "/audio/ja-shi.wav", hiragana: "し", katakana: "シ" },
+    { audio: "/audio/ja-su.wav", hiragana: "す", katakana: "ス" },
+    { audio: "/audio/ja-se.wav", hiragana: "せ", katakana: "セ" },
+    { audio: "/audio/ja-so.wav", hiragana: "そ", katakana: "ソ" },
   ],
   [
-    { audio: "/audio/ja-ta.wav", example: "タイ", exampleAudio: "/audio/ja-katakana-tai.wav", hiragana: "た", katakana: "タ", translation: "Thailand" },
-    { audio: "/audio/ja-chi.wav", example: "チリ", exampleAudio: "/audio/ja-katakana-chiri.wav", hiragana: "ち", katakana: "チ", translation: "Chile" },
-    { audio: "/audio/ja-tsu.wav", example: "ツナ", exampleAudio: "/audio/ja-katakana-tsuna.wav", hiragana: "つ", katakana: "ツ", translation: "tuna" },
-    { audio: "/audio/ja-te.wav", example: "テニス", exampleAudio: "/audio/ja-katakana-tenisu.wav", hiragana: "て", katakana: "テ", translation: "tennis" },
-    { audio: "/audio/ja-to.wav", example: "トマト", exampleAudio: "/audio/ja-katakana-tomato.wav", hiragana: "と", katakana: "ト", translation: "tomato" },
+    { audio: "/audio/ja-ta.wav", hiragana: "た", katakana: "タ" },
+    { audio: "/audio/ja-chi.wav", hiragana: "ち", katakana: "チ" },
+    { audio: "/audio/ja-tsu.wav", hiragana: "つ", katakana: "ツ" },
+    { audio: "/audio/ja-te.wav", hiragana: "て", katakana: "テ" },
+    { audio: "/audio/ja-to.wav", hiragana: "と", katakana: "ト" },
   ],
   [
-    { audio: "/audio/ja-na.wav", example: "ナイフ", exampleAudio: "/audio/ja-katakana-naifu.wav", hiragana: "な", katakana: "ナ", translation: "knife" },
-    { audio: "/audio/ja-ni.wav", example: "ニラ", exampleAudio: "/audio/ja-katakana-nira.wav", hiragana: "に", katakana: "ニ", translation: "chives" },
-    { audio: "/audio/ja-nu.wav", example: "イヌ", exampleAudio: "/audio/ja-inu.wav", hiragana: "ぬ", katakana: "ヌ", translation: "dog" },
-    { audio: "/audio/ja-ne.wav", example: "ネクタイ", exampleAudio: "/audio/ja-katakana-nekutai.wav", hiragana: "ね", katakana: "ネ", translation: "necktie" },
-    { audio: "/audio/ja-no.wav", example: "ノルマ", exampleAudio: "/audio/ja-katakana-noruma.wav", hiragana: "の", katakana: "ノ", translation: "quota" },
+    { audio: "/audio/ja-na.wav", hiragana: "な", katakana: "ナ" },
+    { audio: "/audio/ja-ni.wav", hiragana: "に", katakana: "ニ" },
+    { audio: "/audio/ja-nu.wav", hiragana: "ぬ", katakana: "ヌ" },
+    { audio: "/audio/ja-ne.wav", hiragana: "ね", katakana: "ネ" },
+    { audio: "/audio/ja-no.wav", hiragana: "の", katakana: "ノ" },
   ],
   [
-    { audio: "/audio/ja-ha.wav", example: "ハム", exampleAudio: "/audio/ja-katakana-hamu.wav", hiragana: "は", katakana: "ハ", translation: "ham" },
-    { audio: "/audio/ja-hi.wav", example: "ヒレ", exampleAudio: "/audio/ja-katakana-hire.wav", hiragana: "ひ", katakana: "ヒ", translation: "fillet" },
-    { audio: "/audio/ja-fu.wav", example: "フライ", exampleAudio: "/audio/ja-katakana-furai.wav", hiragana: "ふ", katakana: "フ", translation: "fried food" },
-    { audio: "/audio/ja-he.wav", example: "ヘア", exampleAudio: "/audio/ja-katakana-hea.wav", hiragana: "へ", katakana: "ヘ", translation: "hair" },
-    { audio: "/audio/ja-ho.wav", example: "ホテル", exampleAudio: "/audio/ja-katakana-hoteru.wav", hiragana: "ほ", katakana: "ホ", translation: "hotel" },
+    { audio: "/audio/ja-ha.wav", hiragana: "は", katakana: "ハ" },
+    { audio: "/audio/ja-hi.wav", hiragana: "ひ", katakana: "ヒ" },
+    { audio: "/audio/ja-fu.wav", hiragana: "ふ", katakana: "フ" },
+    { audio: "/audio/ja-he.wav", hiragana: "へ", katakana: "ヘ" },
+    { audio: "/audio/ja-ho.wav", hiragana: "ほ", katakana: "ホ" },
   ],
   [
-    { audio: "/audio/ja-ma.wav", example: "マスク", exampleAudio: "/audio/ja-katakana-masuku.wav", hiragana: "ま", katakana: "マ", translation: "mask" },
-    { audio: "/audio/ja-mi.wav", example: "ミルク", exampleAudio: "/audio/ja-katakana-miruku.wav", hiragana: "み", katakana: "ミ", translation: "milk" },
-    { audio: "/audio/ja-mu.wav", example: "ムニエル", exampleAudio: "/audio/ja-katakana-munieru.wav", hiragana: "む", katakana: "ム", translation: "meunière" },
-    { audio: "/audio/ja-me.wav", example: "メモ", exampleAudio: "/audio/ja-katakana-memo.wav", hiragana: "め", katakana: "メ", translation: "memo" },
-    { audio: "/audio/ja-mo.wav", example: "モナカ", exampleAudio: "/audio/ja-katakana-monaka.wav", hiragana: "も", katakana: "モ", translation: "monaka wafer" },
+    { audio: "/audio/ja-ma.wav", hiragana: "ま", katakana: "マ" },
+    { audio: "/audio/ja-mi.wav", hiragana: "み", katakana: "ミ" },
+    { audio: "/audio/ja-mu.wav", hiragana: "む", katakana: "ム" },
+    { audio: "/audio/ja-me.wav", hiragana: "め", katakana: "メ" },
+    { audio: "/audio/ja-mo.wav", hiragana: "も", katakana: "モ" },
   ],
   [
-    { audio: "/audio/ja-ya.wav", example: "タイヤ", exampleAudio: "/audio/ja-katakana-taiya.wav", hiragana: "や", katakana: "ヤ", translation: "tire" },
+    { audio: "/audio/ja-ya.wav", hiragana: "や", katakana: "ヤ" },
     null,
-    { audio: "/audio/ja-yu.wav", example: "ユリ", exampleAudio: "/audio/ja-katakana-yuri.wav", hiragana: "ゆ", katakana: "ユ", translation: "lily" },
+    { audio: "/audio/ja-yu.wav", hiragana: "ゆ", katakana: "ユ" },
     null,
-    { audio: "/audio/ja-yo.wav", example: "ヨタカ", exampleAudio: "/audio/ja-katakana-yotaka.wav", hiragana: "よ", katakana: "ヨ", translation: "nightjar" },
+    { audio: "/audio/ja-yo.wav", hiragana: "よ", katakana: "ヨ" },
   ],
   [
-    { audio: "/audio/ja-ra.wav", example: "ライオン", exampleAudio: "/audio/ja-katakana-raion.wav", hiragana: "ら", katakana: "ラ", translation: "lion" },
-    { audio: "/audio/ja-ri.wav", example: "リモコン", exampleAudio: "/audio/ja-katakana-rimokon.wav", hiragana: "り", katakana: "リ", translation: "remote control" },
-    { audio: "/audio/ja-ru.wav", example: "ホテル", exampleAudio: "/audio/ja-katakana-hoteru.wav", hiragana: "る", katakana: "ル", translation: "hotel" },
-    { audio: "/audio/ja-re.wav", example: "レモン", exampleAudio: "/audio/ja-katakana-remon.wav", hiragana: "れ", katakana: "レ", translation: "lemon" },
-    { audio: "/audio/ja-ro.wav", example: "ロシア", exampleAudio: "/audio/ja-katakana-roshia.wav", hiragana: "ろ", katakana: "ロ", translation: "Russia" },
+    { audio: "/audio/ja-ra.wav", hiragana: "ら", katakana: "ラ" },
+    { audio: "/audio/ja-ri.wav", hiragana: "り", katakana: "リ" },
+    { audio: "/audio/ja-ru.wav", hiragana: "る", katakana: "ル" },
+    { audio: "/audio/ja-re.wav", hiragana: "れ", katakana: "レ" },
+    { audio: "/audio/ja-ro.wav", hiragana: "ろ", katakana: "ロ" },
   ],
   [
-    { audio: "/audio/ja-wa.wav", example: "ワイン", exampleAudio: "/audio/ja-katakana-wain.wav", hiragana: "わ", katakana: "ワ", translation: "wine" },
+    { audio: "/audio/ja-wa.wav", hiragana: "わ", katakana: "ワ" },
     null,
     null,
     null,
-    { audio: "/audio/ja-wo.wav", example: "ヲタク", exampleAudio: "/audio/ja-katakana-wotaku.wav", hiragana: "を", katakana: "ヲ", translation: "enthusiast" },
+    { audio: "/audio/ja-wo.wav", hiragana: "を", katakana: "ヲ" },
   ],
 ];
 
 const FINAL_KATAKANA: KanaEntry = {
   audio: "/audio/ja-n.wav",
-  example: "ワイン",
-  exampleAudio: "/audio/ja-katakana-wain.wav",
   hiragana: "ん",
   katakana: "ン",
-  translation: "wine",
 };
 
 
@@ -121,7 +111,6 @@ const BASIC_KATAKANA_SET = new Set(
 export function KatakanaGuide() {
   const {
     activeAudioIndex,
-    activeBeatIndex,
     audioError,
     audioPlaying,
     audioRef,
@@ -239,15 +228,6 @@ export function KatakanaGuide() {
     if (!activeCard) return;
     setPronunciationRevealed(true);
     playAudio({ index: 0, src: activeCard.audio });
-  }
-
-  function playExample() {
-    if (!activeCard) return;
-    playAudio({
-      beatCount: splitJapaneseMorae(activeCard.example).length,
-      index: 1,
-      src: activeCard.exampleAudio,
-    });
   }
 
   function answerCard(known: boolean) {
@@ -485,26 +465,19 @@ export function KatakanaGuide() {
                   ? `Replay ${activeCard.katakana}`
                   : `Reveal and play ${activeCard.katakana}`}
                 announcement={pronunciationRevealed
-                  ? `${getJapaneseRomaji(activeCard.katakana)}. Example: ${activeCard.example}, ${getJapaneseWordRomaji(activeCard.example)}, ${activeCard.translation}`
+                  ? getJapaneseRomaji(activeCard.katakana)
                   : ""}
                 key={`${testIndex}-${activeCard.katakana}`}
                 onActivate={activateCard}
                 onAnswer={answerCard}
                 playing={audioPlaying}
               >
-                <FlashcardContent
-                  activeAudio={activeAudioIndex === 0
-                    ? "pronunciation"
-                    : activeAudioIndex === 1 ? "example" : null}
-                  activeExampleBeatIndex={activeBeatIndex}
-                  example={activeCard.example}
-                  examplePronunciation={getJapaneseWordRomaji(activeCard.example)}
+                <KanaFlashcardContent
                   kana={activeCard.katakana}
-                  onPlayExample={playExample}
                   onReveal={activateCard}
                   pronunciation={getJapaneseRomaji(activeCard.katakana)}
+                  pronunciationPlaying={activeAudioIndex === 0}
                   revealed={pronunciationRevealed}
-                  translation={activeCard.translation}
                 />
               </FlashcardReview>
             </div>

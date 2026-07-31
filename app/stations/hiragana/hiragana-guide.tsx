@@ -4,13 +4,9 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   getJapaneseRomaji,
-  getJapaneseWordRomaji,
   JAPANESE_ROMAJI_VOWELS,
 } from "@/src/modules/romaji";
-import {
-  splitJapaneseMorae,
-} from "@/src/modules/learning/japanese-sound-cues";
-import { FlashcardContent, FlashcardReview } from "../flashcard-review";
+import { FlashcardReview, KanaFlashcardContent } from "../flashcard-review";
 import { useFlashcardAudio } from "../use-flashcard-audio";
 
 const HIRAGANA_ROWS = [
@@ -87,105 +83,10 @@ const HIRAGANA_ROWS = [
 ] as const;
 
 const FINAL_HIRAGANA = { audio: "/audio/ja-n.wav", character: "ん" } as const;
-const HIRAGANA_FLASHCARD_GROUPS = [
-  {
-    entries: [
-      { example: "あさ", exampleAudio: "/audio/ja-asa.wav", kana: "あ", kanaAudio: "/audio/ja-a.wav", translation: "morning" },
-      { example: "いぬ", exampleAudio: "/audio/ja-inu.wav", kana: "い", kanaAudio: "/audio/ja-i.wav", translation: "dog" },
-      { example: "うみ", exampleAudio: "/audio/ja-umi.wav", kana: "う", kanaAudio: "/audio/ja-u.wav", translation: "sea" },
-      { example: "えき", exampleAudio: "/audio/ja-eki.wav", kana: "え", kanaAudio: "/audio/ja-e.wav", translation: "station" },
-      { example: "おと", exampleAudio: "/audio/ja-oto.wav", kana: "お", kanaAudio: "/audio/ja-o.wav", translation: "sound" },
-    ],
-  },
-  {
-    entries: [
-      { example: "かさ", exampleAudio: "/audio/ja-kasa.wav", kana: "か", kanaAudio: "/audio/ja-ka.wav", translation: "umbrella" },
-      { example: "きく", exampleAudio: "/audio/ja-kiku.wav", kana: "き", kanaAudio: "/audio/ja-ki.wav", translation: "listen" },
-      { example: "くち", exampleAudio: "/audio/ja-kuchi.wav", kana: "く", kanaAudio: "/audio/ja-ku.wav", translation: "mouth" },
-      { example: "けさ", exampleAudio: "/audio/ja-kesa.wav", kana: "け", kanaAudio: "/audio/ja-ke.wav", translation: "this morning" },
-      { example: "こえ", exampleAudio: "/audio/ja-koe.wav", kana: "こ", kanaAudio: "/audio/ja-ko.wav", translation: "voice" },
-    ],
-  },
-  {
-    entries: [
-      { example: "さかな", exampleAudio: "/audio/ja-sakana.wav", kana: "さ", kanaAudio: "/audio/ja-sa.wav", translation: "fish" },
-      { example: "しお", exampleAudio: "/audio/ja-shio.wav", kana: "し", kanaAudio: "/audio/ja-shi.wav", translation: "salt" },
-      { example: "すし", exampleAudio: "/audio/ja-sushi.wav", kana: "す", kanaAudio: "/audio/ja-su.wav", translation: "sushi" },
-      { example: "せかい", exampleAudio: "/audio/ja-sekai.wav", kana: "せ", kanaAudio: "/audio/ja-se.wav", translation: "world" },
-      { example: "そと", exampleAudio: "/audio/ja-soto.wav", kana: "そ", kanaAudio: "/audio/ja-so.wav", translation: "outside" },
-    ],
-  },
-  {
-    entries: [
-      { example: "たこ", exampleAudio: "/audio/ja-tako.wav", kana: "た", kanaAudio: "/audio/ja-ta.wav", translation: "octopus" },
-      { example: "ちち", exampleAudio: "/audio/ja-chichi.wav", kana: "ち", kanaAudio: "/audio/ja-chi.wav", translation: "father" },
-      { example: "つき", exampleAudio: "/audio/ja-tsuki.wav", kana: "つ", kanaAudio: "/audio/ja-tsu.wav", translation: "moon" },
-      { example: "て", exampleAudio: "/audio/ja-te.wav", kana: "て", kanaAudio: "/audio/ja-te.wav", translation: "hand" },
-      { example: "とり", exampleAudio: "/audio/ja-tori.wav", kana: "と", kanaAudio: "/audio/ja-to.wav", translation: "bird" },
-    ],
-  },
-  {
-    entries: [
-      { example: "なつ", exampleAudio: "/audio/ja-natsu.wav", kana: "な", kanaAudio: "/audio/ja-na.wav", translation: "summer" },
-      { example: "にく", exampleAudio: "/audio/ja-niku.wav", kana: "に", kanaAudio: "/audio/ja-ni.wav", translation: "meat" },
-      { example: "ぬの", exampleAudio: "/audio/ja-nuno.wav", kana: "ぬ", kanaAudio: "/audio/ja-nu.wav", translation: "cloth" },
-      { example: "ねこ", exampleAudio: "/audio/ja-neko.wav", kana: "ね", kanaAudio: "/audio/ja-ne.wav", translation: "cat" },
-      { example: "のむ", exampleAudio: "/audio/ja-nomu.wav", kana: "の", kanaAudio: "/audio/ja-no.wav", translation: "drink" },
-    ],
-  },
-  {
-    entries: [
-      { example: "はな", exampleAudio: "/audio/ja-hana.wav", kana: "は", kanaAudio: "/audio/ja-ha.wav", translation: "flower" },
-      { example: "ひと", exampleAudio: "/audio/ja-hito.wav", kana: "ひ", kanaAudio: "/audio/ja-hi.wav", translation: "person" },
-      { example: "ふね", exampleAudio: "/audio/ja-fune.wav", kana: "ふ", kanaAudio: "/audio/ja-fu.wav", translation: "boat" },
-      { example: "へや", exampleAudio: "/audio/ja-heya.wav", kana: "へ", kanaAudio: "/audio/ja-he.wav", translation: "room" },
-      { example: "ほし", exampleAudio: "/audio/ja-hoshi.wav", kana: "ほ", kanaAudio: "/audio/ja-ho.wav", translation: "star" },
-    ],
-  },
-  {
-    entries: [
-      { example: "まめ", exampleAudio: "/audio/ja-mame.wav", kana: "ま", kanaAudio: "/audio/ja-ma.wav", translation: "bean" },
-      { example: "みみ", exampleAudio: "/audio/ja-mimi.wav", kana: "み", kanaAudio: "/audio/ja-mi.wav", translation: "ear" },
-      { example: "むし", exampleAudio: "/audio/ja-mushi.wav", kana: "む", kanaAudio: "/audio/ja-mu.wav", translation: "insect" },
-      { example: "め", exampleAudio: "/audio/ja-me.wav", kana: "め", kanaAudio: "/audio/ja-me.wav", translation: "eye" },
-      { example: "もも", exampleAudio: "/audio/ja-momo.wav", kana: "も", kanaAudio: "/audio/ja-mo.wav", translation: "peach" },
-    ],
-  },
-  {
-    entries: [
-      { example: "やま", exampleAudio: "/audio/ja-yama.wav", kana: "や", kanaAudio: "/audio/ja-ya.wav", translation: "mountain" },
-      { example: "ゆき", exampleAudio: "/audio/ja-yuki.wav", kana: "ゆ", kanaAudio: "/audio/ja-yu.wav", translation: "snow" },
-      { example: "よる", exampleAudio: "/audio/ja-yoru.wav", kana: "よ", kanaAudio: "/audio/ja-yo.wav", translation: "night" },
-    ],
-  },
-  {
-    entries: [
-      { example: "らいねん", exampleAudio: "/audio/ja-rainen.wav", kana: "ら", kanaAudio: "/audio/ja-ra.wav", translation: "next year" },
-      { example: "りす", exampleAudio: "/audio/ja-risu.wav", kana: "り", kanaAudio: "/audio/ja-ri.wav", translation: "squirrel" },
-      { example: "るす", exampleAudio: "/audio/ja-rusu.wav", kana: "る", kanaAudio: "/audio/ja-ru.wav", translation: "away" },
-      { example: "れきし", exampleAudio: "/audio/ja-rekishi.wav", kana: "れ", kanaAudio: "/audio/ja-re.wav", translation: "history" },
-      { example: "ろく", exampleAudio: "/audio/ja-roku.wav", kana: "ろ", kanaAudio: "/audio/ja-ro.wav", translation: "six" },
-    ],
-  },
-  {
-    entries: [
-      { example: "わに", exampleAudio: "/audio/ja-wani.wav", kana: "わ", kanaAudio: "/audio/ja-wa.wav", translation: "crocodile" },
-      { example: "これを", exampleAudio: "/audio/ja-kore-o.wav", kana: "を", kanaAudio: "/audio/ja-wo.wav", translation: "this (object)" },
-    ],
-  },
-  {
-    entries: [
-      { example: "ほん", exampleAudio: "/audio/ja-hon.wav", kana: "ん", kanaAudio: "/audio/ja-n.wav", translation: "book" },
-    ],
-  },
-] as const;
 
 type HiraganaTestEntry = {
-  readonly example: string;
-  readonly exampleAudio: string;
   readonly kana: string;
   readonly kanaAudio: string;
-  readonly translation: string;
 };
 
 type HiraganaTest = {
@@ -193,10 +94,12 @@ type HiraganaTest = {
   title: string;
 };
 
-const ALL_HIRAGANA_TEST_ENTRIES = HIRAGANA_FLASHCARD_GROUPS.reduce<HiraganaTestEntry[]>(
-  (entries, group) => [...entries, ...group.entries],
-  [],
-);
+const ALL_HIRAGANA_TEST_ENTRIES: HiraganaTestEntry[] = [
+  ...HIRAGANA_ROWS.flatMap((row) => row.flatMap((entry) => (
+    entry ? [{ kana: entry.character, kanaAudio: entry.audio }] : []
+  ))),
+  { kana: FINAL_HIRAGANA.character, kanaAudio: FINAL_HIRAGANA.audio },
+];
 const HIRAGANA_TEST_ENTRY_BY_KANA = new Map(
   ALL_HIRAGANA_TEST_ENTRIES.map((entry) => [entry.kana, entry]),
 );
@@ -207,7 +110,6 @@ const BASIC_HIRAGANA_SET = new Set(
 export function HiraganaGuide() {
   const {
     activeAudioIndex,
-    activeBeatIndex,
     audioError,
     audioPlaying,
     audioRef,
@@ -328,15 +230,6 @@ export function HiraganaGuide() {
     if (!activeCard) return;
     setPronunciationRevealed(true);
     playAudio({ index: 0, src: activeCard.kanaAudio });
-  }
-
-  function playExample() {
-    if (!activeCard) return;
-    playAudio({
-      beatCount: splitJapaneseMorae(activeCard.example).length,
-      index: 1,
-      src: activeCard.exampleAudio,
-    });
   }
 
   function answerCard(known: boolean) {
@@ -590,26 +483,19 @@ export function HiraganaGuide() {
                 ? `Replay ${activeCard.kana}`
                 : `Reveal and play ${activeCard.kana}`}
               announcement={pronunciationRevealed
-                ? `${getJapaneseRomaji(activeCard.kana)}. Example: ${activeCard.example}, ${getJapaneseWordRomaji(activeCard.example)}, ${activeCard.translation}`
+                ? getJapaneseRomaji(activeCard.kana)
                 : ""}
               key={`${testIndex}-${activeCard.kana}`}
               onActivate={activateCard}
               onAnswer={answerCard}
               playing={audioPlaying}
             >
-              <FlashcardContent
-                activeAudio={activeAudioIndex === 0
-                  ? "pronunciation"
-                  : activeAudioIndex === 1 ? "example" : null}
-                activeExampleBeatIndex={activeBeatIndex}
-                example={activeCard.example}
-                examplePronunciation={getJapaneseWordRomaji(activeCard.example)}
+              <KanaFlashcardContent
                 kana={activeCard.kana}
-                onPlayExample={playExample}
                 onReveal={activateCard}
                 pronunciation={getJapaneseRomaji(activeCard.kana)}
+                pronunciationPlaying={activeAudioIndex === 0}
                 revealed={pronunciationRevealed}
-                translation={activeCard.translation}
               />
             </FlashcardReview>
           </div>

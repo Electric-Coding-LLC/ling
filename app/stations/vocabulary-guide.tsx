@@ -2,7 +2,13 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
-import { getJapaneseWordRomaji } from "@/src/modules/romaji";
+import {
+  getJapaneseMorae,
+  getJapaneseWordRomaji,
+} from "@/src/modules/romaji";
+import {
+  getPitchLevels,
+} from "@/src/modules/learning/pitch-accent";
 import {
   isVocabularyItemId,
   VOCABULARY_STATIONS,
@@ -11,6 +17,7 @@ import {
   type VocabularyStationId,
 } from "@/src/modules/learning/vocabulary";
 import { FlashcardCountdown, FlashcardReview } from "./flashcard-review";
+import { PitchContour, pitchLabel } from "./pitch-contour";
 import { StationOptions } from "./station-options";
 import { useFlashcardAudio } from "./use-flashcard-audio";
 
@@ -25,6 +32,7 @@ export function VocabularyGuide({
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const {
     activeAudioIndex,
+    activeBeatIndex,
     audioError,
     audioPlaying,
     audioRef,
@@ -39,6 +47,10 @@ export function VocabularyGuide({
   const [knownItems, setKnownItems] = useState<Set<string>>(() => new Set());
   const [reviewIndex, setReviewIndex] = useState(0);
   const activeCard = activeReview?.[reviewIndex] ?? null;
+  const activeCardMorae = activeCard ? getJapaneseMorae(activeCard.word) : null;
+  const activeCardPitch = activeCardMorae && activeCard
+    ? getPitchLevels(activeCardMorae.length, activeCard.pitchAccent)
+    : null;
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`/api/stations/${stationId}/introduction`, { method: "POST" });
@@ -76,7 +88,11 @@ export function VocabularyGuide({
   }
 
   function playItem(item: VocabularyItem) {
-    playAudio({ beatCount: 1, index: itemIndex(item), src: item.audio });
+    playAudio({
+      beatCount: getJapaneseMorae(item.word).length,
+      index: itemIndex(item),
+      src: item.audio,
+    });
   }
 
   function openReview(items: readonly VocabularyItem[]) {
@@ -212,9 +228,11 @@ export function VocabularyGuide({
         <div aria-label={`${station.name} reference`} className="vocabulary-reference-list">
           {station.items.map((item) => {
             const playing = audioPlaying && activeAudioIndex === itemIndex(item);
+            const morae = getJapaneseMorae(item.word);
+            const pitch = getPitchLevels(morae.length, item.pitchAccent);
             return (
               <button
-                aria-label={`Play ${item.word}, ${item.meaning}`}
+                aria-label={`Play ${item.word}, ${item.meaning}, ${morae.length} ${morae.length === 1 ? "beat" : "beats"}`}
                 className="vocabulary-reference-item"
                 data-known={knownItems.has(item.id) ? "true" : undefined}
                 data-playing={playing ? "true" : undefined}
@@ -223,9 +241,15 @@ export function VocabularyGuide({
                 type="button"
               >
                 <span className="vocabulary-reference-meaning">{item.meaning}</span>
-                <span className="vocabulary-reference-word" lang="ja">{item.word}</span>
-                <span className="vocabulary-reference-romaji">{getJapaneseWordRomaji(item.word)}</span>
+                <PitchContour
+                  activeMoraIndex={playing ? activeBeatIndex : null}
+                  morae={morae}
+                  pitch={pitch}
+                  showPronunciation
+                  word={item.word}
+                />
                 {item.group ? <span className="vocabulary-reference-group">{item.group}</span> : null}
+                <VocabularyAudioIndicator />
               </button>
             );
           })}
@@ -234,7 +258,7 @@ export function VocabularyGuide({
         {audioError ? <p className="station-audio-error" role="alert">Audio could not play. Try again.</p> : null}
         {knowledgeError ? <p className="station-knowledge-error" role="alert">Your {station.name} progress could not sync. Try again.</p> : null}
 
-        {activeReview && activeCard ? (
+        {activeReview && activeCard && activeCardMorae && activeCardPitch ? (
           <dialog
             aria-labelledby={`${stationId}-review-title`}
             className="hiragana-test-dialog"
@@ -255,7 +279,7 @@ export function VocabularyGuide({
               <FlashcardReview
                 activationLabel={answerRevealed ? `Play ${activeCard.word}` : `Recall the Japanese for ${activeCard.meaning}`}
                 announcement={answerRevealed
-                  ? `${activeCard.meaning}: ${activeCard.word}, ${getJapaneseWordRomaji(activeCard.word)}`
+                  ? vocabularyAnnouncement(activeCard)
                   : ""}
                 key={`${reviewIndex}-${activeCard.id}`}
                 onActivate={() => {
@@ -269,8 +293,15 @@ export function VocabularyGuide({
                   <span className="vocabulary-review-answer-slot">
                     {answerRevealed ? (
                       <span className="vocabulary-review-answer">
-                        <span className="vocabulary-review-word" lang="ja">{activeCard.word}</span>
-                        <span className="vocabulary-review-romaji">{getJapaneseWordRomaji(activeCard.word)}</span>
+                        <PitchContour
+                          activeMoraIndex={audioPlaying && activeAudioIndex === itemIndex(activeCard)
+                            ? activeBeatIndex
+                            : null}
+                          morae={activeCardMorae}
+                          pitch={activeCardPitch}
+                          showPronunciation
+                          word={activeCard.word}
+                        />
                         {activeCard.group ? <span className="vocabulary-reference-group">{activeCard.group}</span> : null}
                       </span>
                     ) : (
@@ -285,6 +316,22 @@ export function VocabularyGuide({
       </section>
     </>
   );
+}
+
+function VocabularyAudioIndicator() {
+  return (
+    <span aria-hidden="true" className="vocabulary-audio-indicator">
+      <span />
+      <span />
+      <span />
+    </span>
+  );
+}
+
+function vocabularyAnnouncement(item: VocabularyItem) {
+  const morae = getJapaneseMorae(item.word);
+  const pitch = getPitchLevels(morae.length, item.pitchAccent);
+  return `${item.meaning}: ${item.word}, Rōmaji ${getJapaneseWordRomaji(item.word)}. ${morae.length} ${morae.length === 1 ? "beat" : "beats"}. ${pitchLabel(pitch)}.`;
 }
 
 function shuffle<T>(entries: readonly T[]): T[] {

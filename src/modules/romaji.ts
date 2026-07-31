@@ -315,6 +315,10 @@ export function getJapaneseWordRomaji(word: string): string {
   return getJapaneseMoraRomaji(word).join("");
 }
 
+export function getJapaneseMorae(word: string): string[] {
+  return splitJapaneseMorae(word);
+}
+
 export function getJapaneseMoraRomaji(word: string): string[] {
   const morae = splitJapaneseMorae(toHiragana(word));
 

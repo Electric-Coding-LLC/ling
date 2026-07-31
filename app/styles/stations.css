@@ -1342,6 +1342,23 @@
   flex: none;
 }
 
+.vocabulary-review-launcher {
+  position: relative;
+}
+
+.vocabulary-review-launcher > summary {
+  list-style: none;
+}
+
+.vocabulary-review-launcher > summary::-webkit-details-marker {
+  display: none;
+}
+
+.vocabulary-review-direction-menu {
+  top: calc(100% + 0.5rem);
+  width: 11.5rem;
+}
+
 .hiragana-test-trigger {
   --hiragana-test-progress: 0turn;
 
@@ -1443,6 +1460,11 @@
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
+}
+
+.vocabulary-review-launcher[open] + .hiragana-test-tooltip {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .hiragana-test-dialog {
@@ -2367,6 +2389,12 @@
   gap: 1rem;
 }
 
+.vocabulary-review-direction-label {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 .vocabulary-review-prompt {
   color: var(--muted);
   font-size: 1rem;
@@ -2389,6 +2417,14 @@
 
 .vocabulary-review-answer .pitch-contour {
   --pitch-character-size: clamp(1.75rem, 9vw, 2.5rem);
+}
+
+.vocabulary-review-prompt-word {
+  color: var(--foreground);
+}
+
+.vocabulary-review-meaning {
+  font-size: 1.15rem;
 }
 
 @media (hover: hover) and (pointer: fine) {

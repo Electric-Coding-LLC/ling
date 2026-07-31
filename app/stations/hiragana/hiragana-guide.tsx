@@ -422,7 +422,7 @@ export function HiraganaGuide() {
         />
         <div className="station-intro hiragana-intro">
           <p><strong>Hiragana is the everyday Kana system.</strong> Its rounded characters appear throughout Japanese sentences, for complete words as well as the grammatical parts around them.</p>
-          <p>There are 46 basic Hiragana, arranged under the five vowel sounds you already know: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana in the chart to practice its sound.</p>
+          <p>There are 46 basic Hiragana, arranged under the five shared vowel sounds: あ, い, う, え, お. Learning them lets you sound out written Japanese, even before you know what every word means. Tap any Kana in the chart to practice its sound.</p>
         </div>
 
       <table aria-label="The 46 basic hiragana" className="hiragana-table">

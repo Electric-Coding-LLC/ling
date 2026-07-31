@@ -287,15 +287,26 @@ test("station map glyphs reflect each station's network position", async () => {
   assert.equal(NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH, 6);
   assert.equal(NETWORK_GLYPH_DEFINITIONS["mora-timing"].topology, "horizontal-through");
   assert.equal(NETWORK_GLYPH_DEFINITIONS["pitch-accent"].topology, "horizontal-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.kana.topology, "horizontal-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.kana.topology, "fork");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.hiragana.topology, "downward-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.katakana.topology, "upward-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS["sound-marks"].topology, "merge");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS["combined-sounds"].topology, "horizontal-terminal");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.words.topology, "horizontal-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.topology, "vertical-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.topology, "vertical-start");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.lines.main, "station-map-foundation");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.sound.lines.main, "station-map-sound");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.writing.lines.main, "station-map-writing");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.vocabulary.lines.main, "station-map-vocabulary");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.romaji.lines.main, "station-map-foundation");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.topology, "horizontal-through");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.topology, "spine-branch-interchange");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.lines.vertical, "station-map-foundation");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.lines.horizontal, "station-map-travel");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.introductions.topology, "rising-terminal");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.navigation.topology, "rising-terminal");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.food.topology, "horizontal-terminal");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.shopping.topology, "falling-terminal");
+  assert.equal(NETWORK_GLYPH_DEFINITIONS.help.topology, "falling-terminal");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.vowels.lines.main, "station-map-sound");
 
   for (const [position, definition] of Object.entries(NETWORK_GLYPH_DEFINITIONS)) {
@@ -469,6 +480,8 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   assert.match(source, /JAPANESE_ROMAJI_YOON_VOWELS/);
   assert.doesNotMatch(source, /sound-marks-chart-title|All marked sounds/);
   assert.doesNotMatch(source, /The first four rows use dakuten|The last row uses handakuten/);
+  assert.match(source, /Dakuten and handakuten are marks added to Kana\./);
+  assert.doesNotMatch(source, /Kana you already know/);
   assert.match(source, /aria-label="Dakuten and handakuten marks"/);
   assert.match(source, /<span className="sr-only" lang="ja">゛<\/span>[\s\S]*className="kana-extension-mark-glyph"/);
   assert.match(source, /<span className="sr-only" lang="ja">゜<\/span>[\s\S]*<circle cx="24" cy="22" r="9"/);
@@ -790,6 +803,8 @@ test("the Vowels station introduces both scripts through the five shared sounds"
   assert.match(kanaPage, /Hiragana is used for everyday Japanese words and grammar/);
   assert.match(kanaPage, /Katakana is used mainly for borrowed words, foreign names/);
   assert.match(kanaPage, /href="\/stations\/vowels"/);
+  assert.match(kanaPage, /station shows the five sounds shared across both sets/);
+  assert.doesNotMatch(kanaPage, /Begin with the five shared sounds/);
   assert.match(source, /Japanese Kana are built around five vowel sounds/);
   assert.match(source, /className="kana-table-intro"/);
   assert.doesNotMatch(`${source}${kanaPage}`, /Kanji is different|Kanji primarily carries meaning/);
@@ -887,7 +902,8 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.equal(audioPaths.length, 46);
   assert.match(source, /aria-label="The 46 basic hiragana"/);
   assert.match(source, /Hiragana is the everyday Kana system/);
-  assert.match(source, /five vowel sounds you already know/);
+  assert.match(source, /five shared vowel sounds/);
+  assert.doesNotMatch(source, /vowel sounds you already know/);
   assert.match(source, /Learning them lets you sound out written Japanese/);
   assert.match(source, /JAPANESE_ROMAJI_VOWELS\.map\(\(sound\) =>/);
   assert.match(source, /aria-label=\{`Column of sounds ending in \$\{sound\}`\}/);
@@ -1071,16 +1087,17 @@ test("the Katakana station pairs all 46 basic forms with known Hiragana sounds",
   assert.match(api, /recordStationIntroduction\(user\.id, "katakana"\)/);
   assert.match(api, /\{ recorded: true \}/);
   assert.doesNotMatch(api, /station_unavailable|status: 403/);
-  assert.match(source, /Katakana is another way to write the sounds you learned in Hiragana/);
+  assert.match(source, /Katakana writes the same basic Japanese sounds as Hiragana with a different set of shapes/);
   assert.match(source, /Each Katakana has a Hiragana match/);
   assert.match(source, /ア.*sounds like.*あ.*カ.*sounds like.*か/);
   assert.match(source, /Japanese uses both because they do different jobs in writing/);
   assert.match(source, /Hiragana is used for many Japanese words and for grammar/);
   assert.match(source, /Katakana is mainly used for words borrowed from other languages, foreign names, and sound effects/);
   assert.ok(
-    source.indexOf("Katakana is another way") < source.indexOf("Japanese uses both"),
+    source.indexOf("Katakana writes the same basic") < source.indexOf("Japanese uses both"),
     "the station should introduce Katakana before explaining why Japanese uses both systems",
   );
+  assert.doesNotMatch(source, /sounds you learned|Since you already know/);
   assert.doesNotMatch(source, /Same sounds, different shapes|Why do they look different|This is the base chart/);
   assert.doesNotMatch(source, /station-notes/);
   assert.match(source, /aria-label="The 46 basic Katakana"/);

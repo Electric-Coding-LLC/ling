@@ -406,9 +406,8 @@ export function KatakanaGuide() {
           ref={audioRef}
         />
         <div className="station-intro katakana-intro">
-          <p><strong>Katakana is another way to write the sounds you learned in Hiragana.</strong> Each Katakana has a Hiragana match: <span lang="ja">ア</span> sounds like <span lang="ja">あ</span>, <span lang="ja">カ</span> sounds like <span lang="ja">か</span>, and so on.</p>
+          <p><strong>Katakana writes the same basic Japanese sounds as Hiragana with a different set of shapes.</strong> Each Katakana has a Hiragana match: <span lang="ja">ア</span> sounds like <span lang="ja">あ</span>, <span lang="ja">カ</span> sounds like <span lang="ja">か</span>, and so on.</p>
           <p>Japanese uses both because they do different jobs in writing. Hiragana is used for many Japanese words and for grammar. Katakana is mainly used for words borrowed from other languages, foreign names, and sound effects.</p>
-          <p>Since you already know the sounds, you only need to learn the Katakana shapes.</p>
           <p>Tap any Katakana in the chart to practice its sound.</p>
         </div>
 

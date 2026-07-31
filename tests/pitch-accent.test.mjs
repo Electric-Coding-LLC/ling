@@ -93,7 +93,14 @@ test("Pitch is listening-first, mora-aligned, compact, and privately persisted",
   assert.match(contour, /className="pitch-contour"[\s\S]*role="img"/);
   assert.match(contour, /<polyline points=\{points\} \/>/);
   assert.match(contour, /pitch\.map\(\(level, index\) =>/);
-  assert.match(contour, /className="pitch-contour-morae"/);
+  assert.match(contour, /const moraCharacterWidths = morae\.map/);
+  assert.match(contour, /const pointXs = moraCharacterWidths\.map/);
+  assert.match(contour, /cx=\{pointXs\[index\]\}/);
+  assert.match(contour, /className="pitch-contour-word"/);
+  assert.match(
+    contour,
+    /className="pitch-contour-line"[\s\S]*className="pitch-contour-word"[\s\S]*morae\.map/,
+  );
   assert.doesNotMatch(guide, /pitch-example-word|pitch-review-word/);
   assert.match(guide, /className="pitch-example"[\s\S]*className="pitch-example-meaning"[\s\S]*<PitchContour/);
   assert.match(guide, /aria-labelledby="pitch-practice-title" className="station-practice"/);

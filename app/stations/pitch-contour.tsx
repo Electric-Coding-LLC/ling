@@ -1,9 +1,6 @@
 import type { CSSProperties } from "react";
 import type { PitchLevel } from "@/src/modules/learning/pitch-accent";
-import {
-  getJapaneseMoraRomaji,
-  getJapaneseWordRomaji,
-} from "@/src/modules/romaji";
+import { getJapaneseWordRomaji } from "@/src/modules/romaji";
 
 export function PitchContour({
   activeMoraIndex,
@@ -22,28 +19,40 @@ export function PitchContour({
     throw new Error(`Pitch does not align with the morae in ${word}`);
   }
 
-  const romajiMorae = showPronunciation
-    ? getJapaneseMoraRomaji(word)
-    : [];
-  const width = morae.length * 48;
+  const romaji = getJapaneseWordRomaji(word);
+  const moraCharacterWidths = morae.map((mora) => Array.from(mora).length);
+  const characterCount = moraCharacterWidths.reduce((total, count) => total + count, 0);
+  const pointXs = moraCharacterWidths.map((characterWidth, index) => (
+    moraCharacterWidths
+      .slice(0, index)
+      .reduce((offset, precedingWidth) => offset + precedingWidth, 0)
+      + characterWidth / 2
+  ) * 48);
+  const width = characterCount * 48;
   const points = pitch
-    .map((level, index) => `${24 + index * 48},${level === "high" ? 14 : 42}`)
+    .map((level, index) => `${pointXs[index]},${level === "high" ? 14 : 42}`)
     .join(" ");
 
   return (
     <span
-      aria-label={`${word}: Rōmaji ${getJapaneseWordRomaji(word)}; ${morae.length} ${morae.length === 1 ? "beat" : "beats"}; ${pitchLabel(pitch)}`}
+      aria-label={`${word}: Rōmaji ${romaji}; ${morae.length} ${morae.length === 1 ? "beat" : "beats"}; ${pitchLabel(pitch)}`}
       className="pitch-contour"
       data-pronunciation={showPronunciation ? "true" : undefined}
       role="img"
-      style={{ "--pitch-mora-count": morae.length } as CSSProperties}
+      style={{ "--pitch-character-count": characterCount } as CSSProperties}
     >
-      <svg aria-hidden="true" className="pitch-contour-line" viewBox={`0 0 ${width} 56`}>
+      <svg
+        aria-hidden="true"
+        className="pitch-contour-line"
+        height={56}
+        viewBox={`0 0 ${width} 56`}
+        width={width}
+      >
         <polyline points={points} />
         {pitch.map((level, index) => (
           <circle
             className="pitch-contour-point"
-            cx={24 + index * 48}
+            cx={pointXs[index]}
             cy={level === "high" ? 14 : 42}
             data-active={activeMoraIndex === index ? "true" : undefined}
             key={`${word}-${index}-${level}`}
@@ -51,33 +60,20 @@ export function PitchContour({
           />
         ))}
       </svg>
-      <span aria-hidden="true" className="pitch-contour-morae">
+      <span aria-hidden="true" className="pitch-contour-word">
         {morae.map((mora, index) => (
           <span
             data-active={activeMoraIndex === index ? "true" : undefined}
             key={`${word}-${index}`}
             lang="ja"
+            style={{ "--pitch-mora-character-count": moraCharacterWidths[index] } as CSSProperties}
           >
             {mora}
           </span>
         ))}
       </span>
       {showPronunciation ? (
-        <>
-          <span aria-hidden="true" className="pitch-contour-romaji">
-            {romajiMorae.map((romaji, index) => (
-              <span
-                data-active={activeMoraIndex === index ? "true" : undefined}
-                key={`${word}-romaji-${index}`}
-              >
-                {romaji}
-              </span>
-            ))}
-          </span>
-          <span aria-hidden="true" className="pitch-contour-beat-count">
-            {morae.length} {morae.length === 1 ? "beat" : "beats"}
-          </span>
-        </>
+        <span aria-hidden="true" className="pitch-contour-romaji">{romaji}</span>
       ) : null}
     </span>
   );

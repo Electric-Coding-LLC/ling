@@ -1856,8 +1856,7 @@
   .vocabulary-audio-indicator,
   .vocabulary-audio-indicator span,
   .mora-beat,
-  .pitch-contour-morae span,
-  .pitch-contour-romaji span,
+  .pitch-contour-word span,
   .pitch-contour-point,
   .flashcard-countdown-progress {
     animation: none;
@@ -2151,14 +2150,17 @@
 }
 
 .pitch-contour {
+  --pitch-character-size: 1.65rem;
+
   display: block;
-  width: min(100%, calc(var(--pitch-mora-count) * 3rem));
+  width: min(100%, calc(var(--pitch-character-count) * var(--pitch-character-size)));
 }
 
 .pitch-contour-line {
   display: block;
   width: 100%;
-  height: 3.5rem;
+  height: auto;
+  margin-bottom: 0.2rem;
   overflow: visible;
 }
 
@@ -2189,48 +2191,34 @@
   box-shadow: inset 0 0 0 1px var(--audio);
 }
 
-.pitch-contour-morae {
-  display: grid;
-  grid-template-columns: repeat(var(--pitch-mora-count), minmax(0, 1fr));
-  margin-top: -0.2rem;
+.pitch-contour-word {
+  display: flex;
+  width: 100%;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 1.25rem;
-  line-height: 1.2;
+  font-size: var(--pitch-character-size);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
-.pitch-contour-morae span {
-  transition: color 120ms ease;
-}
-
-.pitch-contour-morae span[data-active="true"] {
-  color: var(--audio);
-}
-
-.pitch-contour-romaji {
-  display: grid;
-  grid-template-columns: repeat(var(--pitch-mora-count), minmax(0, 1fr));
-  margin-top: 0.2rem;
-  color: color-mix(in srgb, var(--foreground) 68%, transparent);
-  font-size: 0.78rem;
-  line-height: 1.2;
-}
-
-.pitch-contour-romaji span {
+.pitch-contour-word span {
   min-width: 0;
+  flex-basis: 0;
+  flex-grow: var(--pitch-mora-character-count);
   text-align: center;
   transition: color 120ms ease;
 }
 
-.pitch-contour-romaji span[data-active="true"] {
+.pitch-contour-word span[data-active="true"] {
   color: var(--audio);
 }
 
-.pitch-contour-beat-count {
+.pitch-contour-romaji {
   display: block;
-  margin-top: 0.55rem;
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.2;
+  margin-top: 0.1rem;
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
 }
 
 .pitch-example:focus-visible {
@@ -2249,11 +2237,7 @@
 }
 
 .pitch-review-card-content .pitch-contour {
-  width: min(100%, calc(var(--pitch-mora-count) * 3.75rem));
-}
-
-.pitch-review-card-content .pitch-contour-morae {
-  font-size: clamp(1.75rem, 9vw, 2.5rem);
+  --pitch-character-size: clamp(1.75rem, 9vw, 2.5rem);
 }
 
 .vocabulary-intro {
@@ -2275,7 +2259,7 @@
   position: relative;
   display: grid;
   width: 100%;
-  min-height: 10rem;
+  min-height: 9rem;
   align-content: center;
   justify-items: start;
   gap: 0.2rem;
@@ -2339,7 +2323,7 @@
   transform-origin: center;
 }
 
-.vocabulary-reference-item[data-known="true"] .pitch-contour-morae {
+.vocabulary-reference-item[data-known="true"] .pitch-contour-word {
   color: var(--known);
 }
 
@@ -2404,11 +2388,7 @@
 }
 
 .vocabulary-review-answer .pitch-contour {
-  width: min(100%, calc(var(--pitch-mora-count) * 3.5rem));
-}
-
-.vocabulary-review-answer .pitch-contour-morae {
-  font-size: clamp(1.75rem, 9vw, 2.5rem);
+  --pitch-character-size: clamp(1.75rem, 9vw, 2.5rem);
 }
 
 @media (hover: hover) and (pointer: fine) {

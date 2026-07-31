@@ -74,7 +74,10 @@ export function NetworkStationSymbol({ kind }: { kind: NetworkStationKind }) {
     return (
       <>
         <circle className="network-interchange-outer" r="28" />
-        <circle className="network-interchange-inner" r="16" />
+        <circle
+          className={`network-interchange-inner network-interchange-inner-${kind}`}
+          r="16"
+        />
       </>
     );
   }
@@ -82,7 +85,10 @@ export function NetworkStationSymbol({ kind }: { kind: NetworkStationKind }) {
   return (
     <>
       <circle className={`network-single-station-outer network-single-station-outer-${kind}`} r="15" />
-      <circle className="network-single-station-inner" r="7" />
+      <circle
+        className={`network-single-station-inner network-single-station-inner-${kind}`}
+        r="7"
+      />
     </>
   );
 }

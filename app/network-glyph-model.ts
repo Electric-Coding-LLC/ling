@@ -56,7 +56,7 @@ export interface NetworkGlyphDefinition {
 }
 
 export const NETWORK_GLYPH_VIEWBOX = "0 0 40 30";
-export const NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH = 9;
+export const NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH = 6;
 export const NETWORK_GLYPH_RADII = {
   interchange: 5,
   station: 4,

@@ -80,13 +80,14 @@ test("the Japan line keeps a compact, source-noted Japanese-first manifest", () 
 
   assert.equal(JAPAN_STARTER_PHRASES.length, 3);
   assert.deepEqual(
-    JAPAN_STARTER_PHRASES.map(({ soundCue }) => soundCue),
+    JAPAN_STARTER_PHRASES.map(({ romaji }) => romaji),
     [
-      "soo mee mah seh nn",
-      "ah ree gah toh oo goh zah ee mah s",
-      "oh neh gah ee shee mah s",
+      "Sumimasen",
+      "Arigatō gozaimasu",
+      "Onegaishimasu",
     ],
   );
+  assert.ok(JAPAN_STARTER_PHRASES.every((phrase) => !("soundCue" in phrase)));
   assert.deepEqual(
     TRAVEL_PHRASES.introductions.map(({ japanese }) => japanese),
     [
@@ -372,17 +373,15 @@ test("the Japan line uses one immediate-feedback reference surface without progr
   assert.match(component, /Rōmaji is required for \$\{item\.japanese\}/);
   assert.match(component, /Rōmaji: \$\{item\.romaji\}/);
   assert.match(component, /className="travel-reference-romaji"/);
-  assert.match(component, /showSoundCues && !item\.soundCue/);
-  assert.match(component, /data-sound-cue=\{soundCue \? "true" : undefined\}/);
-  assert.match(component, /className="travel-reference-sound-cue"/);
+  assert.doesNotMatch(component, /showSoundCues|soundCue|travel-reference-sound-cue/);
   assert.doesNotMatch(component, /splitJapaneseMorae|pronunciationBeats|activeBeatIndex/);
   assert.match(
     component,
-    /\{showPronunciation \? \(\s*<span className="travel-reference-meaning">\{item\.meaning\}<\/span>[\s\S]*?<JapanesePhrase\s+className="travel-reference-japanese"/,
+    /\{meaningFirst \? \(\s*<span className="travel-reference-meaning">\{item\.meaning\}<\/span>[\s\S]*?<JapanesePhrase\s+className="travel-reference-japanese"/,
   );
   assert.match(
     component,
-    /\{!showPronunciation \? \(\s*<span className="travel-reference-meaning">\{item\.meaning\}<\/span>/,
+    /\{!meaningFirst \? \(\s*<span className="travel-reference-meaning">\{item\.meaning\}<\/span>/,
   );
   assert.match(component, /<audio[\s\S]*onEnded=\{handleAudioEnded\}[\s\S]*onError=\{handleAudioError\}/);
   assert.doesNotMatch(component, /fetch\(|score|streak|known|\/api\/stations\/introductions/i);
@@ -439,17 +438,18 @@ test("the Japan line uses one immediate-feedback reference surface without progr
     } else {
       assert.match(page, /items=\{(?:TRAVEL_PHRASES\.|JAPAN_STARTER_PHRASES\})/);
     }
-    if (["introductions", "navigation", "food", "shopping", "help"].includes(station)) {
+    if (["japan", "introductions", "navigation", "food", "shopping", "help"].includes(station)) {
       assert.match(page, /showPronunciation/);
     } else {
       assert.doesNotMatch(page, /showPronunciation/);
     }
     if (station === "japan") {
       assert.match(page, /<TravelStation\s+framed/);
-      assert.match(page, /showSoundCues/);
+      assert.match(page, /meaningFirst=\{false\}/);
     } else {
-      assert.doesNotMatch(page, /showSoundCues/);
+      assert.doesNotMatch(page, /meaningFirst=/);
     }
+    assert.doesNotMatch(page, /showSoundCues/);
     if (["introductions", "navigation", "food", "shopping", "help"].includes(station)) {
       assert.match(page, /\breview\b/);
     } else {

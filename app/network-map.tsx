@@ -28,24 +28,29 @@ export type StationFocus =
   | "writing"
   | "words";
 
-type MobileFocus = StationFocus;
 type CategoryFocus = "japan" | "sound" | "vocabulary" | "writing";
 type LinkedStationFocus = Exclude<StationFocus, CategoryFocus>;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 type LineRole = "foundation" | "sound" | "travel" | "vocabulary" | "writing";
 
-const DESKTOP_VIEW_WIDTH = 1320;
+const DESKTOP_VIEW_WIDTH = 1500;
 const MOBILE_VIEW_WIDTH = 520;
-const NETWORK_VIEW_HEIGHT = 1680;
-const DESKTOP_SPINE_X = DESKTOP_VIEW_WIDTH / 2;
+const NETWORK_ROW_GAP = 180;
+const NETWORK_COLUMN_GAP = 180;
+const CATEGORY_ROW_GAP = NETWORK_ROW_GAP * 1.5;
+const DESKTOP_SPINE_X = (DESKTOP_VIEW_WIDTH - NETWORK_COLUMN_GAP) / 2;
 const MOBILE_SPINE_X = MOBILE_VIEW_WIDTH / 2;
 const ROOT_Y = 105;
-const ROMAJI_Y = 220;
-const JAPAN_Y = 410;
-const SOUND_Y = 780;
-const WRITING_Y = 1160;
-const VOCABULARY_Y = 1530;
-const MOBILE_SWIPE_THRESHOLD = 40;
+const JAPAN_BRANCH_HALF_SPAN = 160;
+const WRITING_BRANCH_HALF_SPAN = 70;
+const NETWORK_BOTTOM_PADDING = 150;
+const MOBILE_CONTENT_WIDTH = MOBILE_VIEW_WIDTH + NETWORK_COLUMN_GAP * 4;
+const ROMAJI_Y = ROOT_Y + NETWORK_ROW_GAP;
+const JAPAN_Y = ROMAJI_Y + NETWORK_ROW_GAP;
+const SOUND_Y = JAPAN_Y + JAPAN_BRANCH_HALF_SPAN + NETWORK_ROW_GAP;
+const WRITING_Y = SOUND_Y + CATEGORY_ROW_GAP;
+const VOCABULARY_Y = WRITING_Y + CATEGORY_ROW_GAP;
+const NETWORK_VIEW_HEIGHT = VOCABULARY_Y + NETWORK_BOTTOM_PADDING;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
 
@@ -110,16 +115,15 @@ const STATION_NEIGHBORS: Record<
   writing: { ArrowDown: "vocabulary", ArrowRight: "kana", ArrowUp: "sound" },
   kana: { ArrowDown: "words", ArrowLeft: "writing", ArrowRight: "hiragana", ArrowUp: "vowels" },
   hiragana: { ArrowDown: "katakana", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "mora" },
-  katakana: { ArrowDown: "words", ArrowLeft: "kana", ArrowRight: "combined", ArrowUp: "hiragana" },
-  marks: { ArrowDown: "combined", ArrowLeft: "hiragana", ArrowUp: "pitch" },
-  combined: { ArrowDown: "words", ArrowLeft: "katakana", ArrowUp: "marks" },
+  katakana: { ArrowDown: "words", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "hiragana" },
+  marks: { ArrowDown: "words", ArrowLeft: "hiragana", ArrowRight: "combined", ArrowUp: "pitch" },
+  combined: { ArrowDown: "words", ArrowLeft: "marks", ArrowUp: "pitch" },
   vocabulary: { ArrowRight: "words", ArrowUp: "writing" },
   words: { ArrowLeft: "vocabulary", ArrowUp: "kana" },
 };
 
 type NetworkViewProps = {
   mobile?: boolean;
-  mobileFocus?: MobileFocus;
   onLinePointerLeave: () => void;
   onStationFocus: (focus: StationFocus) => void;
   onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
@@ -300,33 +304,29 @@ function RoutePath({
   );
 }
 
-function roundedBranchPath({
+function roundedConvergingPath({
   endX,
   endY,
   radius = 16,
   startX,
   startY,
-  turnX,
 }: {
   endX: number;
   endY: number;
   radius?: number;
   startX: number;
   startY: number;
-  turnX: number;
 }) {
-  if (startY === endY) return `M${startX} ${startY}H${endX}`;
-
   const direction = Math.sign(endY - startY);
+  const horizontalDirection = Math.sign(endX - startX);
   const cornerRadius = Math.min(radius, Math.abs(endY - startY) / 2);
+  const beforeEndX = endX - horizontalDirection * cornerRadius;
 
   return [
     `M${startX} ${startY}`,
-    `H${turnX - cornerRadius}`,
-    `Q${turnX} ${startY} ${turnX} ${startY + direction * cornerRadius}`,
-    `V${endY - direction * cornerRadius}`,
-    `Q${turnX} ${endY} ${turnX + cornerRadius} ${endY}`,
-    `H${endX}`,
+    `H${beforeEndX}`,
+    `Q${endX} ${startY} ${endX} ${startY + direction * cornerRadius}`,
+    `V${endY}`,
   ].join("");
 }
 
@@ -399,29 +399,31 @@ function CategoryStation({
 
 function NetworkView({
   mobile = false,
-  mobileFocus = "japanese",
   onLinePointerLeave,
   onStationFocus,
   onTooltipPointerMove,
 }: NetworkViewProps) {
-  const width = mobile ? MOBILE_VIEW_WIDTH : DESKTOP_VIEW_WIDTH;
+  const width = mobile ? MOBILE_CONTENT_WIDTH : DESKTOP_VIEW_WIDTH;
   const spineX = mobile ? MOBILE_SPINE_X : DESKTOP_SPINE_X;
-  const depthOneX = mobile ? 440 : 840;
-  const depthTwoX = mobile ? 680 : 1040;
-  const depthThreeX = mobile ? 920 : 1260;
+  const depthOneX = spineX + NETWORK_COLUMN_GAP;
+  const depthTwoX = depthOneX + NETWORK_COLUMN_GAP;
+  const depthThreeX = depthTwoX + NETWORK_COLUMN_GAP;
+  const depthFourX = depthThreeX + NETWORK_COLUMN_GAP;
   const view = mobile ? "mobile" : "desktop";
   const backlightId = `${view}-station-backlight`;
 
-  const japanPeerYs = [306, 358, 410, 462, 514] as const;
-  const writingUpperY = WRITING_Y - 70;
-  const writingLowerY = WRITING_Y + 70;
-  const writingFinalUpperY = WRITING_Y - 54;
-  const writingFinalLowerY = WRITING_Y + 54;
-  const japanStationX = depthOneX + 60;
-  const japanForkX = spineX + 92;
-  const japanBranchStartX = japanForkX - 16;
-  const writingForkX = depthOneX + 92;
-  const mergeX = depthTwoX + 88;
+  const japanPeerYs = mobile
+    ? [
+        JAPAN_Y - JAPAN_BRANCH_HALF_SPAN,
+        JAPAN_Y - JAPAN_BRANCH_HALF_SPAN / 2,
+        JAPAN_Y,
+        JAPAN_Y + JAPAN_BRANCH_HALF_SPAN / 2,
+        JAPAN_Y + JAPAN_BRANCH_HALF_SPAN,
+      ] as const
+    : [JAPAN_Y - 128, JAPAN_Y - 64, JAPAN_Y, JAPAN_Y + 64, JAPAN_Y + 128] as const;
+  const writingUpperY = WRITING_Y - WRITING_BRANCH_HALF_SPAN;
+  const writingLowerY = WRITING_Y + WRITING_BRANCH_HALF_SPAN;
+  const japanStationX = depthOneX;
 
   const network = (
     <>
@@ -432,24 +434,11 @@ function NetworkView({
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
       />
-      <RoutePath
-        d={`M${spineX} ${JAPAN_Y}H${japanBranchStartX}`}
-        label="Japan territory"
-        line="travel"
-        onLinePointerLeave={onLinePointerLeave}
-        onTooltipPointerMove={onTooltipPointerMove}
-      />
       {japanPeerYs.map((peerY) => (
         <RoutePath
-          d={roundedBranchPath({
-            endX: japanStationX,
-            endY: peerY,
-            startX: japanBranchStartX,
-            startY: JAPAN_Y,
-            turnX: japanForkX,
-          })}
+          d={`M${spineX} ${JAPAN_Y}L${japanStationX} ${peerY}`}
           key={peerY}
-          label="Japan territory"
+          label="Japan"
           line="travel"
           onLinePointerLeave={onLinePointerLeave}
           onTooltipPointerMove={onTooltipPointerMove}
@@ -457,99 +446,76 @@ function NetworkView({
       ))}
       <RoutePath
         d={`M${spineX} ${SOUND_Y}H${depthThreeX}`}
-        label="Sound territory"
+        label="Sound"
         line="sound"
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
         d={`M${spineX} ${WRITING_Y}H${depthOneX}`}
-        label="Writing territory"
+        label="Writing"
         line="writing"
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={roundedBranchPath({
-          endX: depthTwoX,
-          endY: writingUpperY,
-          startX: depthOneX,
-          startY: WRITING_Y,
-          turnX: writingForkX,
-        })}
-        label="Writing territory"
-        line="writing"
-        onLinePointerLeave={onLinePointerLeave}
-        onTooltipPointerMove={onTooltipPointerMove}
-      />
-      <RoutePath
-        d={roundedBranchPath({
-          endX: depthTwoX,
-          endY: writingLowerY,
-          startX: depthOneX,
-          startY: WRITING_Y,
-          turnX: writingForkX,
-        })}
-        label="Writing territory"
-        line="writing"
-        onLinePointerLeave={onLinePointerLeave}
-        onTooltipPointerMove={onTooltipPointerMove}
-      />
-      <RoutePath
-        d={roundedBranchPath({
-          endX: mergeX,
+        d={roundedConvergingPath({
+          endX: depthOneX,
           endY: WRITING_Y,
           startX: depthTwoX,
           startY: writingUpperY,
-          turnX: mergeX - 36,
         })}
-        label="Writing territory"
+        label="Writing"
         line="writing"
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={roundedBranchPath({
-          endX: mergeX,
+        d={roundedConvergingPath({
+          endX: depthOneX,
           endY: WRITING_Y,
           startX: depthTwoX,
           startY: writingLowerY,
-          turnX: mergeX - 36,
         })}
-        label="Writing territory"
+        label="Writing"
         line="writing"
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={roundedBranchPath({
+        d={roundedConvergingPath({
           endX: depthThreeX,
-          endY: writingFinalUpperY,
-          startX: mergeX,
-          startY: WRITING_Y,
-          turnX: mergeX + 54,
+          endY: WRITING_Y,
+          startX: depthTwoX,
+          startY: writingUpperY,
         })}
-        label="Writing territory"
+        label="Writing"
         line="writing"
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={roundedBranchPath({
+        d={roundedConvergingPath({
           endX: depthThreeX,
-          endY: writingFinalLowerY,
-          startX: mergeX,
-          startY: WRITING_Y,
-          turnX: mergeX + 54,
+          endY: WRITING_Y,
+          startX: depthTwoX,
+          startY: writingLowerY,
         })}
-        label="Writing territory"
+        label="Writing"
+        line="writing"
+        onLinePointerLeave={onLinePointerLeave}
+        onTooltipPointerMove={onTooltipPointerMove}
+      />
+      <RoutePath
+        d={`M${depthThreeX} ${WRITING_Y}H${depthFourX}`}
+        label="Writing"
         line="writing"
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
         d={`M${spineX} ${VOCABULARY_Y}H${depthOneX}`}
-        label="Vocabulary territory"
+        label="Vocabulary"
         line="vocabulary"
         onLinePointerLeave={onLinePointerLeave}
         onTooltipPointerMove={onTooltipPointerMove}
@@ -581,11 +547,11 @@ function NetworkView({
       <LinkedStation backlightId={backlightId} focus="mora" kind="sound" labelPlacement="above" onFocus={() => onStationFocus("mora")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={SOUND_Y} />
       <LinkedStation backlightId={backlightId} focus="pitch" kind="sound" labelPlacement="above" onFocus={() => onStationFocus("pitch")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={SOUND_Y} />
 
-      <LinkedStation backlightId={backlightId} focus="kana" kind="writing" labelPlacement="above" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={WRITING_Y} />
+      <LinkedStation backlightId={backlightId} focus="kana" kind="writing" labelPlacement="right" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={WRITING_Y} />
       <LinkedStation backlightId={backlightId} focus="hiragana" kind="writing" labelPlacement="above" onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingUpperY} />
       <LinkedStation backlightId={backlightId} focus="katakana" kind="writing" labelPlacement="below" onFocus={() => onStationFocus("katakana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingLowerY} />
-      <LinkedStation backlightId={backlightId} focus="marks" kind="writing" labelLines={["Dakuten &", "Handakuten"]} labelPlacement="above" onFocus={() => onStationFocus("marks")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={writingFinalUpperY} />
-      <LinkedStation backlightId={backlightId} focus="combined" kind="writing" labelPlacement="below" onFocus={() => onStationFocus("combined")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={writingFinalLowerY} />
+      <LinkedStation backlightId={backlightId} focus="marks" kind="writing" labelLines={["Dakuten &", "Handakuten"]} labelPlacement="left" onFocus={() => onStationFocus("marks")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={WRITING_Y} />
+      <LinkedStation backlightId={backlightId} focus="combined" kind="writing" labelPlacement="below" onFocus={() => onStationFocus("combined")} onPointerLeave={onLinePointerLeave} x={depthFourX} y={WRITING_Y} />
 
       <LinkedStation backlightId={backlightId} focus="words" kind="vocabulary" labelPlacement="above" onFocus={() => onStationFocus("words")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={VOCABULARY_Y} />
     </>
@@ -598,6 +564,9 @@ function NetworkView({
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
+      style={mobile
+        ? { width: `${(MOBILE_CONTENT_WIDTH / MOBILE_VIEW_WIDTH) * 100}%` }
+        : undefined}
       viewBox={`0 0 ${width} ${NETWORK_VIEW_HEIGHT}`}
     >
       <defs>
@@ -624,15 +593,10 @@ function NetworkView({
           <circle fill={`url(#${backlightId}-falloff)`} r="80" />
         </mask>
       </defs>
-      <title>Foundations</title>
       <desc id={`${view}-network-description`}>
-        Scroll down the Foundations spine to move through Japan, Sound, Writing, and Vocabulary. Move right along a territory to go deeper.
+        Scroll down the Foundations spine to move through Japan, Sound, Writing, and Vocabulary. Move right along a line to go deeper.
       </desc>
-      {mobile ? (
-        <g className={`network-mobile-track network-mobile-track-${mobileFocus}`}>{network}</g>
-      ) : (
-        network
-      )}
+      {network}
     </svg>
   );
 }
@@ -658,12 +622,9 @@ export function NetworkMap({
     initialStationFocus ?? null,
   );
   const stationFocus = selectedStationFocus ?? storedStationFocus;
-  const mobileFocus: MobileFocus = stationFocus;
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
   const desktopViewport = useRef<HTMLDivElement>(null);
   const mobileViewport = useRef<HTMLDivElement>(null);
-  const pointerStart = useRef<{ id: number; x: number } | null>(null);
-  const dragged = useRef(false);
 
   useEffect(() => {
     const focus = normalizeStationFocus(
@@ -684,6 +645,22 @@ export function NetworkMap({
     viewport?.focus({ preventScroll: true });
   }, []);
 
+  useEffect(() => {
+    const viewport = mobileViewport.current;
+    if (!viewport || !window.matchMedia("(max-width: 600px)").matches) return;
+    const target = getStationTarget(viewport, stationFocus);
+    const viewportBounds = viewport.getBoundingClientRect();
+    const targetBounds = target.getBoundingClientRect();
+    const targetCenter = viewport.scrollLeft
+      + targetBounds.left
+      - viewportBounds.left
+      + targetBounds.width / 2;
+    viewport.scrollTo({
+      behavior: "auto",
+      left: Math.max(0, targetCenter - viewport.clientWidth / 2),
+    });
+  }, [stationFocus]);
+
   function selectStation(focus: StationFocus) {
     setSelectedStationFocus(focus);
     storeStationFocus(focus);
@@ -703,7 +680,7 @@ export function NetworkMap({
   ) {
     selectStation(focus);
     if (event.currentTarget === mobileViewport.current) {
-      getStationTarget(event.currentTarget, focus).focus();
+      getStationTarget(event.currentTarget, focus).focus({ preventScroll: true });
     }
   }
 
@@ -730,41 +707,6 @@ export function NetworkMap({
     const selectedTarget = focusedStationTarget
       ?? getStationTarget(event.currentTarget, stationFocus);
     if (selectedTarget instanceof SVGAElement) activateStationLink(selectedTarget);
-  }
-
-  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    dragged.current = false;
-    pointerStart.current = { id: event.pointerId, x: event.clientX };
-  }
-
-  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
-    const start = pointerStart.current;
-    if (!start || start.id !== event.pointerId || dragged.current) return;
-    if (Math.abs(event.clientX - start.x) < MOBILE_SWIPE_THRESHOLD) return;
-    dragged.current = true;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function onPointerUp(event: PointerEvent<HTMLDivElement>) {
-    const start = pointerStart.current;
-    if (!start || start.id !== event.pointerId) return;
-    const distance = event.clientX - start.x;
-    const direction = distance < 0 ? "ArrowRight" : "ArrowLeft";
-    const nextFocus = STATION_NEIGHBORS[stationFocus][direction];
-    if (dragged.current && nextFocus) selectStation(nextFocus);
-    pointerStart.current = null;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  }
-
-  function onPointerCancel(event: PointerEvent<HTMLDivElement>) {
-    pointerStart.current = null;
-    dragged.current = false;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
   }
 
   function onTooltipPointerMove(event: PointerEvent<Element>, label: string) {
@@ -804,26 +746,15 @@ export function NetworkMap({
           <span aria-live="polite" className="sr-only">{stationAnnouncement}</span>
         </div>
         <div
-          aria-label="Explore the network with the arrow keys"
+          aria-label="Pan across the network or explore with the arrow keys"
           className="network-mobile-viewport"
-          data-mobile-focus={mobileFocus}
           data-mobile-station-focus={stationFocus}
-          onClickCapture={(event) => {
-            if (!dragged.current) return;
-            event.preventDefault();
-            event.stopPropagation();
-            dragged.current = false;
-          }}
           onKeyDown={onKeyDown}
-          onPointerCancel={onPointerCancel}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
           ref={mobileViewport}
           role="group"
           tabIndex={0}
         >
-          <NetworkView {...sharedViewProps} mobile mobileFocus={mobileFocus} />
+          <NetworkView {...sharedViewProps} mobile />
           <span aria-live="polite" className="sr-only">{stationAnnouncement}</span>
         </div>
       </div>

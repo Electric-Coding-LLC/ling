@@ -48,7 +48,8 @@ export default function JapanPage() {
             </section>,
           ]}
           items={JAPAN_STARTER_PHRASES}
-          showSoundCues
+          meaningFirst={false}
+          showPronunciation
           title="Japan"
         />
       </div>

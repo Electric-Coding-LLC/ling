@@ -10,11 +10,13 @@ import {
   getPitchLevels,
 } from "@/src/modules/learning/pitch-accent";
 import {
-  isVocabularyItemId,
-  VOCABULARY_STATIONS,
+  isVocabularyKnowledge,
+  VOCABULARY_REVIEW_DIRECTIONS,
+  WORDS_STATION,
   type VocabularyItem,
+  type VocabularyKnowledge,
+  type VocabularyReviewDirection,
   type VocabularyStation,
-  type VocabularyStationId,
 } from "@/src/modules/learning/vocabulary";
 import { FlashcardCountdown, FlashcardReview } from "./flashcard-review";
 import { PitchContour, pitchLabel } from "./pitch-contour";
@@ -23,19 +25,13 @@ import { useFlashcardAudio } from "./use-flashcard-audio";
 
 const VOCABULARY_LINE_LABEL = "Vocabulary";
 
-type VocabularyReviewDirection = "japanese-to-meaning" | "meaning-to-japanese";
-
 type VocabularyReview = {
   readonly cards: readonly VocabularyItem[];
   readonly direction: VocabularyReviewDirection;
 };
 
-export function VocabularyGuide({
-  stationId,
-}: {
-  readonly stationId: VocabularyStationId;
-}) {
-  const station: VocabularyStation = VOCABULARY_STATIONS[stationId];
+export function VocabularyGuide() {
+  const station: VocabularyStation = WORDS_STATION;
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const {
     activeAudioIndex,
@@ -51,7 +47,9 @@ export function VocabularyGuide({
   const [activeReview, setActiveReview] = useState<VocabularyReview | null>(null);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [knowledgeError, setKnowledgeError] = useState(false);
-  const [knownItems, setKnownItems] = useState<Set<string>>(() => new Set());
+  const [knownItems, setKnownItems] = useState<KnownVocabularyItems>(
+    createEmptyKnownItems,
+  );
   const [reviewIndex, setReviewIndex] = useState(0);
   const reviewLauncherRef = useRef<HTMLDetailsElement | null>(null);
   const activeCard = activeReview?.cards[reviewIndex] ?? null;
@@ -62,9 +60,9 @@ export function VocabularyGuide({
     : null;
   useEffect(() => {
     const controller = new AbortController();
-    void fetch(`/api/stations/${stationId}/introduction`, { method: "POST" });
+    void fetch("/api/stations/words/introduction", { method: "POST" });
 
-    void fetch(`/api/stations/${stationId}/knowledge`, {
+    void fetch("/api/stations/words/knowledge", {
       cache: "no-store",
       signal: controller.signal,
     })
@@ -74,18 +72,18 @@ export function VocabularyGuide({
       })
       .then((payload) => {
         if (!Array.isArray(payload.known)) throw new Error("Knowledge is invalid");
-        const known = payload.known.filter((value) =>
-          isVocabularyItemId(stationId, value),
+        const known = payload.known.filter((value): value is VocabularyKnowledge =>
+          isVocabularyKnowledge(value),
         );
         if (known.length !== payload.known.length) throw new Error("Knowledge is invalid");
-        setKnownItems(new Set(known));
+        setKnownItems(toKnownVocabularyItems(known));
       })
       .catch(() => {
         if (!controller.signal.aborted) setKnowledgeError(true);
       });
 
     return () => controller.abort();
-  }, [stationId]);
+  }, []);
 
   useEffect(() => {
     function dismissReviewLauncher(event: PointerEvent) {
@@ -152,12 +150,16 @@ export function VocabularyGuide({
     setReviewIndex(0);
   }
 
-  function updateKnownState(itemId: string, known: boolean) {
+  function updateKnownState(
+    itemId: string,
+    direction: VocabularyReviewDirection,
+    known: boolean,
+  ) {
     setKnownItems((current) => {
-      const next = new Set(current);
-      if (known) next.add(itemId);
-      else next.delete(itemId);
-      return next;
+      const nextDirection = new Set(current[direction]);
+      if (known) nextDirection.add(itemId);
+      else nextDirection.delete(itemId);
+      return { ...current, [direction]: nextDirection };
     });
   }
 
@@ -165,18 +167,19 @@ export function VocabularyGuide({
     if (!activeCard || !activeReview) return;
 
     const { id } = activeCard;
-    const wasKnown = knownItems.has(id);
-    updateKnownState(id, known);
+    const { direction } = activeReview;
+    const wasKnown = knownItems[direction].has(id);
+    updateKnownState(id, direction, known);
     setKnowledgeError(false);
 
-    void fetch(`/api/stations/${stationId}/knowledge`, {
-      body: JSON.stringify({ itemId: id, known }),
+    void fetch("/api/stations/words/knowledge", {
+      body: JSON.stringify({ direction, itemId: id, known }),
       headers: { "Content-Type": "application/json" },
       method: "PUT",
     }).then((response) => {
       if (!response.ok) throw new Error("Knowledge could not save");
     }).catch(() => {
-      updateKnownState(id, wasKnown);
+      updateKnownState(id, direction, wasKnown);
       setKnowledgeError(true);
     });
 
@@ -193,7 +196,7 @@ export function VocabularyGuide({
 
   async function setAllKnowledge(known: boolean) {
     setKnowledgeError(false);
-    const response = await fetch(`/api/stations/${stationId}/knowledge`, {
+    const response = await fetch("/api/stations/words/knowledge", {
       body: JSON.stringify({ known }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -202,18 +205,25 @@ export function VocabularyGuide({
 
     const payload = await response.json() as { known?: unknown };
     if (!Array.isArray(payload.known)) throw new Error("Knowledge is invalid");
-    const nextKnown = payload.known.filter((value) =>
-      isVocabularyItemId(stationId, value),
+    const nextKnown = payload.known.filter((value): value is VocabularyKnowledge =>
+      isVocabularyKnowledge(value),
     );
     if (nextKnown.length !== payload.known.length) throw new Error("Knowledge is invalid");
-    setKnownItems(new Set(nextKnown));
+    setKnownItems(toKnownVocabularyItems(nextKnown));
   }
 
-  const knownCount = station.items.filter((item) => knownItems.has(item.id)).length;
-  const remainingCount = station.items.length - knownCount;
-  const reviewLabel = remainingCount === 0
+  const reviewDirections = VOCABULARY_REVIEW_DIRECTIONS;
+  const knownRecallCount = reviewDirections.reduce(
+    (count, direction) => count + station.items.filter((item) =>
+      knownItems[direction].has(item.id),
+    ).length,
+    0,
+  );
+  const totalRecallCount = station.items.length * reviewDirections.length;
+  const remainingRecallCount = totalRecallCount - knownRecallCount;
+  const reviewLabel = remainingRecallCount === 0
     ? `Review ${station.name}. Complete.`
-    : `Review ${station.name}. ${remainingCount} remaining.`;
+    : `Review ${station.name}. ${remainingRecallCount} recalls remaining.`;
 
   return (
     <>
@@ -226,55 +236,48 @@ export function VocabularyGuide({
           </div>
           <div className="station-heading-actions">
             <StationOptions
-              allComplete={remainingCount === 0}
-              completeDescription={`This marks all ${station.items.length} ${station.name} words as complete.`}
-              hasProgress={knownCount > 0}
+              allComplete={remainingRecallCount === 0}
+              completeDescription={`This marks both recall directions for all ${station.items.length} Words as complete.`}
+              hasProgress={knownRecallCount > 0}
               onError={() => setKnowledgeError(true)}
               onSetComplete={setAllKnowledge}
-              resetDescription={`This marks all ${station.items.length} ${station.name} words as incomplete.`}
-              stationId={stationId}
+              resetDescription={`This resets both recall directions for all ${station.items.length} Words.`}
+              stationId="words"
               stationName={station.name}
             />
             <span className="hiragana-test-trigger-wrap">
-              {stationId === "words" ? (
-                <details className="vocabulary-review-launcher" ref={reviewLauncherRef}>
-                  <summary
-                    aria-label={`${reviewLabel} Choose review direction.`}
-                    className="hiragana-test-trigger"
-                    data-complete={remainingCount === 0 ? "true" : undefined}
-                    style={{ "--hiragana-test-progress": `${knownCount / station.items.length}turn` } as CSSProperties}
-                  >
-                    <span className="hiragana-test-progress-text">{remainingCount === 0 ? "✓" : remainingCount}</span>
-                  </summary>
-                  <div aria-label="Review direction" className="station-options-menu vocabulary-review-direction-menu">
-                    <button
-                      className="station-options-action"
-                      onClick={() => openReview(station.items, "meaning-to-japanese")}
-                      type="button"
-                    >
-                      English → Japanese
-                    </button>
-                    <button
-                      className="station-options-action"
-                      onClick={() => openReview(station.items, "japanese-to-meaning")}
-                      type="button"
-                    >
-                      Japanese → English
-                    </button>
-                  </div>
-                </details>
-              ) : (
-                <button
-                  aria-label={reviewLabel}
+              <details className="vocabulary-review-launcher" ref={reviewLauncherRef}>
+                <summary
+                  aria-label={`${reviewLabel} Choose review direction.`}
                   className="hiragana-test-trigger"
-                  data-complete={remainingCount === 0 ? "true" : undefined}
-                  onClick={() => openReview(station.items, "meaning-to-japanese")}
-                  style={{ "--hiragana-test-progress": `${knownCount / station.items.length}turn` } as CSSProperties}
-                  type="button"
+                  data-complete={remainingRecallCount === 0 ? "true" : undefined}
+                  style={{ "--hiragana-test-progress": `${knownRecallCount / totalRecallCount}turn` } as CSSProperties}
                 >
-                  <span className="hiragana-test-progress-text">{remainingCount === 0 ? "✓" : remainingCount}</span>
-                </button>
-              )}
+                  <span className="hiragana-test-progress-text">{remainingRecallCount === 0 ? "✓" : remainingRecallCount}</span>
+                </summary>
+                <div aria-label="Review direction" className="station-options-menu vocabulary-review-direction-menu">
+                  <button
+                    className="station-options-action"
+                    onClick={() => openReview(station.items, "meaning-to-japanese")}
+                    type="button"
+                  >
+                    <span>English → Japanese</span>
+                    <span className="vocabulary-review-direction-progress">
+                      {formatDirectionProgress(station, knownItems, "meaning-to-japanese")}
+                    </span>
+                  </button>
+                  <button
+                    className="station-options-action"
+                    onClick={() => openReview(station.items, "japanese-to-meaning")}
+                    type="button"
+                  >
+                    <span>Japanese → English</span>
+                    <span className="vocabulary-review-direction-progress">
+                      {formatDirectionProgress(station, knownItems, "japanese-to-meaning")}
+                    </span>
+                  </button>
+                </div>
+              </details>
               <span className="network-tooltip hiragana-test-tooltip">{reviewLabel}</span>
             </span>
           </div>
@@ -304,7 +307,9 @@ export function VocabularyGuide({
               <button
                 aria-label={`Play ${item.word}, ${item.meaning}, ${morae.length} ${morae.length === 1 ? "beat" : "beats"}`}
                 className="vocabulary-reference-item"
-                data-known={knownItems.has(item.id) ? "true" : undefined}
+                data-known={reviewDirections.every((direction) =>
+                  knownItems[direction].has(item.id),
+                ) ? "true" : undefined}
                 data-playing={playing ? "true" : undefined}
                 key={item.id}
                 onClick={() => playItem(item)}
@@ -318,7 +323,6 @@ export function VocabularyGuide({
                   showPronunciation
                   word={item.word}
                 />
-                {item.group ? <span className="vocabulary-reference-group">{item.group}</span> : null}
                 <VocabularyAudioIndicator />
               </button>
             );
@@ -330,7 +334,7 @@ export function VocabularyGuide({
 
         {activeReview && activeCard && activeCardMorae && activeCardPitch ? (
           <dialog
-            aria-labelledby={`${stationId}-review-title`}
+            aria-labelledby="words-review-title"
             className="hiragana-test-dialog"
             onCancel={(event) => {
               event.preventDefault();
@@ -342,12 +346,10 @@ export function VocabularyGuide({
             <div className="hiragana-test-modal">
               <header className="hiragana-test-modal-heading">
                 <div>
-                  <h2 id={`${stationId}-review-title`}>{station.name}</h2>
-                  {stationId === "words" ? (
-                    <p className="vocabulary-review-direction-label">
-                      {meaningFirst ? "English → Japanese" : "Japanese → English"}
-                    </p>
-                  ) : null}
+                  <h2 id="words-review-title">{station.name}</h2>
+                  <p className="vocabulary-review-direction-label">
+                    {meaningFirst ? "English → Japanese" : "Japanese → English"}
+                  </p>
                 </div>
                 <button aria-label="Close flashcards" className="hiragana-test-close" onClick={closeReview} type="button">
                   <span aria-hidden="true">×</span>
@@ -379,18 +381,15 @@ export function VocabularyGuide({
                     {answerRevealed ? (
                       <span className="vocabulary-review-answer">
                         {meaningFirst ? (
-                          <>
-                            <PitchContour
-                              activeMoraIndex={audioPlaying && activeAudioIndex === itemIndex(activeCard)
-                                ? activeBeatIndex
-                                : null}
-                              morae={activeCardMorae}
-                              pitch={activeCardPitch}
-                              showPronunciation
-                              word={activeCard.word}
-                            />
-                            {activeCard.group ? <span className="vocabulary-reference-group">{activeCard.group}</span> : null}
-                          </>
+                          <PitchContour
+                            activeMoraIndex={audioPlaying && activeAudioIndex === itemIndex(activeCard)
+                              ? activeBeatIndex
+                              : null}
+                            morae={activeCardMorae}
+                            pitch={activeCardPitch}
+                            showPronunciation
+                            word={activeCard.word}
+                          />
                         ) : (
                           <>
                             <span className="vocabulary-review-meaning">{activeCard.meaning}</span>
@@ -420,6 +419,35 @@ function VocabularyAudioIndicator() {
       <span />
     </span>
   );
+}
+
+type KnownVocabularyItems = Record<VocabularyReviewDirection, Set<string>>;
+
+function createEmptyKnownItems(): KnownVocabularyItems {
+  return {
+    "japanese-to-meaning": new Set(),
+    "meaning-to-japanese": new Set(),
+  };
+}
+
+function toKnownVocabularyItems(
+  knowledge: readonly VocabularyKnowledge[],
+): KnownVocabularyItems {
+  const knownItems = createEmptyKnownItems();
+  for (const item of knowledge) knownItems[item.direction].add(item.itemId);
+  return knownItems;
+}
+
+function formatDirectionProgress(
+  station: VocabularyStation,
+  knownItems: KnownVocabularyItems,
+  direction: VocabularyReviewDirection,
+) {
+  const knownCount = station.items.filter((item) =>
+    knownItems[direction].has(item.id),
+  ).length;
+  const remainingCount = station.items.length - knownCount;
+  return remainingCount === 0 ? "Complete" : `${remainingCount} remaining`;
 }
 
 function vocabularyAnnouncement(item: VocabularyItem, meaningFirst: boolean) {

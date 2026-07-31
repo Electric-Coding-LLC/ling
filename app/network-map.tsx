@@ -135,8 +135,6 @@ function normalizeStationFocus(focus: string | null): StationFocus | null {
   if (focus === "mora-timing") return "mora";
   if (focus === "sound-marks" || focus === "kana-extensions") return "marks";
   if (focus === "combined-sounds") return "combined";
-  if (focus === "nouns" || focus === "verbs" || focus === "adjectives") return "words";
-
   return focus && focus in STATION_LABELS
     ? focus as StationFocus
     : null;

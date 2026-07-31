@@ -1,19 +1,19 @@
 import {
-  handleVocabularyKnowledgeGet,
-  handleVocabularyKnowledgePatch,
-  handleVocabularyKnowledgePut,
+  handleWordsKnowledgeGet,
+  handleWordsKnowledgePatch,
+  handleWordsKnowledgePut,
 } from "../../vocabulary-route-handlers";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return handleVocabularyKnowledgeGet("words");
+  return handleWordsKnowledgeGet();
 }
 
 export async function PUT(request: Request) {
-  return handleVocabularyKnowledgePut("words", request);
+  return handleWordsKnowledgePut(request);
 }
 
 export async function PATCH(request: Request) {
-  return handleVocabularyKnowledgePatch("words", request);
+  return handleWordsKnowledgePatch(request);
 }

@@ -191,9 +191,9 @@ speaking about the present. It is a listening-first reference with Japanese,
 canonical rōmaji, meaning, bundled audio, and an explicit flashcard review in
 either the English-to-Japanese or Japanese-to-English direction.
 
-The earlier `Nouns`, `Verbs`, and `Adjectives` references are not stations on
-the mapped Foundations network. Their routes remain directly addressable while
-their material is reconsidered around more useful real-world groupings.
+The earlier `Nouns`, `Verbs`, and `Adjectives` stations have been retired.
+Vocabulary grows through practical Words sets rather than abstract parts-of-speech
+routes.
 
 `Mora` first defines a mora as one rhythmic timing unit, then presents purpose-chosen playable examples with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division.
 

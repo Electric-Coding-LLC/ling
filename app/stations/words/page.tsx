@@ -8,7 +8,7 @@ export default function WordsPage() {
     <main className="shell station-shell">
       <StationTopbar current="Words" mapPosition="words" />
       <div className="station-page station-page-vocabulary station-page-words">
-        <VocabularyGuide stationId="words" />
+        <VocabularyGuide />
       </div>
     </main>
   );

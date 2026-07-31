@@ -40,6 +40,10 @@ test("generated migrations create the account-scoped learning boundaries", async
     new URL("drizzle/0008_great_the_twelve.sql", root),
     "utf8",
   );
+  const directionalVocabularyKnowledgeMigration = await readFile(
+    new URL("drizzle/0009_nostalgic_wallop.sql", root),
+    "utf8",
+  );
   const database = new DatabaseSync(":memory:");
   database.exec("PRAGMA foreign_keys = ON");
   database.exec(userMigration);
@@ -51,6 +55,46 @@ test("generated migrations create the account-scoped learning boundaries", async
   database.exec(pitchAccentKnowledgeMigration);
   database.exec(romajiKnowledgeMigration);
   database.exec(vocabularyKnowledgeMigration);
+  database.prepare(
+    "INSERT INTO users (id, created_at, updated_at) VALUES (?, ?, ?)",
+  ).run("legacy-learner", 1, 1);
+  database.prepare(
+    "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
+  ).run("legacy-learner", "words", "kore", 2);
+  database.prepare(
+    "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
+  ).run("legacy-learner", "nouns", "yama", 3);
+  database.prepare(
+    "INSERT INTO station_introductions (user_id, station_id, introduced_at) VALUES (?, ?, ?)",
+  ).run("legacy-learner", "words", 4);
+  database.prepare(
+    "INSERT INTO station_introductions (user_id, station_id, introduced_at) VALUES (?, ?, ?)",
+  ).run("legacy-learner", "nouns", 5);
+  database.exec(directionalVocabularyKnowledgeMigration);
+
+  const migratedVocabularyKnowledge = database.prepare(
+    "SELECT review_direction FROM vocabulary_knowledge WHERE user_id = ? AND item_id = ?",
+  ).get("legacy-learner", "kore");
+  assert.equal(
+    migratedVocabularyKnowledge.review_direction,
+    "meaning-to-japanese",
+  );
+  assert.equal(
+    database.prepare("SELECT COUNT(*) AS count FROM vocabulary_knowledge").get().count,
+    1,
+  );
+  assert.deepEqual(
+    database.prepare(
+      "SELECT station_id FROM station_introductions WHERE user_id = ? ORDER BY station_id",
+    ).all("legacy-learner").map(({ station_id }) => station_id),
+    ["words"],
+  );
+  assert.equal(
+    database.prepare("PRAGMA table_info(vocabulary_knowledge)").all()
+      .some(({ name }) => name === "station_id"),
+    false,
+  );
+  database.prepare("DELETE FROM users WHERE id = ?").run("legacy-learner");
 
   const tables = database
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
@@ -152,16 +196,16 @@ test("generated migrations create the account-scoped learning boundaries", async
   }, /UNIQUE constraint failed/);
 
   database.prepare(
-    "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
-  ).run("learner-1", "words", "neko", 16);
+    "INSERT INTO vocabulary_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "neko", "meaning-to-japanese", 16);
   assert.throws(() => {
     database.prepare(
-      "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
-    ).run("learner-1", "words", "neko", 17);
+      "INSERT INTO vocabulary_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+    ).run("learner-1", "neko", "meaning-to-japanese", 17);
   }, /UNIQUE constraint failed/);
   database.prepare(
-    "INSERT INTO vocabulary_knowledge (user_id, station_id, item_id, known_at) VALUES (?, ?, ?, ?)",
-  ).run("learner-1", "nouns", "neko", 18);
+    "INSERT INTO vocabulary_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "neko", "japanese-to-meaning", 18);
 
   database.prepare(
     "INSERT INTO mora_timing_knowledge (user_id, review_id, known_at) VALUES (?, ?, ?)",

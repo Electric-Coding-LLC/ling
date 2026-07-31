@@ -279,9 +279,9 @@ test("station pages use one plain, focused return to the map", async () => {
   assert.match(topbar, /import type \{ StationFocus \} from "\.\.\/network-map"/);
   assert.match(topbar, /className="station-network-link"/);
   assert.match(topbar, /href=\{`\/\?focus=\$\{networkFocus\}`\}/);
-  assert.match(topbar, /className="station-map-chevron"/);
-  assert.doesNotMatch(topbar, />←</);
-  assert.doesNotMatch(topbar, /NetworkGlyph|<svg/);
+  assert.match(topbar, /aria-label=\{`Return to map from \$\{current\}`\}/);
+  assert.match(topbar, /<svg aria-hidden="true" viewBox="0 0 24 24">/);
+  assert.doesNotMatch(topbar, /NetworkGlyph|>←|>Map</);
   assert.doesNotMatch(source, /NetworkGlyph|network-glyph-model/);
   assert.match(networkMap, /<NetworkStationSymbol kind=\{kind\} \/>/);
   assert.match(networkMap, /<NetworkStationSymbol kind=\{line\} \/>/);

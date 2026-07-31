@@ -24,7 +24,7 @@ This runs lint, TypeScript, focused tests, and a production build. After changin
 ## Boundaries
 
 - D1 is authoritative for users and future product state.
-- The service worker stores only static install/offline assets.
-- `/api/*` and ChatGPT authentication paths bypass service-worker caching.
+- The installed app is intentionally online-only and does not register a service worker.
+- HTML, `/api/*`, and ChatGPT authentication responses remain private and uncached.
 - Production has no development identity or in-memory database fallback.
 - R2, roles, teams, analytics, and offline writes remain absent until required.

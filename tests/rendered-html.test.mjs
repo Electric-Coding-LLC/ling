@@ -212,11 +212,12 @@ test("server-renders the reusable Welcome to Ling guide outside the station netw
   assert.match(html, /Ling is a calm, practical place to build Japanese through sounds, words, and useful situations\./i);
   assert.match(html, /Inspired by a transit system, Ling shows the entire network from the start\./i);
   assert.match(html, /<h2 id="welcome-cues-title">How Ling works<\/h2>/i);
-  assert.match(html, /<strong>Network<\/strong>/i);
+  assert.match(html, /<strong>Map<\/strong>/i);
   assert.match(html, /<strong>Stations<\/strong>/i);
   assert.match(html, /<strong>Progress<\/strong>/i);
   assert.match(html, /<strong>Flashcards &amp; checks<\/strong>/i);
-  assert.match(html, /data-position="japanese"/i);
+  assert.match(html, /class="welcome-cue-network">← Map<\/span>/i);
+  assert.doesNotMatch(html, /data-position="japanese"|station-map-/i);
   assert.match(html, /class="welcome-cue-station"/i);
   assert.match(html, /class="hiragana-test-trigger welcome-cue-progress"/i);
   assert.match(html, /class="hiragana-test-card welcome-cue-flashcard"/i);
@@ -547,9 +548,9 @@ test("server-renders Kana in the Writing line", async () => {
   const html = await response.text();
 
   assert.match(html, /<h1>Kana<\/h1>/i);
-  assert.match(html, /aria-label="Return to network map from Kana"/i);
-  assert.match(html, /data-position="kana"/i);
-  assert.match(html, /class="station-map-writing"/i);
+  assert.match(html, /aria-label="Return to map from Kana"/i);
+  assert.equal((html.match(/href="\/\?focus=kana"/gi) ?? []).length, 2);
+  assert.match(html, /<span aria-hidden="true">←<\/span> Map<\/a>/i);
   assert.doesNotMatch(html, /data-line="sound"/i);
   assert.match(html, /data-line="writing"[^>]*>Writing</i);
   assert.match(html, /Kana is the collective name for Hiragana and Katakana/i);
@@ -564,12 +565,11 @@ test("server-renders the Vowels introduction", async () => {
 
   const html = await response.text();
   assert.match(html, /<h1>Vowels<\/h1>/i);
-  assert.match(html, /aria-label="Return to the Ling network map"/i);
+  assert.match(html, /aria-label="Return to the Ling map"/i);
   assert.match(html, /aria-label="Station navigation"/i);
-  assert.match(html, /aria-label="Return to network map from Vowels"/i);
+  assert.match(html, /aria-label="Return to map from Vowels"/i);
   assert.equal((html.match(/href="\/\?focus=vowels"/gi) ?? []).length, 2);
-  assert.match(html, /data-position="vowels"/i);
-  assert.match(html, /class="station-map-sound"/i);
+  assert.match(html, /<span aria-hidden="true">←<\/span> Map<\/a>/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);
   assert.match(html, /Japanese Kana are built around five vowel sounds/i);
   assert.match(html, /Hiragana and Katakana write each sound with a different shape/i);
@@ -598,7 +598,10 @@ test("health and version routes are private and non-cacheable", async () => {
   const version = await request("/api/pwa/version");
   assert.equal(version.status, 200);
   assert.equal(version.headers.get("cache-control"), "private, no-store");
-  assert.equal((await version.json()).version, "0.1.0");
+  assert.deepEqual(await version.json(), {
+    build: "development",
+    version: "0.1.0",
+  });
 });
 
 test("the current-user API fails closed without production identity", async () => {

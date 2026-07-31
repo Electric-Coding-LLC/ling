@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { getAppVersion } from "../src/modules/app-version";
 import { BootReady } from "./boot-ready";
 import { NavigationFeedbackProvider } from "./navigation-feedback";
 import { PwaCleanup } from "./pwa-cleanup";
+import { PwaExperience } from "./pwa-experience";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -119,6 +121,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const appVersion = getAppVersion();
+
   return (
     <html lang="en">
       <body
@@ -127,6 +131,7 @@ export default function RootLayout({
         <NavigationFeedbackProvider>{children}</NavigationFeedbackProvider>
         <BootReady />
         <PwaCleanup />
+        <PwaExperience {...appVersion} />
       </body>
     </html>
   );

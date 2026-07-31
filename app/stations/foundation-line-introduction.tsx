@@ -109,7 +109,7 @@ export function FoundationLineIntroduction({
     <main className="shell station-shell">
       <StationTopbar
         current={introduction.title}
-        mapPosition={line}
+        networkFocus={line}
       />
       <div
         className={`station-page station-page-${line} station-page-foundation-line`}

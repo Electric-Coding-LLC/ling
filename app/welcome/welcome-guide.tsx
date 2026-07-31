@@ -1,4 +1,4 @@
-import { NetworkGlyph, NetworkStationSymbol } from "../network-visuals";
+import { NetworkStationSymbol } from "../network-visuals";
 
 export function WelcomeGuide() {
   return (
@@ -22,13 +22,13 @@ export function WelcomeGuide() {
       <h2 id="welcome-cues-title">How Ling works</h2>
       <ul aria-labelledby="welcome-cues-title" className="welcome-cues">
         <li>
-          <span aria-hidden="true" className="welcome-cue-visual welcome-cue-network">
-            <NetworkGlyph position="japanese" />
+          <span aria-hidden="true" className="welcome-cue-visual">
+            <span className="welcome-cue-network">← Map</span>
           </span>
           <span>
-            <strong>Network</strong>
-            Lines connect related practice. The corner glyph returns to the map
-            and shows the current station’s connections.
+            <strong>Map</strong>
+            Lines connect related practice. The Map link returns with the
+            current station in view.
           </span>
         </li>
         <li>

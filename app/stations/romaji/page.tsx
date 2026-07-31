@@ -11,7 +11,7 @@ import { RomajiGuide } from "./romaji-guide";
 export default function RomajiPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Rōmaji" mapPosition="romaji" />
+      <StationTopbar current="Rōmaji" networkFocus="romaji" />
       <div className="station-page station-page-travel station-page-romaji">
         <RomajiGuide
           columnHeadings={ROMAJI_COLUMN_HEADINGS}

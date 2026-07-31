@@ -6,7 +6,7 @@ export const dynamic = "force-static";
 export default function KanaPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Kana" mapPosition="kana" />
+      <StationTopbar current="Kana" networkFocus="kana" />
       <div className="station-page station-page-kana">
         <header className="station-heading">
           <div className="station-heading-row">

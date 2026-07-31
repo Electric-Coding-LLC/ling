@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default function SoundMarksPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Dakuten & Handakuten" mapPosition="sound-marks" />
+      <StationTopbar current="Dakuten & Handakuten" networkFocus="marks" />
       <div className="station-page station-page-kana-patterns">
         <SoundMarksGuide />
       </div>

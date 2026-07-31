@@ -339,34 +339,26 @@
   font-size: 1.05rem;
 }
 
-.japanese-paths-list {
+.japanese-lines {
   display: grid;
-  margin: -0.35rem 0 0;
+  gap: 1.15rem;
+  margin: -0.15rem 0 0;
 }
 
-.japanese-paths-list > div {
+.japanese-line {
   display: grid;
-  grid-template-columns: 5.5rem minmax(0, 1fr);
-  gap: 1.25rem;
-  padding-block: 0.7rem;
-  border-top: 1px solid var(--line);
+  gap: 0.3rem;
 }
 
-.japanese-paths-list > div:last-child {
-  border-bottom: 1px solid var(--line);
-}
-
-.japanese-paths-list dt {
+.japanese-line h2 {
+  margin: 0;
   color: var(--foreground);
+  font-size: 1rem;
   font-weight: 600;
 }
 
-.japanese-paths-list dd {
+.japanese-line p {
   margin: 0;
-}
-
-.japanese-script-example {
-  white-space: nowrap;
 }
 
 .japan-orientation {
@@ -717,10 +709,6 @@
 }
 
 .travel-reference-romaji {
-  letter-spacing: 0.01em;
-}
-
-.travel-reference-sound-cue {
   letter-spacing: 0.01em;
 }
 

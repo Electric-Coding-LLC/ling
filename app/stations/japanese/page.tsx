@@ -15,58 +15,46 @@ export default function JapanesePage() {
               key="japanese-orientation"
             >
               <p className="japanese-orientation-lead">
-                Japanese is the language spoken by most people in Japan and by
-                communities around the world. It has its own sounds, grammar,
-                and ways of expressing politeness, and it is written with
-                hiragana, katakana, and kanji.
-              </p>
-              <dl className="japanese-paths-list">
-                <div>
-                  <dt>hiragana</dt>
-                  <dd>
-                    the phonetic script used for grammar and many Japanese
-                    words.{" "}
-                    <span className="japanese-script-example" lang="ja">
-                      ありがとう
-                    </span>
-                  </dd>
-                </div>
-                <div>
-                  <dt>katakana</dt>
-                  <dd>
-                    the phonetic script most often used for borrowed words and
-                    names.{" "}
-                    <span className="japanese-script-example" lang="ja">
-                      ホテル
-                    </span>
-                  </dd>
-                </div>
-                <div>
-                  <dt>kanji</dt>
-                  <dd>
-                    characters that carry meaning.{" "}
-                    <span className="japanese-script-example" lang="ja">
-                      日本
-                    </span>
-                  </dd>
-                </div>
-              </dl>
-              <p>
-                Rōmaji uses the Roman alphabet to represent Japanese sounds. It
-                is useful in some contexts, while hiragana, katakana, and kanji
-                are the main writing systems used in Japanese.
-              </p>
-              <p>
-                Visiting Japan? Start with{" "}
+                Japanese is the starting point of Ling&apos;s Foundations
+                network.{" "}
                 <NavigationLink
                   href="/stations/romaji"
                   loadingStation="Rōmaji"
                 >
                   Rōmaji
                 </NavigationLink>{" "}
-                on the Foundations spine, then use it to read the phrases that
-                follow.
+                is an optional reading bridge on the spine. Japan, Sound,
+                Writing, and Vocabulary branch from Foundations.
               </p>
+              <div className="japanese-lines">
+                <section className="japanese-line">
+                  <h2>Japan</h2>
+                  <p>
+                    Practical Japanese for introductions, getting around,
+                    food, shopping, and asking for help.
+                  </p>
+                </section>
+                <section className="japanese-line">
+                  <h2>Sound</h2>
+                  <p>
+                    Vowels, mora timing, and pitch—how Japanese is heard and
+                    spoken.
+                  </p>
+                </section>
+                <section className="japanese-line">
+                  <h2>Writing</h2>
+                  <p>
+                    Kana and the sound patterns used to read and write
+                    Japanese.
+                  </p>
+                </section>
+                <section className="japanese-line">
+                  <h2>Vocabulary</h2>
+                  <p>
+                    Words studied through meaning, pronunciation, and recall.
+                  </p>
+                </section>
+              </div>
             </section>,
           ]}
           line="Foundations"

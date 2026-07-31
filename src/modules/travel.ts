@@ -6,7 +6,6 @@ export type TravelPhrase = {
   readonly meaning: string;
   readonly note?: string;
   readonly romaji?: string;
-  readonly soundCue?: string;
   readonly source: string;
 };
 
@@ -36,7 +35,7 @@ export const JAPAN_STARTER_PHRASES: readonly TravelPhrase[] = [
     japanese: "すみません",
     meaning: "Excuse me / I’m sorry",
     note: "Also useful for getting someone’s attention.",
-    soundCue: "soo mee mah seh nn",
+    romaji: "Sumimasen",
     audio: "/audio/ja-travel-sumimasen.wav",
     source: "JNTO Japanese language basics and etiquette guidance",
   },
@@ -45,7 +44,7 @@ export const JAPAN_STARTER_PHRASES: readonly TravelPhrase[] = [
     japanese: "ありがとうございます",
     meaning: "Thank you",
     note: "Polite and broadly useful.",
-    soundCue: "ah ree gah toh oo goh zah ee mah s",
+    romaji: "Arigatō gozaimasu",
     audio: "/audio/ja-travel-arigatou-gozaimasu.wav",
     source: "JNTO Japanese language basics",
   },
@@ -54,7 +53,7 @@ export const JAPAN_STARTER_PHRASES: readonly TravelPhrase[] = [
     japanese: "お願いします",
     meaning: "Please",
     note: "Use when making or confirming a request.",
-    soundCue: "oh neh gah ee shee mah s",
+    romaji: "Onegaishimasu",
     audio: "/audio/ja-travel-onegaishimasu.wav",
     source: "Irodori Starter request patterns",
   },

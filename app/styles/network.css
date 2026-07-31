@@ -208,6 +208,7 @@
 }
 
 .network-interchange-inner {
+  fill: var(--foreground);
   stroke: var(--foreground);
   stroke-width: 5;
 }
@@ -241,8 +242,35 @@
 }
 
 .network-single-station-inner {
+  fill: var(--foreground);
   stroke: var(--foreground);
   stroke-width: 4;
+}
+
+.network-single-station-inner-sound {
+  fill: var(--sound);
+  stroke: var(--sound);
+}
+
+.network-single-station-inner-local {
+  fill: var(--muted);
+  stroke: var(--muted);
+}
+
+.network-single-station-inner-writing {
+  fill: var(--writing);
+  stroke: var(--writing);
+}
+
+.network-single-station-inner-vocabulary {
+  fill: var(--vocabulary);
+  stroke: var(--vocabulary);
+}
+
+.network-single-station-inner-travel,
+.network-interchange-inner-travel-interchange {
+  fill: var(--travel);
+  stroke: var(--travel);
 }
 
 .network-station-hit {
@@ -283,8 +311,15 @@
 
   .network-mobile-viewport {
     display: block;
-    overflow: hidden;
-    touch-action: pan-y;
+    overflow-x: auto;
+    overflow-y: clip;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    touch-action: pan-x pan-y;
+  }
+
+  .network-mobile-viewport::-webkit-scrollbar {
+    display: none;
   }
 
   .network-mobile-viewport:focus-visible {
@@ -358,33 +393,6 @@
     display: block;
   }
 
-  .network-mobile-track {
-    transform-box: view-box;
-    transform-origin: 0 0;
-    transition: transform 220ms ease;
-  }
-
-  .network-mobile-track-japan,
-  .network-mobile-track-introductions,
-  .network-mobile-track-navigation,
-  .network-mobile-track-food,
-  .network-mobile-track-shopping,
-  .network-mobile-track-help {
-    transform: translateX(-28%);
-  }
-
-  .network-mobile-track-mora,
-  .network-mobile-track-hiragana,
-  .network-mobile-track-katakana {
-    transform: translateX(-60%);
-  }
-
-  .network-mobile-track-pitch,
-  .network-mobile-track-marks,
-  .network-mobile-track-combined {
-    transform: translateX(-115%);
-  }
-
   .network-station-label {
     font-size: 18px;
   }
@@ -394,11 +402,31 @@
   }
 
   .network-map-mobile .network-single-station-outer {
-    r: 20px;
+    r: 24px;
   }
 
   .network-map-mobile .network-single-station-inner {
-    r: 9.5px;
+    r: 11.5px;
+  }
+
+  .network-map-mobile .network-station-label-left {
+    transform: translateX(-6px);
+  }
+
+  .network-map-mobile .network-station-label-right {
+    transform: translateX(9px);
+  }
+
+  .network-map-mobile .network-station-label-above {
+    transform: translateY(-6px);
+  }
+
+  .network-map-mobile .network-station-label-below {
+    transform: translateY(17px);
+  }
+
+  .network-map-mobile .network-station-label-below-right {
+    transform: translate(9px, 17px);
   }
 
 }

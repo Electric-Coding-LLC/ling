@@ -12,7 +12,6 @@ type TravelReferenceItem = {
   readonly meaning: string;
   readonly note?: string;
   readonly romaji?: string;
-  readonly soundCue?: string;
 };
 
 export function TravelStation({
@@ -22,16 +21,16 @@ export function TravelStation({
   line = "Japan",
   review = false,
   showPronunciation = false,
-  showSoundCues = false,
+  meaningFirst = showPronunciation,
   title,
 }: {
   framed?: boolean;
   intro?: readonly (string | ReactElement)[];
   items?: readonly TravelReferenceItem[];
   line?: "Foundations" | "Japan";
+  meaningFirst?: boolean;
   review?: boolean;
   showPronunciation?: boolean;
-  showSoundCues?: boolean;
   title: string;
 }) {
   const framedCards = framed || showPronunciation;
@@ -144,29 +143,19 @@ export function TravelStation({
               if (showPronunciation && !item.romaji) {
                 throw new Error(`Rōmaji is required for ${item.japanese}`);
               }
-              if (showSoundCues && !item.soundCue) {
-                throw new Error(`A sound cue is required for ${item.japanese}`);
-              }
-              const soundCue = showSoundCues ? item.soundCue : undefined;
               const meaningTerminator = /[.!?]$/.test(item.meaning) ? "" : ".";
               const romajiTerminator = item.romaji && /[.!?]$/.test(item.romaji)
-                ? ""
-                : ".";
-              const soundCueTerminator = soundCue && /[.!?]$/.test(soundCue)
                 ? ""
                 : ".";
               return (
                 <button
                   aria-label={item.romaji
                     ? `${item.japanese}: ${item.meaning}${meaningTerminator} Rōmaji: ${item.romaji}${romajiTerminator} Play audio`
-                    : soundCue
-                      ? `${item.japanese}: ${item.meaning}${meaningTerminator} Pronunciation: ${soundCue}${soundCueTerminator} Play audio`
                     : `${item.japanese}: ${item.meaning}${meaningTerminator} Play audio`}
                   className="travel-reference-item"
                   data-framed={framedCards ? "true" : undefined}
                   data-playing={playing}
                   data-pronunciation={showPronunciation ? "true" : undefined}
-                  data-sound-cue={soundCue ? "true" : undefined}
                   key={item.japanese}
                   onClick={() => playAudio({
                     index,
@@ -174,7 +163,7 @@ export function TravelStation({
                   })}
                   type="button"
                 >
-                  {showPronunciation ? (
+                  {meaningFirst ? (
                     <span className="travel-reference-meaning">{item.meaning}</span>
                   ) : null}
                   <JapanesePhrase
@@ -191,17 +180,7 @@ export function TravelStation({
                       </span>
                     </span>
                   ) : null}
-                  {soundCue ? (
-                    <span
-                      aria-label={`Pronunciation: ${soundCue}`}
-                      className="travel-reference-pronunciation"
-                    >
-                      <span className="travel-reference-sound-cue">
-                        {soundCue}
-                      </span>
-                    </span>
-                  ) : null}
-                  {!showPronunciation ? (
+                  {!meaningFirst ? (
                     <span className="travel-reference-meaning">{item.meaning}</span>
                   ) : null}
                   {item.note ? (

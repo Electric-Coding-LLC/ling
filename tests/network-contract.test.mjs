@@ -31,6 +31,7 @@ function wavDuration(audio) {
 
 test("the network uses a vertical Foundations spine with horizontal depth", async () => {
   const source = await readFile(new URL("app/network-map.tsx", root), "utf8");
+  const visuals = await readFile(new URL("app/network-visuals.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
   const styles = await readFile(new URL("app/styles/network.css", root), "utf8");
   const foundation = await readFile(
@@ -38,13 +39,27 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     "utf8",
   );
 
-  assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*1680/);
-  assert.match(source, /DESKTOP_SPINE_X\s*=\s*DESKTOP_VIEW_WIDTH \/ 2/);
+  assert.match(source, /NETWORK_ROW_GAP\s*=\s*180/);
+  assert.match(source, /NETWORK_COLUMN_GAP\s*=\s*180/);
+  assert.doesNotMatch(source, /BRANCH_TURN_OFFSET/);
+  assert.match(source, /JAPAN_BRANCH_HALF_SPAN\s*=\s*160/);
+  assert.match(source, /WRITING_BRANCH_HALF_SPAN\s*=\s*70/);
+  assert.match(source, /NETWORK_BOTTOM_PADDING\s*=\s*150/);
+  assert.match(source, /DESKTOP_VIEW_WIDTH\s*=\s*1500/);
+  assert.match(source, /MOBILE_CONTENT_WIDTH\s*=\s*MOBILE_VIEW_WIDTH \+ NETWORK_COLUMN_GAP \* 4/);
+  assert.match(source, /DESKTOP_SPINE_X\s*=\s*\(DESKTOP_VIEW_WIDTH - NETWORK_COLUMN_GAP\) \/ 2/);
   assert.match(source, /MOBILE_SPINE_X\s*=\s*MOBILE_VIEW_WIDTH \/ 2/);
-  assert.match(source, /JAPAN_Y\s*=\s*410/);
-  assert.match(source, /SOUND_Y\s*=\s*780/);
-  assert.match(source, /WRITING_Y\s*=\s*1160/);
-  assert.match(source, /VOCABULARY_Y\s*=\s*1530/);
+  assert.match(source, /ROMAJI_Y\s*=\s*ROOT_Y \+ NETWORK_ROW_GAP/);
+  assert.match(source, /JAPAN_Y\s*=\s*ROMAJI_Y \+ NETWORK_ROW_GAP/);
+  assert.match(source, /SOUND_Y\s*=\s*JAPAN_Y \+ JAPAN_BRANCH_HALF_SPAN \+ NETWORK_ROW_GAP/);
+  assert.match(source, /CATEGORY_ROW_GAP\s*=\s*NETWORK_ROW_GAP \* 1\.5/);
+  assert.match(source, /WRITING_Y\s*=\s*SOUND_Y \+ CATEGORY_ROW_GAP/);
+  assert.match(source, /VOCABULARY_Y\s*=\s*WRITING_Y \+ CATEGORY_ROW_GAP/);
+  assert.match(source, /NETWORK_VIEW_HEIGHT\s*=\s*VOCABULARY_Y \+ NETWORK_BOTTOM_PADDING/);
+  assert.match(source, /const depthOneX = spineX \+ NETWORK_COLUMN_GAP/);
+  assert.match(source, /const depthTwoX = depthOneX \+ NETWORK_COLUMN_GAP/);
+  assert.match(source, /const depthThreeX = depthTwoX \+ NETWORK_COLUMN_GAP/);
+  assert.match(source, /const depthFourX = depthThreeX \+ NETWORK_COLUMN_GAP/);
   assert.match(source, /Foundations learning network/);
   assert.match(source, /Scroll down the Foundations spine/);
   assert.match(source, /d=\{`M\$\{spineX\} \$\{ROOT_Y \+ 30\}V\$\{VOCABULARY_Y\}`\}/);
@@ -77,24 +92,37 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.doesNotMatch(source, /network-category-junction|<rect/);
   assert.doesNotMatch(source, /network-line-label/);
 
-  assert.match(source, /function roundedBranchPath\(/);
-  assert.match(source, /if \(startY === endY\) return `M\$\{startX\} \$\{startY\}H\$\{endX\}`/);
   assert.match(source, /radius = 16/);
-  assert.match(source, /Q\$\{turnX\} \$\{startY\} \$\{turnX\} \$\{startY \+ direction \* cornerRadius\}/);
-  assert.match(source, /V\$\{endY - direction \* cornerRadius\}/);
-  assert.match(source, /Q\$\{turnX\} \$\{endY\} \$\{turnX \+ cornerRadius\} \$\{endY\}/);
-  assert.match(source, /d=\{roundedBranchPath\(\{/);
   assert.match(source, /\{japanPeerYs\.map\(\(peerY\) =>/);
-  assert.match(source, /const japanStationX = depthOneX \+ 60/);
-  assert.match(source, /const japanForkX = spineX \+ 92/);
-  assert.match(source, /const japanBranchStartX = japanForkX - 16/);
   assert.match(
     source,
-    /endX: japanStationX,[\s\S]*startX: japanBranchStartX,[\s\S]*startY: JAPAN_Y,[\s\S]*turnX: japanForkX/,
+    /const japanPeerYs = mobile[\s\S]*JAPAN_Y - JAPAN_BRANCH_HALF_SPAN,[\s\S]*JAPAN_Y \+ JAPAN_BRANCH_HALF_SPAN,[\s\S]*: \[JAPAN_Y - 128, JAPAN_Y - 64, JAPAN_Y, JAPAN_Y \+ 64, JAPAN_Y \+ 128\] as const/,
   );
+  assert.match(source, /const writingUpperY = WRITING_Y - WRITING_BRANCH_HALF_SPAN/);
+  assert.match(source, /const writingLowerY = WRITING_Y \+ WRITING_BRANCH_HALF_SPAN/);
+  assert.doesNotMatch(source, /writingFinalUpperY|writingFinalLowerY|mergeX/);
+  assert.match(source, /function roundedConvergingPath\(/);
+  assert.match(source, /const horizontalDirection = Math\.sign\(endX - startX\)/);
+  assert.match(source, /const beforeEndX = endX - horizontalDirection \* cornerRadius/);
+  assert.match(source, /`H\$\{beforeEndX\}`/);
+  assert.match(source, /endX: depthOneX,[\s\S]*endY: WRITING_Y,[\s\S]*startX: depthTwoX,[\s\S]*startY: writingUpperY/);
+  assert.match(source, /endX: depthOneX,[\s\S]*endY: WRITING_Y,[\s\S]*startX: depthTwoX,[\s\S]*startY: writingLowerY/);
+  assert.match(source, /endX: depthThreeX,[\s\S]*endY: WRITING_Y,[\s\S]*startX: depthTwoX,[\s\S]*startY: writingUpperY/);
+  assert.match(source, /endX: depthThreeX,[\s\S]*endY: WRITING_Y,[\s\S]*startX: depthTwoX,[\s\S]*startY: writingLowerY/);
+  assert.match(source, /d=\{`M\$\{depthThreeX\} \$\{WRITING_Y\}H\$\{depthFourX\}`\}/);
+  assert.match(source, /focus="marks"[\s\S]*labelPlacement="left"[\s\S]*x=\{depthThreeX\} y=\{WRITING_Y\}/);
+  assert.match(source, /focus="combined"[\s\S]*x=\{depthFourX\} y=\{WRITING_Y\}/);
+  assert.match(source, /focus="kana"[\s\S]*labelPlacement="right"[\s\S]*x=\{depthOneX\} y=\{WRITING_Y\}/);
+  assert.match(source, /const japanStationX = depthOneX/);
+  assert.match(source, /d=\{`M\$\{spineX\} \$\{JAPAN_Y\}L\$\{japanStationX\} \$\{peerY\}`\}/);
+  assert.doesNotMatch(source, /roundedBranchPath|writingForkX/);
+  assert.doesNotMatch(source, /roundedHubRoutePath|japanTurnX/);
+  assert.doesNotMatch(source, /Japan territory|Sound territory|Writing territory|Vocabulary territory/);
+  assert.doesNotMatch(source, /<title>Foundations<\/title>/);
+  assert.doesNotMatch(source, /japanForkX|japanBranchStartX|outerRoute/);
   assert.match(
-    styles,
-    /\.network-mobile-track-japan,[\s\S]*\.network-mobile-track-help\s*\{[^}]*transform:\s*translateX\(-28%\)/s,
+    source,
+    /style=\{mobile[\s\S]*width: `\$\{\(MOBILE_CONTENT_WIDTH \/ MOBILE_VIEW_WIDTH\) \* 100\}%`/,
   );
   assert.match(source, /className=\{`network-line network-line-\$\{line\}`\}/);
   assert.match(styles, /\.network-line\s*\{[^}]*stroke-width:\s*4[^}]*stroke-linecap:\s*round[^}]*stroke-linejoin:\s*round/s);
@@ -111,12 +139,32 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   );
   assert.match(
     styles,
-    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-outer\s*\{[^}]*r:\s*20px/s,
+    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-outer\s*\{[^}]*r:\s*24px/s,
   );
+  assert.match(visuals, /network-interchange-inner/);
+  assert.match(visuals, /network-single-station-inner/);
   assert.match(
     styles,
-    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-inner\s*\{[^}]*r:\s*9\.5px/s,
+    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-inner\s*\{[^}]*r:\s*11\.5px/s,
   );
+  assert.match(styles, /\.network-single-station-outer\s*\{[^}]*stroke-width:\s*3/s);
+  for (const line of ["sound", "writing", "vocabulary", "travel"]) {
+    assert.match(
+      styles,
+      new RegExp(`\\.network-single-station-outer-${line}\\s*\\{[^}]*stroke:\\s*var\\(--${line}\\)`),
+    );
+  }
+  for (const line of ["sound", "writing", "vocabulary", "travel"]) {
+    assert.match(
+      styles,
+      new RegExp(`\\.network-single-station-inner-${line}[\\s\\S]*?fill:\\s*var\\(--${line}\\)[\\s\\S]*?stroke:\\s*var\\(--${line}\\)`),
+    );
+  }
+  assert.match(
+    styles,
+    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-station-label-left\s*\{[^}]*transform:\s*translateX\(-6px\)[\s\S]*\.network-map-mobile \.network-station-label-right\s*\{[^}]*transform:\s*translateX\(9px\)[\s\S]*\.network-map-mobile \.network-station-label-above\s*\{[^}]*transform:\s*translateY\(-6px\)[\s\S]*\.network-map-mobile \.network-station-label-below\s*\{[^}]*transform:\s*translateY\(17px\)[\s\S]*\.network-map-mobile \.network-station-label-below-right\s*\{[^}]*transform:\s*translate\(9px, 17px\)/s,
+  );
+  assert.doesNotMatch(styles, /\[data-station="sound-marks"\] \.network-station-label-above/);
   assert.match(
     styles,
     /\.network-topbar\s*\{[^}]*position:\s*sticky[^}]*z-index:\s*20[^}]*top:\s*0[^}]*background:\s*var\(--surface\)/s,
@@ -141,6 +189,11 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     source,
     /\{href \? <circle className="network-station-hit" r="48" \/> : null\}/,
   );
+  assert.equal(
+    (source.match(/<circle className="network-station-hit" r="48" \/>/g) ?? []).length,
+    2,
+  );
+  assert.match(styles, /\.network-station-hit\s*\{[^}]*fill:\s*transparent/s);
 
   for (const [focus, href] of Object.entries({
     japanese: "/stations/japanese",
@@ -178,21 +231,30 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /writing:\s*\{ ArrowDown: "vocabulary", ArrowRight: "kana", ArrowUp: "sound" \}/);
   assert.match(source, /kana:\s*\{ ArrowDown: "words", ArrowLeft: "writing", ArrowRight: "hiragana", ArrowUp: "vowels" \}/);
   assert.match(source, /hiragana:\s*\{ ArrowDown: "katakana", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "mora" \}/);
-  assert.match(source, /marks:\s*\{ ArrowDown: "combined", ArrowLeft: "hiragana", ArrowUp: "pitch" \}/);
+  assert.match(source, /katakana:\s*\{ ArrowDown: "words", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "hiragana" \}/);
+  assert.match(source, /marks:\s*\{ ArrowDown: "words", ArrowLeft: "hiragana", ArrowRight: "combined", ArrowUp: "pitch" \}/);
+  assert.match(source, /combined:\s*\{ ArrowDown: "words", ArrowLeft: "marks", ArrowUp: "pitch" \}/);
   assert.match(source, /vocabulary:\s*\{ ArrowRight: "words", ArrowUp: "writing" \}/);
   assert.match(source, /words:\s*\{ ArrowLeft: "vocabulary", ArrowUp: "kana" \}/);
-  assert.match(styles, /network-mobile-track-introductions,[\s\S]*translateX\(-60%\)/);
-  assert.match(styles, /network-mobile-track-pitch,[\s\S]*translateX\(-115%\)/);
-
-  assert.match(source, /MOBILE_SWIPE_THRESHOLD\s*=\s*40/);
-  assert.match(source, /Math\.abs\(event\.clientX - start\.x\) < MOBILE_SWIPE_THRESHOLD/);
-  assert.match(source, /const direction = distance < 0 \? "ArrowRight" : "ArrowLeft"/);
+  assert.match(
+    styles,
+    /\.network-mobile-viewport\s*\{[^}]*overflow-x:\s*auto[^}]*overflow-y:\s*clip[^}]*overscroll-behavior-x:\s*contain[^}]*scrollbar-width:\s*none[^}]*touch-action:\s*pan-x pan-y/s,
+  );
+  assert.match(styles, /\.network-mobile-viewport::\-webkit-scrollbar\s*\{[^}]*display:\s*none/s);
+  assert.doesNotMatch(
+    source,
+    /MOBILE_SWIPE_THRESHOLD|pointerStart|dragged|function onPointer(?:Down|Move|Up|Cancel)|onPointer(?:Down|Move|Up|Cancel)=\{onPointer/,
+  );
+  assert.doesNotMatch(styles, /network-mobile-track|translateX\(-(?:28|60|95)%\)/);
+  assert.match(source, /viewport\.scrollTo\(\{[\s\S]*behavior:\s*"auto"[\s\S]*left:\s*Math\.max\(0, targetCenter - viewport\.clientWidth \/ 2\)/);
+  assert.match(source, /focus\(\{ preventScroll: true \}\)/);
   assert.match(source, /STATION_FOCUS_STORAGE_KEY\s*=\s*"ling:network-station-focus"/);
   assert.match(source, /useSyncExternalStore\(\s*subscribeToStoredStationFocus,\s*getStoredStationFocus,\s*getServerStationFocus/s);
   assert.match(source, /new URLSearchParams\(window\.location\.search\)\.get\("focus"\)/);
   assert.match(source, /function onKeyDown\(event: KeyboardEvent<HTMLDivElement>\)/);
   assert.match(source, /new MouseEvent\("click", \{ bubbles: true, cancelable: true, view: window \}\)/);
-  assert.equal((source.match(/aria-label="Explore the network with the arrow keys"/g) ?? []).length, 2);
+  assert.equal((source.match(/aria-label="Explore the network with the arrow keys"/g) ?? []).length, 1);
+  assert.match(source, /aria-label="Pan across the network or explore with the arrow keys"/);
   assert.match(source, /document\.activeElement !== document\.body/);
   assert.match(source, /window\.matchMedia\("\(max-width: 600px\)"\)\.matches/);
   assert.match(source, /`\[data-network-focus="\$\{focus\}"\]`/);
@@ -204,8 +266,8 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(styles, /\.network-category-station:focus-visible \.network-station-backlight,[\s\S]*\.network-station-link:focus-visible \.network-station-backlight/);
   assert.doesNotMatch(source, /aria-disabled="true"|data-available=|\/api\/stations\/availability/);
 
-  assert.match(foundation, /--sound:\s*#db4e3a/);
-  assert.match(foundation, /--travel:\s*#4c689c/);
+  assert.match(foundation, /--sound:\s*#4c689c/);
+  assert.match(foundation, /--travel:\s*#ff2b23/);
   assert.match(foundation, /--writing:\s*#d6aa36/);
   assert.match(foundation, /--vocabulary:\s*#4f8f83/);
   assert.match(page, /dynamic = "force-static"/);
@@ -218,6 +280,7 @@ test("station map glyphs reflect each station's network position", async () => {
   const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
 
   assert.equal(Object.keys(NETWORK_GLYPH_DEFINITIONS).length, 20);
+  assert.equal(NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH, 6);
   assert.equal(NETWORK_GLYPH_DEFINITIONS["mora-timing"].topology, "horizontal-through");
   assert.equal(NETWORK_GLYPH_DEFINITIONS["pitch-accent"].topology, "horizontal-terminal");
   assert.equal(NETWORK_GLYPH_DEFINITIONS.kana.topology, "horizontal-through");
@@ -244,7 +307,10 @@ test("station map glyphs reflect each station's network position", async () => {
       .filter((length) => length > 0);
     assert.ok(armLengths.length > 0, `${topology} should expose at least one arm`);
     for (const length of armLengths.slice(1)) {
-      assert.equal(length, armLengths[0], `${topology} arms should have equal lengths`);
+      assert.ok(
+        Math.abs(length - armLengths[0]) < Number.EPSILON * 16,
+        `${topology} arms should have equal lengths`,
+      );
     }
     const radius = geometry.interchange
       ? NETWORK_GLYPH_RADII.interchange
@@ -262,6 +328,12 @@ test("station map glyphs reflect each station's network position", async () => {
   assert.doesNotMatch(source, /if \(position/);
   assert.match(topbar, /import \{ NetworkGlyph, type NetworkPosition \} from "\.\.\/network-visuals"/);
   assert.match(networkMap, /<NetworkStationSymbol kind=\{kind\} \/>/);
+  assert.match(networkMap, /<NetworkStationSymbol kind=\{line\} \/>/);
+  assert.match(source, /<circle className="network-interchange-outer" r="28" \/>/);
+  assert.match(source, /network-interchange-inner-\$\{kind\}`\}/);
+  assert.match(source, /network-single-station-outer-\$\{kind\}`\} r="15"/);
+  assert.match(source, /network-single-station-inner-\$\{kind\}`\}/);
+  assert.doesNotMatch(source, /LingMarkStrokes|network-brand-station|<rect/);
 });
 
 test("every mapped station is visible and directly accessible without completion", async () => {

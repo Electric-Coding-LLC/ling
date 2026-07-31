@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import {
-  NETWORK_GLYPH_DEFINITIONS,
-  NETWORK_GLYPH_RADII,
-  NETWORK_GLYPH_TOPOLOGIES,
-  NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH,
-} from "../app/network-glyph-model.ts";
-
 const root = new URL("../", import.meta.url);
 
 function wavDuration(audio) {
@@ -278,73 +271,17 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(page, /<NetworkMap \/>/);
 });
 
-test("station map glyphs reflect each station's network position", async () => {
+test("station pages use one plain, focused return to the map", async () => {
   const source = await readFile(new URL("app/network-visuals.tsx", root), "utf8");
   const topbar = await readFile(new URL("app/stations/station-topbar.tsx", root), "utf8");
   const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
 
-  assert.equal(Object.keys(NETWORK_GLYPH_DEFINITIONS).length, 20);
-  assert.equal(NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH, 6);
-  assert.equal(NETWORK_GLYPH_DEFINITIONS["mora-timing"].topology, "horizontal-through");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS["pitch-accent"].topology, "horizontal-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.kana.topology, "fork");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.hiragana.topology, "downward-through");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.katakana.topology, "upward-through");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS["sound-marks"].topology, "merge");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS["combined-sounds"].topology, "horizontal-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.words.topology, "horizontal-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.topology, "vertical-start");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.japanese.lines.main, "station-map-foundation");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.sound.lines.main, "station-map-sound");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.writing.lines.main, "station-map-writing");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.vocabulary.lines.main, "station-map-vocabulary");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.romaji.lines.main, "station-map-foundation");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.topology, "spine-branch-interchange");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.lines.vertical, "station-map-foundation");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.japan.lines.horizontal, "station-map-travel");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.introductions.topology, "rising-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.navigation.topology, "rising-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.food.topology, "horizontal-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.shopping.topology, "falling-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.help.topology, "falling-terminal");
-  assert.equal(NETWORK_GLYPH_DEFINITIONS.vowels.lines.main, "station-map-sound");
-
-  for (const [position, definition] of Object.entries(NETWORK_GLYPH_DEFINITIONS)) {
-    const geometry = NETWORK_GLYPH_TOPOLOGIES[definition.topology];
-    assert.ok(geometry, `${position} should select a shared glyph topology`);
-    for (const path of geometry.paths) {
-      assert.ok(definition.lines[path.role], `${position} should color the ${path.role} line`);
-    }
-  }
-
-  for (const [topology, geometry] of Object.entries(NETWORK_GLYPH_TOPOLOGIES)) {
-    const [currentX, currentY] = geometry.current;
-    const armLengths = geometry.paths
-      .flatMap((path) => [path.points[0], path.points.at(-1)])
-      .map(([x, y]) => Math.hypot(x - currentX, y - currentY))
-      .filter((length) => length > 0);
-    assert.ok(armLengths.length > 0, `${topology} should expose at least one arm`);
-    for (const length of armLengths.slice(1)) {
-      assert.ok(
-        Math.abs(length - armLengths[0]) < Number.EPSILON * 16,
-        `${topology} arms should have equal lengths`,
-      );
-    }
-    const radius = geometry.interchange
-      ? NETWORK_GLYPH_RADII.interchange
-      : NETWORK_GLYPH_RADII.station;
-    for (const length of armLengths) {
-      assert.ok(
-        Math.abs(length - radius - NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH) < Number.EPSILON * 16,
-        `${topology} should use the shared visible segment length`,
-      );
-    }
-  }
-
-  assert.match(source, /NETWORK_GLYPH_DEFINITIONS\[position\]/);
-  assert.match(source, /NETWORK_GLYPH_TOPOLOGIES\[definition\.topology\]/);
-  assert.doesNotMatch(source, /if \(position/);
-  assert.match(topbar, /import \{ NetworkGlyph, type NetworkPosition \} from "\.\.\/network-visuals"/);
+  assert.match(topbar, /import type \{ StationFocus \} from "\.\.\/network-map"/);
+  assert.match(topbar, /className="station-network-link"/);
+  assert.match(topbar, /href=\{`\/\?focus=\$\{networkFocus\}`\}/);
+  assert.match(topbar, /<span aria-hidden="true">←<\/span> Map/);
+  assert.doesNotMatch(topbar, /NetworkGlyph|<svg/);
+  assert.doesNotMatch(source, /NetworkGlyph|network-glyph-model/);
   assert.match(networkMap, /<NetworkStationSymbol kind=\{kind\} \/>/);
   assert.match(networkMap, /<NetworkStationSymbol kind=\{line\} \/>/);
   assert.match(source, /<circle className="network-interchange-outer" r="28" \/>/);
@@ -463,10 +400,10 @@ test("Dakuten & Handakuten and Yōon teach focused patterns with scoped progress
   );
 
   assert.doesNotMatch(soundMarksPage, /isStationAvailableToCurrentUser|redirect\(/);
-  assert.match(soundMarksPage, /<StationTopbar current="Dakuten & Handakuten" mapPosition="sound-marks" \/>/);
+  assert.match(soundMarksPage, /<StationTopbar current="Dakuten & Handakuten" networkFocus="marks" \/>/);
   assert.match(soundMarksPage, /<SoundMarksGuide \/>/);
   assert.doesNotMatch(combinedSoundsPage, /isStationAvailableToCurrentUser|redirect\(/);
-  assert.match(combinedSoundsPage, /<StationTopbar current="Yōon" mapPosition="combined-sounds" \/>/);
+  assert.match(combinedSoundsPage, /<StationTopbar current="Yōon" networkFocus="combined" \/>/);
   assert.match(combinedSoundsPage, /<CombinedSoundsGuide \/>/);
   assert.match(source, /fetch\(`\/api\/stations\/\$\{stationSlug\}\/introduction`/);
   assert.match(source, /const knowledgePath = `\/api\/stations\/\$\{stationSlug\}\/knowledge`/);

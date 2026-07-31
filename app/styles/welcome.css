@@ -121,12 +121,10 @@
   pointer-events: none;
 }
 
-.welcome-cue-network svg {
-  width: 2.5rem;
-  height: auto;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.welcome-cue-network {
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .welcome-cue-station {

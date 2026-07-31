@@ -66,6 +66,26 @@ test("Words contains a distinct, playable set with canonical rōmaji", async () 
     "Start with words for finding your way, identifying people and things, and meeting immediate needs.",
   );
   assert.deepEqual(
+    Object.fromEntries(WORDS_STATION.items.map(({ id, pitchAccent }) => [id, pitchAccent])),
+    {
+      densha: 0,
+      doko: 1,
+      eki: 1,
+      hito: 0,
+      iku: 0,
+      ima: 1,
+      koko: 0,
+      kore: 0,
+      kyou: 1,
+      mizu: 0,
+      namae: 0,
+      nani: 1,
+      tabemono: 2,
+      toire: 1,
+      watashi: 0,
+    },
+  );
+  assert.deepEqual(
     VOCABULARY_REVIEW_DIRECTIONS,
     ["meaning-to-japanese", "japanese-to-meaning"],
   );
@@ -172,6 +192,14 @@ test("Vocab uses the shared reference, flashcard, and private persistence contra
   assert.match(repository, /VOCABULARY_REVIEW_DIRECTIONS\.map\(\(reviewDirection\) => \(\{/);
   assert.match(repository, /VOCABULARY_REVIEW_DIRECTIONS\.every\(\(direction\) =>/);
   assert.match(styles, /\.vocabulary-reference-list\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fill, minmax\(9\.5rem, 1fr\)\)/s);
+  assert.match(
+    styles,
+    /@media \(max-width: 360px\)\s*\{[\s\S]*?\.vocabulary-reference-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 360px\)\s*\{[\s\S]*?\.vocabulary-reference-item \.pitch-contour\s*\{[^}]*--pitch-character-size:\s*1\.35rem/s,
+  );
   assert.match(styles, /\.vocabulary-reference-item\s*\{/);
   assert.match(styles, /\.vocabulary-reference-item\s*\{[^}]*min-height:\s*8\.25rem/s);
   assert.match(styles, /\.vocabulary-reference-item \.pitch-contour\s*\{/);

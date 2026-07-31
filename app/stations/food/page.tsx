@@ -5,7 +5,7 @@ import { TravelStation } from "../travel-station";
 export default function FoodPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Food" mapPosition="food" />
+      <StationTopbar current="Food" networkFocus="food" />
       <div className="station-page station-page-travel station-page-food">
         <TravelStation
           items={TRAVEL_PHRASES.food}

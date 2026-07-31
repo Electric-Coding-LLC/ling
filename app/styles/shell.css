@@ -62,3 +62,91 @@
   width: 2.08em;
   height: auto;
 }
+
+.pwa-pull-indicator {
+  position: fixed;
+  z-index: 60;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: 50%;
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  opacity: 0;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--surface) 94%, var(--foreground));
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.24);
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+.pwa-pull-indicator[data-visible="true"] {
+  opacity: 1;
+}
+
+.pwa-pull-arrow {
+  display: inline-grid;
+  width: 1rem;
+  place-items: center;
+  color: var(--vocabulary);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 120ms ease-out;
+}
+
+.pwa-pull-arrow[data-ready="true"] {
+  transform: rotate(180deg);
+}
+
+.pwa-update-toast {
+  position: fixed;
+  z-index: 70;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: max(1rem, env(safe-area-inset-left));
+  display: flex;
+  min-height: 3.25rem;
+  max-width: 28rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.625rem 0.625rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.875rem;
+  margin-inline: auto;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--surface) 96%, var(--foreground));
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.32);
+  font-size: 0.8125rem;
+}
+
+.pwa-update-toast > span {
+  flex: 1;
+}
+
+.pwa-update-toast button {
+  min-height: 2.25rem;
+  padding-inline: 0.75rem;
+  border: 0;
+  border-radius: 0.625rem;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+  cursor: pointer;
+}
+
+.pwa-update-toast button:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+.pwa-update-toast .pwa-update-dismiss {
+  width: 2.25rem;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 1.125rem;
+}

@@ -1,32 +1,32 @@
 import { LingWordmark } from "../brand";
 import { NavigationLink } from "../navigation-feedback";
-import { NetworkGlyph, type NetworkPosition } from "../network-visuals";
+import type { StationFocus } from "../network-map";
 
 export function StationTopbar({
   current,
-  mapPosition,
+  networkFocus,
 }: {
   current: string;
-  mapPosition: NetworkPosition;
+  networkFocus: StationFocus;
 }) {
   return (
     <header className="topbar station-topbar">
       <NavigationLink
-        aria-label="Return to the Ling network map"
+        aria-label="Return to the Ling map"
         className="brand-link"
-        href={`/?focus=${mapPosition}`}
-        title="Network map"
+        href={`/?focus=${networkFocus}`}
+        title="Ling map"
       >
         <LingWordmark className="wordmark" />
       </NavigationLink>
       <nav aria-label="Station navigation" className="station-nav">
         <NavigationLink
-          aria-label={`Return to network map from ${current}`}
-          className="station-map-link"
-          href={`/?focus=${mapPosition}`}
-          title="Network map"
+          aria-label={`Return to map from ${current}`}
+          className="station-network-link"
+          href={`/?focus=${networkFocus}`}
+          title="Map"
         >
-          <NetworkGlyph position={mapPosition} />
+          <span aria-hidden="true">←</span> Map
         </NavigationLink>
       </nav>
     </header>

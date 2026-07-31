@@ -63,7 +63,8 @@ test("first visit, dismissal, and permanent map help stay outside station progre
   assert.match(link, /dismissWelcome\(storage\)/);
   assert.match(link, /href="\/"/);
   assert.match(welcomePage, /<WelcomeMapLink/);
-  assert.match(guide, /<NetworkGlyph position="japanese" \/>/);
+  assert.match(guide, /className="welcome-cue-network">← Map<\/span>/);
+  assert.doesNotMatch(guide, /NetworkGlyph|corner glyph/);
   assert.match(guide, /<NetworkStationSymbol kind="travel-interchange" \/>/);
   assert.match(guide, /hiragana-test-trigger welcome-cue-progress/);
   assert.match(guide, /hiragana-test-card welcome-cue-flashcard/);

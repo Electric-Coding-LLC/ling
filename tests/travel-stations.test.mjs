@@ -264,7 +264,7 @@ test("Rōmaji mirrors the Kana chart and tests each hidden reading", async () =>
   );
   const schema = await readFile(new URL("db/schema.ts", root), "utf8");
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
-  assert.match(page, /mapPosition="romaji"/);
+  assert.match(page, /networkFocus="romaji"/);
   assert.match(page, /columnHeadings=\{ROMAJI_COLUMN_HEADINGS\}/);
   assert.match(page, /combinedRows=\{ROMAJI_COMBINED_ROWS\}/);
   assert.match(page, /finalEntry=\{FINAL_ROMAJI\}/);
@@ -427,7 +427,7 @@ test("the Japan line uses one immediate-feedback reference surface without progr
       new URL(`app/stations/${station}/loading.tsx`, root),
       "utf8",
     );
-    assert.match(page, new RegExp(`mapPosition="${station}"`));
+    assert.match(page, new RegExp(`networkFocus="${station}"`));
     assert.match(page, /<TravelStation/);
     assert.doesNotMatch(
       page,

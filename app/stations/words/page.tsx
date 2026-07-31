@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default function WordsPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Words" mapPosition="words" />
+      <StationTopbar current="Words" networkFocus="words" />
       <div className="station-page station-page-vocabulary station-page-words">
         <VocabularyGuide />
       </div>

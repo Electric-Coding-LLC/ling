@@ -1,13 +1,10 @@
-import packageJson from "@/package.json";
+import { getAppVersion } from "../../../../src/modules/app-version";
 
 export const dynamic = "force-dynamic";
 
 export function GET() {
   return Response.json(
-    {
-      version: packageJson.version,
-      build: process.env.SITES_BUILD_SHA ?? "development",
-    },
+    getAppVersion(),
     { headers: { "Cache-Control": "private, no-store" } },
   );
 }

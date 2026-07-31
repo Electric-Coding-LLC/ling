@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default function PitchAccentPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Pitch" mapPosition="pitch-accent" />
+      <StationTopbar current="Pitch" networkFocus="pitch" />
       <div className="station-page station-page-pitch-accent">
         <PitchAccentGuide />
       </div>

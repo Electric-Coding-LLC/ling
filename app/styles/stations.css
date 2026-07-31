@@ -12,75 +12,35 @@
   margin-left: auto;
 }
 
-.station-map-link {
+.station-network-link {
   display: inline-flex;
-  width: 2.5rem;
-  min-height: 2.25rem;
+  min-height: 2.75rem;
   flex: none;
   align-items: center;
   justify-content: center;
+  padding-inline: 0.25rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.station-map-link:focus-visible {
+.station-network-link:focus-visible {
   outline: 2px solid var(--foreground);
-  outline-offset: 5px;
-}
-
-.station-map-link svg {
-  width: 2.5rem;
-  height: auto;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: opacity 150ms ease;
-}
-
-.station-map-link:hover svg {
-  opacity: 0.78;
-}
-
-.station-map-sound {
-  stroke-width: 3;
-}
-
-.station-map-sound {
-  stroke: var(--sound);
-}
-
-.station-map-writing {
-  stroke: var(--writing);
-  stroke-width: 3;
-}
-
-.station-map-vocabulary {
-  stroke: var(--vocabulary);
-  stroke-width: 3;
-}
-
-.station-map-travel {
-  stroke: var(--travel);
-  stroke-width: 3;
-}
-
-.station-map-foundation {
-  stroke: var(--foreground);
-  stroke-width: 3;
-}
-
-.station-map-current {
-  fill: var(--surface);
-  stroke: var(--foreground);
-  stroke-width: 2;
-}
-
-.station-map-interchange {
-  stroke-width: 2.5;
+  outline-offset: 4px;
 }
 
 .station-page {
   width: min(100%, 46rem);
   margin-inline: auto;
   padding: clamp(1.75rem, 5vw, 3rem) clamp(1.25rem, 5vw, 3rem) 4rem;
+}
+
+.help-version {
+  padding-top: 2.5rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
 }
 
 .station-heading {
@@ -2434,6 +2394,20 @@
     background: color-mix(in srgb, var(--foreground) 7%, transparent);
   }
 
+}
+
+@media (max-width: 360px) {
+  .vocabulary-reference-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vocabulary-reference-item {
+    padding: 0.75rem 1.5rem 0.75rem 0.75rem;
+  }
+
+  .vocabulary-reference-item .pitch-contour {
+    --pitch-character-size: 1.35rem;
+  }
 }
 
 @media (max-width: 600px) {

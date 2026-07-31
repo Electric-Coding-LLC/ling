@@ -42,7 +42,7 @@ export const WORDS_STATION = {
     { audio: "/audio/ja-eki.wav", id: "eki", meaning: "station", pitchAccent: 1, word: "えき" },
     { audio: "/audio/ja-marks-densha.wav", id: "densha", meaning: "train", pitchAccent: 0, word: "でんしゃ" },
     { audio: "/audio/ja-vocab-iku.wav", id: "iku", meaning: "to go", pitchAccent: 0, word: "いく" },
-    { audio: "/audio/ja-vocab-ima.wav", id: "ima", meaning: "now", pitchAccent: 2, word: "いま" },
+    { audio: "/audio/ja-vocab-ima.wav", id: "ima", meaning: "now", pitchAccent: 1, word: "いま" },
     { audio: "/audio/ja-yoon-hiragana-kyo.wav", id: "kyou", meaning: "today", pitchAccent: 1, word: "きょう" },
   ],
   name: "Words",

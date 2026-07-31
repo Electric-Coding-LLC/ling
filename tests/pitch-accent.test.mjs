@@ -133,7 +133,7 @@ test("Pitch is listening-first, mora-aligned, compact, and privately persisted",
   assert.doesNotMatch(mobileStyles, /\.pitch-example\s*\{/s);
 
   assert.doesNotMatch(page, /isStationAvailableToCurrentUser|redirect\(/);
-  assert.match(page, /StationTopbar current="Pitch" mapPosition="pitch-accent"/);
+  assert.match(page, /StationTopbar current="Pitch" networkFocus="pitch"/);
   assert.match(introductionApi, /recordStationIntroduction\(user\.id, "pitch-accent"\)/);
   assert.match(introductionApi, /private, no-store/);
   assert.match(knowledgeApi, /export async function GET/);

@@ -5,7 +5,7 @@ import { TravelStation } from "../travel-station";
 export default function JapanesePage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Japanese" mapPosition="japanese" />
+      <StationTopbar current="Japanese" networkFocus="japanese" />
       <div className="station-page station-page-travel station-page-japanese">
         <TravelStation
           intro={[

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default function HiraganaPage() {
   return (
     <main className="shell station-shell">
-      <StationTopbar current="Hiragana" mapPosition="hiragana" />
+      <StationTopbar current="Hiragana" networkFocus="hiragana" />
       <div className="station-page station-page-hiragana">
         <HiraganaGuide />
       </div>

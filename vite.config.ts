@@ -44,6 +44,11 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    define: {
+      __LING_BUILD_SHA__: JSON.stringify(
+        process.env.SITES_BUILD_SHA ?? "development",
+      ),
+    },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,

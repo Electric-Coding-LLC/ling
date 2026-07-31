@@ -43,15 +43,17 @@ test("installed Ling supports guarded pull-to-refresh and build update feedback"
 });
 
 test("Help lists the package version and deployment build", async () => {
-  const [help, version, route] = await Promise.all([
+  const [help, version, route, viteConfig] = await Promise.all([
     readFile(new URL("app/stations/help/page.tsx", root), "utf8"),
     readFile(new URL("src/modules/app-version.ts", root), "utf8"),
     readFile(new URL("app/api/pwa/version/route.ts", root), "utf8"),
+    readFile(new URL("vite.config.ts", root), "utf8"),
   ]);
 
   assert.match(help, /Version \{formatAppVersion\(appVersion\)\}/);
   assert.match(version, /packageJson\.version/);
-  assert.match(version, /process\.env\.SITES_BUILD_SHA \?\? "development"/);
+  assert.match(version, /build: __LING_BUILD_SHA__/);
+  assert.match(viteConfig, /__LING_BUILD_SHA__:\s*JSON\.stringify/);
   assert.match(version, /build\.slice\(0, 7\)/);
   assert.match(route, /getAppVersion\(\)/);
 });

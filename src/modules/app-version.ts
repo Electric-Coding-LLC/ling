@@ -1,5 +1,7 @@
 import packageJson from "../../package.json";
 
+declare const __LING_BUILD_SHA__: string;
+
 export type AppVersion = {
   readonly build: string;
   readonly version: string;
@@ -7,7 +9,7 @@ export type AppVersion = {
 
 export function getAppVersion(): AppVersion {
   return {
-    build: process.env.SITES_BUILD_SHA ?? "development",
+    build: __LING_BUILD_SHA__,
     version: packageJson.version,
   };
 }

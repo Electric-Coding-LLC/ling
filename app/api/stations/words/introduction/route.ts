@@ -1,7 +1,7 @@
-import { handleVocabularyIntroduction } from "../../vocabulary-route-handlers";
+import { handleWordsIntroduction } from "../../vocabulary-route-handlers";
 
 export const dynamic = "force-dynamic";
 
 export async function POST() {
-  return handleVocabularyIntroduction("words");
+  return handleWordsIntroduction();
 }

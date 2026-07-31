@@ -219,7 +219,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
 
   assert.doesNotMatch(source, /focus="(?:nouns|verbs|adjectives)"/);
   assert.doesNotMatch(source, /label="(?:Kanji|Grammar|Phrasing)"/);
-  assert.match(source, /focus === "nouns" \|\| focus === "verbs" \|\| focus === "adjectives"\) return "words"/);
+  assert.doesNotMatch(source, /nouns|verbs|adjectives/);
   assert.match(source, /japanese:\s*\{ ArrowDown: "romaji" \}/);
   assert.match(source, /romaji:\s*\{ ArrowDown: "japan", ArrowUp: "japanese" \}/);
   assert.match(source, /japan:\s*\{ ArrowDown: "sound", ArrowRight: "food", ArrowUp: "romaji" \}/);
@@ -283,7 +283,7 @@ test("station map glyphs reflect each station's network position", async () => {
   const topbar = await readFile(new URL("app/stations/station-topbar.tsx", root), "utf8");
   const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
 
-  assert.equal(Object.keys(NETWORK_GLYPH_DEFINITIONS).length, 23);
+  assert.equal(Object.keys(NETWORK_GLYPH_DEFINITIONS).length, 20);
   assert.equal(NETWORK_GLYPH_VISIBLE_SEGMENT_LENGTH, 6);
   assert.equal(NETWORK_GLYPH_DEFINITIONS["mora-timing"].topology, "horizontal-through");
   assert.equal(NETWORK_GLYPH_DEFINITIONS["pitch-accent"].topology, "horizontal-terminal");
@@ -363,9 +363,6 @@ test("every mapped station is visible and directly accessible without completion
     "sound-marks",
     "combined-sounds",
     "words",
-    "nouns",
-    "verbs",
-    "adjectives",
     "mora-timing",
     "pitch-accent",
   ];
@@ -394,7 +391,7 @@ test("every mapped station is visible and directly accessible without completion
   assert.match(repository, /SOUND_MARK_PATTERN_IDS\.every\(\(patternId\) =>/);
   assert.match(repository, /COMBINED_SOUND_PATTERN_IDS\.every\(\(patternId\) =>/);
   assert.match(repository, /PITCH_ACCENT_ITEM_IDS\.every\(\(itemId\) =>/);
-  assert.match(repository, /getVocabularyItemIds\(stationId\)\.every\(\(itemId\) =>/);
+  assert.match(repository, /getVocabularyItemIds\(\)\.every\(\(itemId\) =>/);
   assert.match(repository, /return independentlyCompleted/);
   assert.match(repository, /onConflictDoNothing\(\)/);
   assert.match(vowelsApi, /recordStationIntroduction\(user\.id, "vowels"\)/);

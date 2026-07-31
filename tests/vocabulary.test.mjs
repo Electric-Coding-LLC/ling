@@ -10,8 +10,9 @@ import {
   PITCH_ACCENT_ITEMS,
 } from "../src/modules/learning/pitch-accent.ts";
 import {
-  VOCABULARY_STATION_IDS,
-  VOCABULARY_STATIONS,
+  isVocabularyKnowledge,
+  VOCABULARY_REVIEW_DIRECTIONS,
+  WORDS_STATION,
 } from "../src/modules/learning/vocabulary.ts";
 
 const root = new URL("../", import.meta.url);
@@ -39,10 +40,9 @@ function readWavFormat(audio) {
   return { bitsPerSample, channels, data, sampleRate };
 }
 
-test("Vocab stations contain distinct, playable word sets with canonical rōmaji", async () => {
-  assert.deepEqual(VOCABULARY_STATION_IDS, ["words", "nouns", "verbs", "adjectives"]);
+test("Words contains a distinct, playable set with canonical rōmaji", async () => {
   assert.deepEqual(
-    VOCABULARY_STATIONS.words.items.map(({ meaning, word }) => ({ meaning, word })),
+    WORDS_STATION.items.map(({ meaning, word }) => ({ meaning, word })),
     [
       { meaning: "this", word: "これ" },
       { meaning: "here", word: "ここ" },
@@ -62,43 +62,39 @@ test("Vocab stations contain distinct, playable word sets with canonical rōmaji
     ],
   );
   assert.equal(
-    VOCABULARY_STATIONS.words.description,
+    WORDS_STATION.description,
     "Start with words for finding your way, identifying people and things, and meeting immediate needs.",
   );
-  assert.equal(VOCABULARY_STATIONS.nouns.items.length, 8);
-  assert.equal(VOCABULARY_STATIONS.verbs.items.length, 8);
-  assert.equal(VOCABULARY_STATIONS.adjectives.items.length, 8);
-
-  for (const stationId of VOCABULARY_STATION_IDS) {
-    const station = VOCABULARY_STATIONS[stationId];
-    assert.equal(new Set(station.items.map((item) => item.id)).size, station.items.length);
-
-    for (const item of station.items) {
-      assert.ok(getJapaneseWordRomaji(item.word).length > 0, `${item.word} needs rōmaji`);
-      const morae = getJapaneseMorae(item.word);
-      const pitch = getPitchLevels(morae.length, item.pitchAccent);
-      assert.equal(morae.join(""), item.word, `${item.word} should preserve its written morae`);
-      assert.equal(pitch.length, morae.length, `${item.word} should align pitch to its beats`);
-      const audio = await readFile(new URL(`public${item.audio}`, root));
-      assert.equal(audio.subarray(0, 4).toString("ascii"), "RIFF");
-      assert.equal(audio.subarray(8, 12).toString("ascii"), "WAVE");
-      const format = readWavFormat(audio);
-      assert.equal(format.channels, 1, `${item.audio} should be mono`);
-      assert.equal(format.sampleRate, 22_050, `${item.audio} should use the authored rate`);
-      assert.equal(format.bitsPerSample, 16, `${item.audio} should use PCM16`);
-      assert.ok(format.data?.some((sample) => sample !== 0), `${item.audio} should be audible`);
-    }
-  }
-
-  const adjectiveGroups = new Set(
-    VOCABULARY_STATIONS.adjectives.items.map((item) => item.group),
+  assert.deepEqual(
+    VOCABULARY_REVIEW_DIRECTIONS,
+    ["meaning-to-japanese", "japanese-to-meaning"],
   );
-  assert.deepEqual(adjectiveGroups, new Set(["い-adjective", "な-adjective"]));
+  assert.equal(isVocabularyKnowledge({
+    direction: "japanese-to-meaning",
+    itemId: "kore",
+  }), true);
+  assert.equal(new Set(WORDS_STATION.items.map((item) => item.id)).size, WORDS_STATION.items.length);
+
+  for (const item of WORDS_STATION.items) {
+    assert.ok(getJapaneseWordRomaji(item.word).length > 0, `${item.word} needs rōmaji`);
+    const morae = getJapaneseMorae(item.word);
+    const pitch = getPitchLevels(morae.length, item.pitchAccent);
+    assert.equal(morae.join(""), item.word, `${item.word} should preserve its written morae`);
+    assert.equal(pitch.length, morae.length, `${item.word} should align pitch to its beats`);
+    const audio = await readFile(new URL(`public${item.audio}`, root));
+    assert.equal(audio.subarray(0, 4).toString("ascii"), "RIFF");
+    assert.equal(audio.subarray(8, 12).toString("ascii"), "WAVE");
+    const format = readWavFormat(audio);
+    assert.equal(format.channels, 1, `${item.audio} should be mono`);
+    assert.equal(format.sampleRate, 22_050, `${item.audio} should use the authored rate`);
+    assert.equal(format.bitsPerSample, 16, `${item.audio} should use PCM16`);
+    assert.ok(format.data?.some((sample) => sample !== 0), `${item.audio} should be audible`);
+  }
 });
 
 test("Words stays independent from the pronunciation stations' teaching examples", async () => {
   const starterWords = new Set(
-    VOCABULARY_STATIONS.words.items.map((item) => `${item.word}:${item.meaning}`),
+    WORDS_STATION.items.map((item) => `${item.word}:${item.meaning}`),
   );
   assert.ok(PITCH_ACCENT_ITEMS.some(
     (item) => !starterWords.has(`${item.word}:${item.meaning}`),
@@ -128,6 +124,10 @@ test("Vocab uses the shared reference, flashcard, and private persistence contra
   );
   const routeHandlers = await readFile(
     new URL("app/api/stations/vocabulary-route-handlers.ts", root),
+    "utf8",
+  );
+  const repository = await readFile(
+    new URL("src/modules/learning/repository.ts", root),
     "utf8",
   );
   const pitchContour = await readFile(
@@ -162,16 +162,22 @@ test("Vocab uses the shared reference, flashcard, and private persistence contra
   );
   assert.match(flashcardReview, />Good<\/span>/);
   assert.match(flashcardReview, />Not Yet<\/span>/);
-  assert.match(guide, /fetch\(`\/api\/stations\/\$\{stationId\}\/knowledge`/);
-  assert.match(routeHandlers, /listKnownVocabularyItems/);
-  assert.match(routeHandlers, /setVocabularyItemKnown/);
-  assert.match(routeHandlers, /setAllVocabularyItemsKnown/);
+  assert.match(guide, /fetch\("\/api\/stations\/words\/knowledge"/);
+  assert.match(routeHandlers, /listWordsKnowledge/);
+  assert.match(routeHandlers, /setWordsItemKnown/);
+  assert.match(routeHandlers, /setAllWordsItemsKnown/);
   assert.match(routeHandlers, /private, no-store/);
+  assert.match(routeHandlers, /isVocabularyReviewDirection/);
+  assert.match(repository, /eq\(vocabularyKnowledge\.reviewDirection, direction\)/);
+  assert.match(repository, /VOCABULARY_REVIEW_DIRECTIONS\.map\(\(reviewDirection\) => \(\{/);
+  assert.match(repository, /VOCABULARY_REVIEW_DIRECTIONS\.every\(\(direction\) =>/);
+  assert.match(styles, /\.vocabulary-reference-list\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fill, minmax\(9\.5rem, 1fr\)\)/s);
   assert.match(styles, /\.vocabulary-reference-item\s*\{/);
+  assert.match(styles, /\.vocabulary-reference-item\s*\{[^}]*min-height:\s*8\.25rem/s);
   assert.match(styles, /\.vocabulary-reference-item \.pitch-contour\s*\{/);
   assert.match(guide, /<VocabularyAudioIndicator \/>/);
   assert.match(guide, /className="vocabulary-audio-indicator"[\s\S]*?<span \/>[\s\S]*?<span \/>[\s\S]*?<span \/>/);
-  assert.match(styles, /\.vocabulary-audio-indicator\s*\{[^}]*top:\s*1rem[^}]*right:\s*1rem[^}]*color:\s*var\(--audio\)[^}]*opacity:\s*0/s);
+  assert.match(styles, /\.vocabulary-audio-indicator\s*\{[^}]*top:\s*0\.875rem[^}]*right:\s*0\.875rem[^}]*color:\s*var\(--audio\)[^}]*opacity:\s*0/s);
   assert.match(styles, /\.vocabulary-reference-item\[data-playing="true"\]\s*\{[^}]*background:[^}]*var\(--audio\)[^}]*box-shadow:\s*inset 0 0 0 2px var\(--audio\)/s);
   assert.match(styles, /\.vocabulary-reference-item\[data-playing="true"\] \.vocabulary-audio-indicator\s*\{[^}]*opacity:\s*1/s);
   assert.match(styles, /\.vocabulary-reference-item\[data-playing="true"\] \.vocabulary-audio-indicator span\s*\{[^}]*animation:\s*hiragana-test-sound-pulse/s);
@@ -179,21 +185,17 @@ test("Vocab uses the shared reference, flashcard, and private persistence contra
   assert.match(styles, /\.station-membership-vocabulary\s*\{/);
 });
 
-test("Words reviews in either direction without splitting item progress", async () => {
+test("Words tracks both review directions independently", async () => {
   const guide = await readFile(
     new URL("app/stations/vocabulary-guide.tsx", root),
     "utf8",
   );
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
 
-  assert.match(
-    guide,
-    /type VocabularyReviewDirection = "japanese-to-meaning" \| "meaning-to-japanese"/,
-  );
   assert.match(guide, /setActiveReview\(\{ cards: shuffle\(items\), direction \}\)/);
-  assert.match(guide, /stationId === "words"[\s\S]*className="vocabulary-review-launcher"/);
-  assert.match(guide, />\s*English → Japanese\s*<\/button>/);
-  assert.match(guide, />\s*Japanese → English\s*<\/button>/);
+  assert.match(guide, /className="vocabulary-review-launcher"/);
+  assert.match(guide, /<span>English → Japanese<\/span>/);
+  assert.match(guide, /<span>Japanese → English<\/span>/);
   assert.match(guide, /meaningFirst \? "English → Japanese" : "Japanese → English"/);
   assert.match(
     guide,
@@ -204,8 +206,15 @@ test("Words reviews in either direction without splitting item progress", async 
     /answerRevealed \? \([\s\S]*meaningFirst \? \([\s\S]*<PitchContour[\s\S]*word=\{activeCard\.word\}[\s\S]*vocabulary-review-meaning[\s\S]*activeCard\.meaning/,
   );
   assert.match(guide, /if \(!meaningFirst \|\| answerRevealed\) playItem\(activeCard\)/);
-  assert.match(guide, /body: JSON\.stringify\(\{ itemId: id, known \}\)/);
-  assert.match(styles, /\.vocabulary-review-direction-menu\s*\{[^}]*top:\s*calc\(100% \+ 0\.5rem\)/s);
+  assert.match(guide, /const wasKnown = knownItems\[direction\]\.has\(id\)/);
+  assert.match(guide, /body: JSON\.stringify\(\{ direction, itemId: id, known \}\)/);
+  assert.match(guide, /const totalRecallCount = station\.items\.length \* reviewDirections\.length/);
+  assert.match(guide, /remainingRecallCount.*?recalls remaining/s);
+  assert.match(guide, /formatDirectionProgress\(station, knownItems, "meaning-to-japanese"\)/);
+  assert.match(guide, /formatDirectionProgress\(station, knownItems, "japanese-to-meaning"\)/);
+  assert.match(guide, /reviewDirections\.every\(\(direction\) =>[\s\S]*knownItems\[direction\]\.has\(item\.id\)/);
+  assert.match(styles, /\.vocabulary-review-direction-menu\s*\{[^}]*top:\s*calc\(100% \+ 0\.5rem\)[^}]*width:\s*16\.5rem/s);
+  assert.match(styles, /\.vocabulary-review-direction-progress\s*\{/);
   assert.match(styles, /\.vocabulary-review-launcher\[open\] \+ \.hiragana-test-tooltip\s*\{/);
   assert.match(styles, /\.vocabulary-review-direction-label\s*\{/);
 });

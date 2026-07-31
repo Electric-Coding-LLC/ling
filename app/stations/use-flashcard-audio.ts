@@ -70,11 +70,17 @@ export function useFlashcardAudio() {
     activeSourceRef.current = source;
     setAudioError(false);
     setActiveAudioIndex(source.index);
-    setActiveBeatIndex(source.beatCount === undefined ? null : 0);
+    setActiveBeatIndex(null);
     setAudioPlaying(true);
     void audio.play()
-      .then(() => startBeatAnimation(source))
-      .catch(failPlayback);
+      .then(() => {
+        if (activeSourceRef.current !== source) return;
+        setActiveBeatIndex(source.beatCount === undefined ? null : 0);
+        startBeatAnimation(source);
+      })
+      .catch(() => {
+        if (activeSourceRef.current === source) failPlayback();
+      });
   }, [cancelBeatAnimation, failPlayback, startBeatAnimation]);
 
   const stopAudio = useCallback(() => {

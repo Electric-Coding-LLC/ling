@@ -1,5 +1,4 @@
 export type NetworkPosition =
-  | "adjectives"
   | "combined-sounds"
   | "food"
   | "help"
@@ -10,14 +9,12 @@ export type NetworkPosition =
   | "katakana"
   | "mora-timing"
   | "navigation"
-  | "nouns"
   | "pitch-accent"
   | "romaji"
   | "shopping"
   | "sound"
   | "sound-marks"
   | "japan"
-  | "verbs"
   | "vowels"
   | "vocabulary"
   | "writing"
@@ -318,9 +315,6 @@ const VOCABULARY_TERMINAL: NetworkGlyphDefinition = {
 export const NETWORK_GLYPH_DEFINITIONS: Readonly<
   Record<NetworkPosition, NetworkGlyphDefinition>
 > = {
-  adjectives: {
-    ...VOCABULARY_TERMINAL,
-  },
   "combined-sounds": {
     lines: { main: "station-map-writing" },
     topology: "horizontal-terminal",
@@ -358,7 +352,6 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     lines: { main: "station-map-travel" },
     topology: "rising-terminal",
   },
-  nouns: VOCABULARY_TERMINAL,
   "pitch-accent": {
     lines: { main: "station-map-sound" },
     topology: "horizontal-terminal",
@@ -379,7 +372,6 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     lines: WRITING_BRANCH_LINES,
     topology: "merge",
   },
-  verbs: VOCABULARY_TERMINAL,
   japan: {
     lines: {
       horizontal: "station-map-travel",

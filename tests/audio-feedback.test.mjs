@@ -19,14 +19,24 @@ test("flashcard audio highlights Kana and examples only where they remain part o
     hook.indexOf("setAudioPlaying(true)") < hook.indexOf("void audio.play()"),
     "the shared player should show audio feedback at click intent",
   );
+  assert.ok(
+    hook.indexOf("setActiveBeatIndex(null)", hook.indexOf("const playAudio"))
+      < hook.indexOf("void audio.play()"),
+    "the shared player should not highlight a beat before playback begins",
+  );
   assert.doesNotMatch(hook, /queuedSources|AUDIO_SEQUENCE_PAUSE|setTimeout/);
   assert.match(hook, /audio\.currentTime \/ audio\.duration/);
   assert.match(hook, /Math\.floor\(progress \* beatCount\)/);
   assert.match(hook, /window\.requestAnimationFrame\(updateActiveBeat\)/);
   assert.match(
     hook,
-    /setActiveBeatIndex\(source\.beatCount === undefined \? null : 0\)/,
-    "one-beat examples should highlight their only beat while playing",
+    /void audio\.play\(\)[\s\S]*?\.then\(\(\) => \{[\s\S]*?setActiveBeatIndex\(source\.beatCount === undefined \? null : 0\)/,
+    "one-beat examples should highlight their only beat once playback begins",
+  );
+  assert.match(
+    hook,
+    /\.catch\(\(\) => \{[\s\S]*?if \(activeSourceRef\.current === source\) failPlayback\(\)/,
+    "an aborted stale clip should not clear the replacement clip's feedback",
   );
 
   for (const path of [...exampleFlashcardGuides, ...kanaOnlyFlashcardGuides]) {

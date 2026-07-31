@@ -1,24 +1,24 @@
 import {
   getVocabularyItemIds,
   isVocabularyItemId,
-  type VocabularyStationId,
+  isVocabularyReviewDirection,
+  VOCABULARY_REVIEW_DIRECTIONS,
+  type VocabularyReviewDirection,
 } from "@/src/modules/learning/vocabulary";
 import {
-  listKnownVocabularyItems,
+  listWordsKnowledge,
   recordStationIntroduction,
-  setAllVocabularyItemsKnown,
-  setVocabularyItemKnown,
+  setAllWordsItemsKnown,
+  setWordsItemKnown,
 } from "@/src/modules/learning/repository";
 import { getOrCreateUser } from "@/src/modules/users/repository";
 import { getCurrentIdentity } from "@/src/platform/current-identity";
 
-export async function handleVocabularyIntroduction(
-  stationId: VocabularyStationId,
-) {
+export async function handleWordsIntroduction() {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
 
-  await recordStationIntroduction(user.id, stationId);
+  await recordStationIntroduction(user.id, "words");
 
   return Response.json(
     { recorded: true },
@@ -26,45 +26,51 @@ export async function handleVocabularyIntroduction(
   );
 }
 
-export async function handleVocabularyKnowledgeGet(
-  stationId: VocabularyStationId,
-) {
+export async function handleWordsKnowledgeGet() {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
 
   return Response.json(
-    { known: await listKnownVocabularyItems(user.id, stationId) },
+    { known: await listWordsKnowledge(user.id) },
     { headers: privateNoStoreHeaders() },
   );
 }
 
-export async function handleVocabularyKnowledgePut(
-  stationId: VocabularyStationId,
-  request: Request,
-) {
+export async function handleWordsKnowledgePut(request: Request) {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
 
   const body = await readJson(request);
-  if (!isKnowledgeUpdate(stationId, body)) return invalidKnowledge();
+  if (!isKnowledgeUpdate(body)) return invalidKnowledge();
 
-  await setVocabularyItemKnown(user.id, stationId, body.itemId, body.known);
+  await setWordsItemKnown(
+    user.id,
+    body.itemId,
+    body.direction,
+    body.known,
+  );
   return Response.json(body, { headers: privateNoStoreHeaders() });
 }
 
-export async function handleVocabularyKnowledgePatch(
-  stationId: VocabularyStationId,
-  request: Request,
-) {
+export async function handleWordsKnowledgePatch(request: Request) {
   const user = await getCurrentUser();
   if (!user) return unauthorized();
 
   const body = await readJson(request);
   if (!isBulkKnowledgeUpdate(body)) return invalidKnowledge();
 
-  await setAllVocabularyItemsKnown(user.id, stationId, body.known);
+  await setAllWordsItemsKnown(user.id, body.known);
   return Response.json(
-    { known: body.known ? getVocabularyItemIds(stationId) : [] },
+    {
+      known: body.known
+        ? getVocabularyItemIds().flatMap((itemId) =>
+          VOCABULARY_REVIEW_DIRECTIONS.map((direction) => ({
+            direction,
+            itemId,
+          })),
+        )
+        : [],
+    },
     { headers: privateNoStoreHeaders() },
   );
 }
@@ -82,13 +88,15 @@ async function readJson(request: Request): Promise<unknown> {
   }
 }
 
-function isKnowledgeUpdate(
-  stationId: VocabularyStationId,
-  value: unknown,
-): value is { itemId: string; known: boolean } {
+function isKnowledgeUpdate(value: unknown): value is {
+  direction: VocabularyReviewDirection;
+  itemId: string;
+  known: boolean;
+} {
   if (!value || typeof value !== "object") return false;
-  const candidate = value as { itemId?: unknown; known?: unknown };
-  return isVocabularyItemId(stationId, candidate.itemId)
+  const candidate = value as { direction?: unknown; itemId?: unknown; known?: unknown };
+  return isVocabularyItemId(candidate.itemId)
+    && isVocabularyReviewDirection(candidate.direction)
     && typeof candidate.known === "boolean";
 }
 

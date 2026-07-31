@@ -5,9 +5,6 @@ export const STATION_IDS = [
   "sound-marks",
   "combined-sounds",
   "words",
-  "nouns",
-  "verbs",
-  "adjectives",
   "mora-timing",
   "pitch-accent",
 ] as const;

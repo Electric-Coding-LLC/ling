@@ -511,15 +511,27 @@ test("every learning station route is directly accessible", async () => {
     "sound-marks",
     "combined-sounds",
     "words",
-    "nouns",
-    "verbs",
-    "adjectives",
     "mora-timing",
     "pitch-accent",
   ]) {
     const response = await request(`/stations/${station}`);
     assert.equal(response.status, 200, `${station} should not redirect`);
     assert.equal(response.headers.get("cache-control"), "private, no-store");
+  }
+});
+
+test("retired parts-of-speech stations and APIs are no longer addressable", async () => {
+  for (const station of ["nouns", "verbs", "adjectives"]) {
+    const page = await request(`/stations/${station}`);
+    assert.equal(page.status, 404);
+
+    const introduction = await request(`/api/stations/${station}/introduction`, {
+      method: "POST",
+    });
+    assert.equal(introduction.status, 404);
+
+    const knowledge = await request(`/api/stations/${station}/knowledge`);
+    assert.equal(knowledge.status, 404);
   }
 });
 

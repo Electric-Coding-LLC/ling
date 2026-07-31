@@ -44,8 +44,10 @@ import {
 import {
   getVocabularyItemIds,
   isVocabularyItemId,
-  VOCABULARY_STATION_IDS,
-  type VocabularyStationId,
+  isVocabularyReviewDirection,
+  VOCABULARY_REVIEW_DIRECTIONS,
+  type VocabularyKnowledge,
+  type VocabularyReviewDirection,
 } from "./vocabulary";
 import {
   isRomajiKana,
@@ -100,7 +102,7 @@ export async function listCompletedStations(
     knownKanaExtensionPatterns,
     knownMoraTimingReviews,
     knownPitchAccentItems,
-    knownVocabularyItems,
+    knownWords,
   ] = await Promise.all([
     introductions.includes("hiragana") ? listKnownHiragana(userId) : [],
     introductions.includes("katakana") ? listKnownKatakana(userId) : [],
@@ -113,14 +115,7 @@ export async function listCompletedStations(
     introductions.includes("pitch-accent")
       ? listKnownPitchAccentItems(userId)
       : [] as PitchAccentItemId[],
-    Promise.all(
-      VOCABULARY_STATION_IDS.map(async (stationId) => [
-        stationId,
-        introductions.includes(stationId)
-          ? await listKnownVocabularyItems(userId, stationId)
-          : [],
-      ] as const),
-    ),
+    introductions.includes("words") ? listWordsKnowledge(userId) : [],
   ]);
   const independentlyCompleted = introductions.filter(
     (stationId) => (
@@ -151,11 +146,13 @@ export async function listCompletedStations(
         )
       )
       && (
-        !isVocabularyStationIdForCompletion(stationId)
-        || getVocabularyItemIds(stationId).every((itemId) =>
-          knownVocabularyItems
-            .find(([knownStationId]) => knownStationId === stationId)?.[1]
-            .includes(itemId),
+        stationId !== "words"
+        || VOCABULARY_REVIEW_DIRECTIONS.every((direction) =>
+          getVocabularyItemIds().every((itemId) =>
+            knownWords.some((knowledge) => (
+              knowledge.itemId === itemId && knowledge.direction === direction
+            )),
+          ),
         )
       )
     ),
@@ -682,30 +679,29 @@ export async function setAllPitchAccentItemsKnown(
     });
 }
 
-export async function listKnownVocabularyItems(
+export async function listWordsKnowledge(
   userId: string,
-  stationId: VocabularyStationId,
-): Promise<string[]> {
+): Promise<VocabularyKnowledge[]> {
   const db = await getDb();
   const rows = await db
-    .select({ itemId: vocabularyKnowledge.itemId })
+    .select({
+      direction: vocabularyKnowledge.reviewDirection,
+      itemId: vocabularyKnowledge.itemId,
+    })
     .from(vocabularyKnowledge)
-    .where(
-      and(
-        eq(vocabularyKnowledge.userId, userId),
-        eq(vocabularyKnowledge.stationId, stationId),
-      ),
-    );
+    .where(eq(vocabularyKnowledge.userId, userId));
 
   return rows
-    .map((row) => row.itemId)
-    .filter((itemId) => isVocabularyItemId(stationId, itemId));
+    .filter((row): row is VocabularyKnowledge => (
+      isVocabularyItemId(row.itemId)
+      && isVocabularyReviewDirection(row.direction)
+    ));
 }
 
-export async function setVocabularyItemKnown(
+export async function setWordsItemKnown(
   userId: string,
-  stationId: VocabularyStationId,
   itemId: string,
+  direction: VocabularyReviewDirection,
   known: boolean,
 ): Promise<void> {
   const db = await getDb();
@@ -716,8 +712,8 @@ export async function setVocabularyItemKnown(
       .where(
         and(
           eq(vocabularyKnowledge.userId, userId),
-          eq(vocabularyKnowledge.stationId, stationId),
           eq(vocabularyKnowledge.itemId, itemId),
+          eq(vocabularyKnowledge.reviewDirection, direction),
         ),
       );
     return;
@@ -725,20 +721,24 @@ export async function setVocabularyItemKnown(
 
   await db
     .insert(vocabularyKnowledge)
-    .values({ userId, stationId, itemId, knownAt: new Date() })
+    .values({
+      userId,
+      itemId,
+      reviewDirection: direction,
+      knownAt: new Date(),
+    })
     .onConflictDoUpdate({
       target: [
         vocabularyKnowledge.userId,
-        vocabularyKnowledge.stationId,
         vocabularyKnowledge.itemId,
+        vocabularyKnowledge.reviewDirection,
       ],
       set: { knownAt: new Date() },
     });
 }
 
-export async function setAllVocabularyItemsKnown(
+export async function setAllWordsItemsKnown(
   userId: string,
-  stationId: VocabularyStationId,
   known: boolean,
 ): Promise<void> {
   const db = await getDb();
@@ -746,36 +746,27 @@ export async function setAllVocabularyItemsKnown(
   if (!known) {
     await db
       .delete(vocabularyKnowledge)
-      .where(
-        and(
-          eq(vocabularyKnowledge.userId, userId),
-          eq(vocabularyKnowledge.stationId, stationId),
-        ),
-      );
+      .where(eq(vocabularyKnowledge.userId, userId));
     return;
   }
 
   const knownAt = new Date();
   await db
     .insert(vocabularyKnowledge)
-    .values(getVocabularyItemIds(stationId).map((itemId) => ({
-      userId,
-      stationId,
-      itemId,
-      knownAt,
-    })))
+    .values(getVocabularyItemIds().flatMap((itemId) =>
+      VOCABULARY_REVIEW_DIRECTIONS.map((reviewDirection) => ({
+        userId,
+        itemId,
+        reviewDirection,
+        knownAt,
+      })),
+    ))
     .onConflictDoUpdate({
       target: [
         vocabularyKnowledge.userId,
-        vocabularyKnowledge.stationId,
         vocabularyKnowledge.itemId,
+        vocabularyKnowledge.reviewDirection,
       ],
       set: { knownAt },
     });
-}
-
-function isVocabularyStationIdForCompletion(
-  stationId: StationId,
-): stationId is VocabularyStationId {
-  return VOCABULARY_STATION_IDS.some((candidate) => candidate === stationId);
 }

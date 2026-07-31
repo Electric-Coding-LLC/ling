@@ -49,6 +49,14 @@ type FlashcardContentProps = {
   readonly translation: string;
 };
 
+type KanaFlashcardContentProps = {
+  readonly kana: string;
+  readonly onReveal: () => void;
+  readonly pronunciation: string;
+  readonly pronunciationPlaying: boolean;
+  readonly revealed: boolean;
+};
+
 type FlashcardCountdownProps = {
   readonly onComplete: () => void;
 };
@@ -173,6 +181,35 @@ export function FlashcardContent({
           <FlashcardCountdown onComplete={onReveal} />
         )}
       </span>
+    </>
+  );
+}
+
+export function KanaFlashcardContent({
+  kana,
+  onReveal,
+  pronunciation,
+  pronunciationPlaying,
+  revealed,
+}: KanaFlashcardContentProps) {
+  return (
+    <>
+      <span className="hiragana-test-reveal">
+        <span
+          aria-hidden="true"
+          className="hiragana-test-pronunciation"
+          data-playing={pronunciationPlaying ? "true" : undefined}
+          data-revealed={revealed ? "true" : undefined}
+        >
+          {revealed ? pronunciation : "\u00a0"}
+        </span>
+        <span className="hiragana-test-card-kana" lang="ja">{kana}</span>
+      </span>
+      {!revealed ? (
+        <span className="hiragana-test-answer-slot">
+          <FlashcardCountdown onComplete={onReveal} />
+        </span>
+      ) : null}
     </>
   );
 }

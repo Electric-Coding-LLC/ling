@@ -319,7 +319,7 @@ test("Rōmaji mirrors the Kana chart and tests each hidden reading", async () =>
   );
   assert.match(
     styles,
-    /\.romaji-rule-example\[data-playing="true"\]\s*\{[^}]*color:\s*var\(--sound\)[^}]*box-shadow:\s*inset 0 0 0 1px var\(--sound\)/s,
+    /\.romaji-rule-example\[data-playing="true"\]\s*\{[^}]*color:\s*var\(--audio\)[^}]*box-shadow:\s*inset 0 0 0 1px var\(--audio\)/s,
   );
   assert.match(
     styles,
@@ -399,11 +399,11 @@ test("the Japan line uses one immediate-feedback reference surface without progr
   );
   assert.match(
     styles,
-    /\.travel-reference-item\[data-framed="true"\]\[data-playing="true"\]\s*\{[^}]*border-color:\s*var\(--sound\)[^}]*background:\s*color-mix\(in srgb, var\(--sound\) 8%, transparent\)[^}]*box-shadow:\s*inset 0 0 0 1px var\(--sound\)/s,
+    /\.travel-reference-item\[data-framed="true"\]\[data-playing="true"\]\s*\{[^}]*border-color:\s*var\(--audio\)[^}]*background:\s*color-mix\(in srgb, var\(--audio\) 8%, transparent\)[^}]*box-shadow:\s*inset 0 0 0 2px var\(--audio\)/s,
   );
   assert.match(
     styles,
-    /\.travel-audio-indicator\s*\{[^}]*color:\s*var\(--sound\)/s,
+    /\.travel-audio-indicator\s*\{[^}]*color:\s*var\(--audio\)/s,
   );
   assert.match(
     styles,

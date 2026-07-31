@@ -87,6 +87,9 @@ test("server-renders the Ling network home", async () => {
     "food",
     "shopping",
     "help",
+    "sound",
+    "writing",
+    "vocabulary",
     "kana",
     "vowels",
     "hiragana",
@@ -122,6 +125,67 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /aria-label="Ling"[^>]*role="img"/i);
   assert.doesNotMatch(html, /aria-label="Ready"/i);
   assert.doesNotMatch(html, /Your site is taking shape|Codex is working|react-loading-skeleton/i);
+});
+
+test("the Sound, Writing, and Vocabulary category stations introduce their lines", async () => {
+  const introductions = {
+    sound: {
+      lead: "Japanese pronunciation is built from a small set of clear vowels and a steady rhythm. Those regular beats are called morae, and they shape the timing of every word.",
+      support: "Pitch moves within a word as well. Listening for where the voice rises and falls helps speech sound natural and can distinguish words that otherwise sound alike.",
+      links: [
+        ["/stations/vowels", "Vowels"],
+        ["/stations/mora-timing", "Mora Timing"],
+        ["/stations/pitch-accent", "Pitch Accent"],
+      ],
+      title: "Sound",
+    },
+    writing: {
+      lead: "Japanese uses two Kana scripts to represent the same set of sounds. Hiragana carries most Japanese words and grammar; Katakana handles borrowed words, foreign names, emphasis, and sound effects.",
+      support: "The basic charts are only the beginning. Dakuten and handakuten change consonants, while small や, ゆ, and よ combine with a preceding Kana to make Yōon sounds such as きゃ, きゅ, and きょ.",
+      links: [
+        ["/stations/kana", "Kana"],
+        ["/stations/hiragana", "Hiragana"],
+        ["/stations/katakana", "Katakana"],
+        ["/stations/sound-marks", "Dakuten &amp; Handakuten"],
+        ["/stations/combined-sounds", "Yōon"],
+      ],
+      title: "Writing",
+    },
+    vocabulary: {
+      lead: "A useful word is more than a translation. You need to recognize its meaning, writing, and sound together.",
+      support: "Ling keeps those parts on one reference surface: the English meaning, Japanese word, Rōmaji, and audio. The same words also appear in Mora Timing and Pitch Accent, so pronunciation stays connected to vocabulary.",
+      links: [["/stations/words", "Words"]],
+      title: "Vocabulary",
+    },
+  };
+
+  for (const [station, introduction] of Object.entries(introductions)) {
+    const response = await request(`/stations/${station}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+
+    assert.match(html, new RegExp(`<h1>${introduction.title}</h1>`));
+    assert.match(
+      html,
+      new RegExp(`aria-label="Introduction to ${introduction.title}"`),
+    );
+    assert.match(html, new RegExp(escapeRegExp(introduction.lead)));
+    assert.match(html, new RegExp(escapeRegExp(introduction.support)));
+    assert.match(
+      html,
+      new RegExp(`data-line="${station}">${introduction.title}</span>`),
+    );
+    assert.match(html, /class="foundation-line-orientation"/);
+    assert.match(html, /class="foundation-line-orientation-lead"/);
+    assert.match(html, /class="foundation-line-learning"/);
+    assert.match(html, /<h2 id="(?:sound|writing|vocabulary)-learning-title">Start small<\/h2>/);
+    for (const [href, label] of introduction.links) {
+      assert.match(
+        html,
+        new RegExp(`<a href="${escapeRegExp(href)}">${label}</a>`),
+      );
+    }
+  }
 });
 
 test("station documents do not render the map boot overlay", async () => {
@@ -491,7 +555,7 @@ test("server-renders the Vowels introduction", async () => {
   assert.match(html, /aria-label="Return to the Ling network map"/i);
   assert.match(html, /aria-label="Station navigation"/i);
   assert.match(html, /aria-label="Return to network map from Vowels"/i);
-  assert.equal((html.match(/href="\/\?focus=vowels"/gi) ?? []).length, 1);
+  assert.equal((html.match(/href="\/\?focus=vowels"/gi) ?? []).length, 2);
   assert.match(html, /data-position="vowels"/i);
   assert.match(html, /class="station-map-sound"/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);

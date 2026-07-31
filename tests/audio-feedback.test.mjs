@@ -3,14 +3,16 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const root = new URL("../", import.meta.url);
-const flashcardGuides = [
+const exampleFlashcardGuides = [
   "app/stations/vowels/vowels-guide.tsx",
-  "app/stations/hiragana/hiragana-guide.tsx",
-  "app/stations/katakana/katakana-guide.tsx",
   "app/stations/kana-extensions/kana-extensions-guide.tsx",
 ];
+const kanaOnlyFlashcardGuides = [
+  "app/stations/hiragana/hiragana-guide.tsx",
+  "app/stations/katakana/katakana-guide.tsx",
+];
 
-test("flashcard audio highlights Kana and manually played example beats", async () => {
+test("flashcard audio highlights Kana and examples only where they remain part of the card", async () => {
   const hook = await readFile(new URL("app/stations/use-flashcard-audio.ts", root), "utf8");
 
   assert.ok(
@@ -27,14 +29,10 @@ test("flashcard audio highlights Kana and manually played example beats", async 
     "one-beat examples should highlight their only beat while playing",
   );
 
-  for (const path of flashcardGuides) {
+  for (const path of [...exampleFlashcardGuides, ...kanaOnlyFlashcardGuides]) {
     const source = await readFile(new URL(path, root), "utf8");
 
     assert.match(source, /function activateCard\(\)[\s\S]*playAudio\(\{ index: 0, src: activeCard\.(?:audio|kanaAudio) \}\)/);
-    assert.match(source, /function playExample\(\)[\s\S]*beatCount: splitJapaneseMorae\(activeCard\.example\)\.length,[\s\S]*index: 1,[\s\S]*src: activeCard\.exampleAudio/);
-    assert.match(source, /onPlayExample=\{playExample\}/);
-    assert.match(source, /activeAudio=\{activeAudioIndex === 0[\s\S]*"pronunciation"[\s\S]*activeAudioIndex === 1 \? "example" : null\}/);
-    assert.match(source, /activeExampleBeatIndex=\{activeBeatIndex\}/);
     assert.match(source, /onEnded=\{handleAudioEnded\}/);
     assert.match(source, /onError=\{handleAudioError\}/);
     assert.doesNotMatch(
@@ -42,6 +40,22 @@ test("flashcard audio highlights Kana and manually played example beats", async 
       /onPause=\{\(\) => setAudioPlaying\(false\)\}/,
       `${path} should not let a replaced clip clear the new feedback cue`,
     );
+  }
+
+  for (const path of exampleFlashcardGuides) {
+    const source = await readFile(new URL(path, root), "utf8");
+
+    assert.match(source, /function playExample\(\)[\s\S]*beatCount: splitJapaneseMorae\(activeCard\.example\)\.length,[\s\S]*index: 1,[\s\S]*src: activeCard\.exampleAudio/);
+    assert.match(source, /onPlayExample=\{playExample\}/);
+    assert.match(source, /activeAudio=\{activeAudioIndex === 0[\s\S]*"pronunciation"[\s\S]*activeAudioIndex === 1 \? "example" : null\}/);
+    assert.match(source, /activeExampleBeatIndex=\{activeBeatIndex\}/);
+  }
+
+  for (const path of kanaOnlyFlashcardGuides) {
+    const source = await readFile(new URL(path, root), "utf8");
+
+    assert.match(source, /<KanaFlashcardContent[\s\S]*pronunciationPlaying=\{activeAudioIndex === 0\}/);
+    assert.doesNotMatch(source, /function playExample|onPlayExample|activeExampleBeatIndex|activeCard\.exampleAudio/);
   }
 });
 
@@ -54,5 +68,5 @@ test("flashcard hover feedback is limited to hover-capable pointers", async () =
   );
   assert.doesNotMatch(styles, /\.hiragana-test-reveal:hover|\.hiragana-test-example:hover/);
   assert.doesNotMatch(styles, /\.hiragana-test-reveal:focus-visible|\.hiragana-test-example:focus-visible/);
-  assert.match(styles, /\.hiragana-test-pronunciation\[data-playing="true"\],[\s\S]*\.hiragana-test-example-beat\[data-playing="true"\],[\s\S]*\.hiragana-test-example-pronunciation-beat\[data-playing="true"\][\s\S]*color:\s*var\(--sound\)/);
+  assert.match(styles, /\.hiragana-test-pronunciation\[data-playing="true"\],[\s\S]*\.hiragana-test-example-beat\[data-playing="true"\],[\s\S]*\.hiragana-test-example-pronunciation-beat\[data-playing="true"\][\s\S]*color:\s*var\(--audio\)/);
 });

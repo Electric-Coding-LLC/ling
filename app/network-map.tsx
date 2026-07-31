@@ -530,9 +530,9 @@ function NetworkView({
         Foundations
       </text>
       <CategoryStation backlightId={backlightId} focus="japan" label="Japan" line="travel" onFocus={() => onStationFocus("japan")} href="/stations/japan" spineX={spineX} y={JAPAN_Y} />
-      <CategoryStation backlightId={backlightId} focus="sound" label="Sound" line="sound" onFocus={() => onStationFocus("sound")} spineX={spineX} y={SOUND_Y} />
-      <CategoryStation backlightId={backlightId} focus="writing" label="Writing" line="writing" onFocus={() => onStationFocus("writing")} spineX={spineX} y={WRITING_Y} />
-      <CategoryStation backlightId={backlightId} focus="vocabulary" label="Vocabulary" line="vocabulary" onFocus={() => onStationFocus("vocabulary")} spineX={spineX} y={VOCABULARY_Y} />
+      <CategoryStation backlightId={backlightId} focus="sound" label="Sound" line="sound" onFocus={() => onStationFocus("sound")} href="/stations/sound" spineX={spineX} y={SOUND_Y} />
+      <CategoryStation backlightId={backlightId} focus="writing" label="Writing" line="writing" onFocus={() => onStationFocus("writing")} href="/stations/writing" spineX={spineX} y={WRITING_Y} />
+      <CategoryStation backlightId={backlightId} focus="vocabulary" label="Vocabulary" line="vocabulary" onFocus={() => onStationFocus("vocabulary")} href="/stations/vocabulary" spineX={spineX} y={VOCABULARY_Y} />
 
       <LinkedStation backlightId={backlightId} focus="japanese" hideLabel kind="interchange" labelPlacement="left" onFocus={() => onStationFocus("japanese")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROOT_Y} />
       <LinkedStation backlightId={backlightId} focus="romaji" kind="foundation" labelPlacement="left" onFocus={() => onStationFocus("romaji")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROMAJI_Y} />
@@ -646,18 +646,16 @@ export function NetworkMap({
   }, []);
 
   useEffect(() => {
-    const viewport = mobileViewport.current;
-    if (!viewport || !window.matchMedia("(max-width: 600px)").matches) return;
+    const viewport = window.matchMedia("(max-width: 600px)").matches
+      ? mobileViewport.current
+      : desktopViewport.current;
+    if (!viewport) return;
     const target = getStationTarget(viewport, stationFocus);
-    const viewportBounds = viewport.getBoundingClientRect();
-    const targetBounds = target.getBoundingClientRect();
-    const targetCenter = viewport.scrollLeft
-      + targetBounds.left
-      - viewportBounds.left
-      + targetBounds.width / 2;
-    viewport.scrollTo({
+
+    target.scrollIntoView({
       behavior: "auto",
-      left: Math.max(0, targetCenter - viewport.clientWidth / 2),
+      block: "center",
+      inline: "center",
     });
   }, [stationFocus]);
 

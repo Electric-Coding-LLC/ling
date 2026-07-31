@@ -14,7 +14,7 @@ export function StationTopbar({
       <NavigationLink
         aria-label="Return to the Ling network map"
         className="brand-link"
-        href="/"
+        href={`/?focus=${mapPosition}`}
         title="Network map"
       >
         <LingWordmark className="wordmark" />

@@ -361,32 +361,42 @@
   margin: 0;
 }
 
-.japan-orientation {
+.japan-orientation,
+.foundation-line-orientation {
   display: grid;
   gap: 2rem;
 }
 
-.japan-orientation-lead {
+.japan-orientation-lead,
+.foundation-line-orientation-lead {
   display: grid;
   gap: 1rem;
   color: var(--muted);
 }
 
-.japan-orientation-lead p:first-child {
+.japan-orientation-lead p:first-child,
+.foundation-line-orientation-lead p:first-child {
   color: var(--foreground);
   font-size: 1.05rem;
 }
 
-.japan-learning {
+.japan-learning,
+.foundation-line-learning {
   display: grid;
   gap: 0.75rem;
 }
 
-.japan-learning h2 {
+.japan-learning h2,
+.foundation-line-learning h2 {
   margin: 0;
   color: var(--foreground);
   font-size: 1.35rem;
   font-weight: 600;
+}
+
+.foundation-line-orientation-lead p,
+.foundation-line-learning p {
+  margin: 0;
 }
 
 .station-page-japan .travel-reference,
@@ -395,7 +405,7 @@
 .station-page-food .travel-reference,
 .station-page-shopping .travel-reference,
 .station-page-help .travel-reference {
-  --travel: var(--sound);
+  --travel: var(--audio);
 
   margin-top: 0;
 }
@@ -452,7 +462,7 @@
 }
 
 .romaji-test-answer[data-playing="true"] .romaji-test-answer-cue {
-  color: var(--sound);
+  color: var(--audio);
 }
 
 .travel-test-prompt {
@@ -477,7 +487,7 @@
 }
 
 .travel-test-answer[data-playing="true"] .travel-test-japanese {
-  color: var(--sound);
+  color: var(--audio);
 }
 
 .travel-japanese-segment {
@@ -576,9 +586,9 @@
 }
 
 .romaji-rule-example[data-playing="true"] {
-  color: var(--sound);
-  background: color-mix(in srgb, var(--sound) 8%, transparent);
-  box-shadow: inset 0 0 0 1px var(--sound);
+  color: var(--audio);
+  background: color-mix(in srgb, var(--audio) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--audio);
 }
 
 .romaji-rule-example:focus-visible {
@@ -677,9 +687,9 @@
 }
 
 .travel-reference-item[data-framed="true"][data-playing="true"] {
-  border-color: var(--sound);
-  background: color-mix(in srgb, var(--sound) 8%, transparent);
-  box-shadow: inset 0 0 0 1px var(--sound);
+  border-color: var(--audio);
+  background: color-mix(in srgb, var(--audio) 8%, transparent);
+  box-shadow: inset 0 0 0 2px var(--audio);
 }
 
 .travel-reference-item:focus-visible {
@@ -730,7 +740,7 @@
   height: 1rem;
   align-items: center;
   gap: 0.16rem;
-  color: var(--sound);
+  color: var(--audio);
   opacity: 0;
   transform: translateY(-50%);
   transition: opacity 120ms ease;
@@ -1035,7 +1045,7 @@
   height: 1rem;
   align-items: center;
   gap: 0.16rem;
-  color: var(--sound);
+  color: var(--audio);
   opacity: 0;
   transition: opacity 120ms ease;
 }
@@ -1066,8 +1076,8 @@
 }
 
 .mora-example[data-playing="true"] {
-  background: color-mix(in srgb, var(--sound) 8%, transparent);
-  box-shadow: inset 0 0 0 1px var(--sound);
+  background: color-mix(in srgb, var(--audio) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--audio);
 }
 
 .mora-example:focus-visible {
@@ -1101,7 +1111,7 @@
 }
 
 .mora-beat[data-active="true"] {
-  color: var(--sound);
+  color: var(--audio);
 }
 
 .mora-pronunciation {
@@ -1116,7 +1126,7 @@
 }
 
 .mora-pronunciation-beat[data-active="true"] {
-  color: var(--sound);
+  color: var(--audio);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1180,7 +1190,7 @@
 }
 
 .mora-review-word-beat[data-active="true"] {
-  color: var(--sound);
+  color: var(--audio);
 }
 
 .mora-review-translation {
@@ -1253,7 +1263,7 @@
 .station-audio-error,
 .station-knowledge-error {
   margin: 0.75rem 0;
-  color: var(--sound);
+  color: var(--audio);
   font-size: 0.9rem;
 }
 
@@ -1496,9 +1506,9 @@
 }
 
 .hiragana-test-answer.station-confirm-reset {
-  border-color: var(--sound);
+  border-color: var(--audio);
   color: var(--background);
-  background: var(--sound);
+  background: var(--audio);
 }
 
 .hiragana-test-dialog::backdrop {
@@ -1630,8 +1640,8 @@
 }
 
 .hiragana-test-card-gesture[data-swipe="no"] {
-  border-color: var(--sound);
-  box-shadow: inset 0 0 0 1px var(--sound);
+  border-color: var(--audio);
+  box-shadow: inset 0 0 0 1px var(--audio);
 }
 
 .hiragana-test-card-gesture[data-swipe="yes"] {
@@ -1719,7 +1729,7 @@
 .hiragana-test-pronunciation[data-playing="true"],
 .hiragana-test-example-beat[data-playing="true"],
 .hiragana-test-example-pronunciation-beat[data-playing="true"] {
-  color: var(--sound);
+  color: var(--audio);
 }
 
 .hiragana-test-example-beat,
@@ -1750,8 +1760,8 @@
 }
 
 .hiragana-test-card[data-playing="true"] {
-  border-color: var(--sound);
-  box-shadow: inset 0 0 0 1px var(--sound);
+  border-color: var(--audio);
+  box-shadow: inset 0 0 0 1px var(--audio);
 }
 
 .hiragana-test-playing-indicator {
@@ -1762,7 +1772,7 @@
   height: 1rem;
   align-items: center;
   gap: 0.16rem;
-  color: var(--sound);
+  color: var(--audio);
   opacity: 0;
   transition: opacity 120ms ease;
 }
@@ -1843,8 +1853,11 @@
   .romaji-rule-audio-indicator span,
   .mora-audio-indicator,
   .mora-audio-indicator span,
+  .vocabulary-audio-indicator,
+  .vocabulary-audio-indicator span,
   .mora-beat,
   .pitch-contour-morae span,
+  .pitch-contour-romaji span,
   .pitch-contour-point,
   .flashcard-countdown-progress {
     animation: none;
@@ -1853,7 +1866,8 @@
 
   .hiragana-test-card[data-playing="true"] .hiragana-test-playing-indicator span,
   .romaji-rule-example[data-playing="true"] .romaji-rule-audio-indicator span,
-  .mora-example[data-playing="true"] .mora-audio-indicator span {
+  .mora-example[data-playing="true"] .mora-audio-indicator span,
+  .vocabulary-reference-item[data-playing="true"] .vocabulary-audio-indicator span {
     animation: none;
     transform: scaleY(0.75);
   }
@@ -1911,14 +1925,14 @@
 }
 
 .hiragana-test-answer-no {
-  border-color: var(--sound);
+  border-color: var(--audio);
   color: var(--foreground);
   background: transparent;
 }
 
 .hiragana-test-answer-no .hiragana-test-answer-icon,
 .hiragana-test-answer-no .hiragana-test-swipe-icon {
-  color: var(--sound);
+  color: var(--audio);
 }
 
 .hiragana-test-answer-yes {
@@ -1929,8 +1943,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .hiragana-test-answer-no:hover {
-    border-color: var(--sound);
-    background: color-mix(in srgb, var(--sound) 8%, transparent);
+    border-color: var(--audio);
+    background: color-mix(in srgb, var(--audio) 8%, transparent);
   }
 
   .hiragana-test-answer:hover {
@@ -1966,7 +1980,7 @@
   }
 
   .hiragana-test-answer-no {
-    color: var(--sound);
+    color: var(--audio);
   }
 
   .hiragana-test-answer-yes {
@@ -2150,7 +2164,7 @@
 
 .pitch-contour-line polyline {
   fill: none;
-  stroke: color-mix(in srgb, var(--sound) 65%, var(--muted));
+  stroke: color-mix(in srgb, var(--audio) 65%, var(--muted));
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2;
@@ -2158,7 +2172,7 @@
 
 .pitch-contour-point {
   fill: var(--surface);
-  stroke: var(--sound);
+  stroke: var(--audio);
   stroke-width: 2;
   transition:
     fill 120ms ease,
@@ -2166,13 +2180,13 @@
 }
 
 .pitch-contour-point[data-active="true"] {
-  fill: var(--sound);
+  fill: var(--audio);
   r: 6px;
 }
 
 .pitch-example[data-playing="true"] {
-  background: color-mix(in srgb, var(--sound) 8%, transparent);
-  box-shadow: inset 0 0 0 1px var(--sound);
+  background: color-mix(in srgb, var(--audio) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--audio);
 }
 
 .pitch-contour-morae {
@@ -2189,7 +2203,34 @@
 }
 
 .pitch-contour-morae span[data-active="true"] {
-  color: var(--sound);
+  color: var(--audio);
+}
+
+.pitch-contour-romaji {
+  display: grid;
+  grid-template-columns: repeat(var(--pitch-mora-count), minmax(0, 1fr));
+  margin-top: 0.2rem;
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.pitch-contour-romaji span {
+  min-width: 0;
+  text-align: center;
+  transition: color 120ms ease;
+}
+
+.pitch-contour-romaji span[data-active="true"] {
+  color: var(--audio);
+}
+
+.pitch-contour-beat-count {
+  display: block;
+  margin-top: 0.55rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
 }
 
 .pitch-example:focus-visible {
@@ -2234,7 +2275,7 @@
   position: relative;
   display: grid;
   width: 100%;
-  min-height: 7rem;
+  min-height: 10rem;
   align-content: center;
   justify-items: start;
   gap: 0.2rem;
@@ -2258,16 +2299,8 @@
   font-size: 0.9rem;
 }
 
-.vocabulary-reference-word {
-  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 1.65rem;
-  line-height: 1.35;
-}
-
-.vocabulary-reference-romaji,
-.vocabulary-review-romaji {
-  color: color-mix(in srgb, var(--foreground) 72%, transparent);
-  font-size: 0.85rem;
+.vocabulary-reference-item .pitch-contour {
+  margin-top: 0.2rem;
 }
 
 .vocabulary-reference-group {
@@ -2279,18 +2312,65 @@
   font-weight: 600;
 }
 
-.vocabulary-reference-item[data-known="true"] .vocabulary-reference-word {
+.vocabulary-reference-item .vocabulary-reference-group {
+  top: auto;
+  bottom: 1rem;
+}
+
+.vocabulary-audio-indicator {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  height: 1rem;
+  align-items: center;
+  gap: 0.16rem;
+  color: var(--audio);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.vocabulary-audio-indicator span {
+  width: 0.16rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  background: currentcolor;
+  transform: scaleY(0.35);
+  transform-origin: center;
+}
+
+.vocabulary-reference-item[data-known="true"] .pitch-contour-morae {
   color: var(--known);
 }
 
 .vocabulary-reference-item[data-playing="true"] {
-  background: color-mix(in srgb, var(--vocabulary) 10%, transparent);
-  box-shadow: inset 0 0 0 1px var(--vocabulary);
+  background: color-mix(in srgb, var(--audio) 8%, transparent);
+  box-shadow: inset 0 0 0 2px var(--audio);
+}
+
+.vocabulary-reference-item[data-playing="true"] .vocabulary-audio-indicator {
+  opacity: 1;
+}
+
+.vocabulary-reference-item[data-playing="true"] .vocabulary-audio-indicator span {
+  animation: hiragana-test-sound-pulse 600ms ease-in-out infinite;
+}
+
+.vocabulary-reference-item[data-playing="true"] .vocabulary-audio-indicator span:nth-child(2) {
+  animation-delay: -400ms;
+}
+
+.vocabulary-reference-item[data-playing="true"] .vocabulary-audio-indicator span:nth-child(3) {
+  animation-delay: -200ms;
 }
 
 .vocabulary-reference-item:focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
+}
+
+.vocabulary-reference-item[data-playing="true"]:focus-visible {
+  outline-color: transparent;
 }
 
 .vocabulary-review-content {
@@ -2317,15 +2397,18 @@
 .vocabulary-review-answer {
   position: relative;
   display: flex;
+  width: 100%;
   align-items: center;
   flex-direction: column;
   gap: 0.35rem;
 }
 
-.vocabulary-review-word {
-  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: clamp(2.5rem, 12vw, 4rem);
-  line-height: 1.1;
+.vocabulary-review-answer .pitch-contour {
+  width: min(100%, calc(var(--pitch-mora-count) * 3.5rem));
+}
+
+.vocabulary-review-answer .pitch-contour-morae {
+  font-size: clamp(1.75rem, 9vw, 2.5rem);
 }
 
 @media (hover: hover) and (pointer: fine) {

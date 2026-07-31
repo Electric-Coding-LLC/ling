@@ -36,8 +36,16 @@ export type NetworkGlyphTopology =
   | "branch-interchange"
   | "connector"
   | "corner-interchange"
+  | "downward-through"
+  | "falling-terminal"
+  | "fork"
   | "horizontal-terminal"
   | "horizontal-through"
+  | "merge"
+  | "rising-terminal"
+  | "spine-branch-interchange"
+  | "upward-through"
+  | "vertical-start"
   | "vertical-terminal"
   | "vertical-through";
 
@@ -133,6 +141,48 @@ export const NETWORK_GLYPH_TOPOLOGIES: Readonly<
       },
     ],
   },
+  "downward-through": {
+    current: [CENTER_X, CENTER_Y - CONNECTOR_OFFSET],
+    paths: [{
+      points: [
+        [CENTER_X - CONNECTOR_OFFSET, CENTER_Y],
+        [CENTER_X, CENTER_Y - CONNECTOR_OFFSET],
+        [CENTER_X + CONNECTOR_OFFSET, CENTER_Y],
+      ],
+      role: "main",
+    }],
+  },
+  "falling-terminal": {
+    current: [CENTER_X + CONNECTOR_OFFSET, CENTER_Y + CONNECTOR_OFFSET],
+    paths: [{
+      points: [
+        [CENTER_X, CENTER_Y],
+        [CENTER_X + CONNECTOR_OFFSET, CENTER_Y + CONNECTOR_OFFSET],
+      ],
+      role: "main",
+    }],
+    terminal: true,
+  },
+  fork: {
+    current: [CENTER_X, CENTER_Y],
+    paths: [
+      {
+        points: [
+          [CENTER_X - STATION_ARM_LENGTH, CENTER_Y],
+          [CENTER_X, CENTER_Y],
+          [CENTER_X + CONNECTOR_OFFSET, CENTER_Y - CONNECTOR_OFFSET],
+        ],
+        role: "main",
+      },
+      {
+        points: [
+          [CENTER_X, CENTER_Y],
+          [CENTER_X + CONNECTOR_OFFSET, CENTER_Y + CONNECTOR_OFFSET],
+        ],
+        role: "branch",
+      },
+    ],
+  },
   "horizontal-terminal": {
     current: [CENTER_X + STATION_ARM_LENGTH, CENTER_Y],
     paths: [{
@@ -153,6 +203,79 @@ export const NETWORK_GLYPH_TOPOLOGIES: Readonly<
       ],
       role: "main",
     }],
+  },
+  merge: {
+    current: [CENTER_X, CENTER_Y],
+    paths: [
+      {
+        points: [
+          [CENTER_X - CONNECTOR_OFFSET, CENTER_Y - CONNECTOR_OFFSET],
+          [CENTER_X, CENTER_Y],
+          [CENTER_X + STATION_ARM_LENGTH, CENTER_Y],
+        ],
+        role: "main",
+      },
+      {
+        points: [
+          [CENTER_X - CONNECTOR_OFFSET, CENTER_Y + CONNECTOR_OFFSET],
+          [CENTER_X, CENTER_Y],
+        ],
+        role: "branch",
+      },
+    ],
+  },
+  "rising-terminal": {
+    current: [CENTER_X + CONNECTOR_OFFSET, CENTER_Y - CONNECTOR_OFFSET],
+    paths: [{
+      points: [
+        [CENTER_X, CENTER_Y],
+        [CENTER_X + CONNECTOR_OFFSET, CENTER_Y - CONNECTOR_OFFSET],
+      ],
+      role: "main",
+    }],
+    terminal: true,
+  },
+  "spine-branch-interchange": {
+    current: [CORNER_X, CENTER_Y],
+    interchange: true,
+    paths: [
+      {
+        points: [
+          [CORNER_X, CENTER_Y - INTERCHANGE_ARM_LENGTH],
+          [CORNER_X, CENTER_Y + INTERCHANGE_ARM_LENGTH],
+        ],
+        role: "vertical",
+      },
+      {
+        points: [
+          [CORNER_X, CENTER_Y],
+          [CORNER_X + INTERCHANGE_ARM_LENGTH, CENTER_Y],
+        ],
+        role: "horizontal",
+      },
+    ],
+  },
+  "upward-through": {
+    current: [CENTER_X, CENTER_Y + CONNECTOR_OFFSET],
+    paths: [{
+      points: [
+        [CENTER_X - CONNECTOR_OFFSET, CENTER_Y],
+        [CENTER_X, CENTER_Y + CONNECTOR_OFFSET],
+        [CENTER_X + CONNECTOR_OFFSET, CENTER_Y],
+      ],
+      role: "main",
+    }],
+  },
+  "vertical-start": {
+    current: [CENTER_X, CENTER_Y - STATION_ARM_LENGTH],
+    paths: [{
+      points: [
+        [CENTER_X, CENTER_Y - STATION_ARM_LENGTH],
+        [CENTER_X, CENTER_Y],
+      ],
+      role: "main",
+    }],
+    terminal: true,
   },
   "vertical-terminal": {
     current: [CENTER_X, CENTER_Y + STATION_ARM_LENGTH],
@@ -182,14 +305,14 @@ const TRAVEL_TERMINAL: NetworkGlyphDefinition = {
   topology: "horizontal-terminal",
 };
 
+const WRITING_BRANCH_LINES = {
+  branch: "station-map-writing",
+  main: "station-map-writing",
+} as const;
+
 const VOCABULARY_TERMINAL: NetworkGlyphDefinition = {
   lines: { main: "station-map-vocabulary" },
   topology: "horizontal-terminal",
-};
-
-const WRITING_THROUGH: NetworkGlyphDefinition = {
-  lines: { main: "station-map-writing" },
-  topology: "horizontal-through",
 };
 
 export const NETWORK_GLYPH_DEFINITIONS: Readonly<
@@ -203,22 +326,38 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     topology: "horizontal-terminal",
   },
   food: TRAVEL_TERMINAL,
-  help: TRAVEL_TERMINAL,
-  hiragana: WRITING_THROUGH,
-  introductions: TRAVEL_TERMINAL,
+  help: {
+    lines: { main: "station-map-travel" },
+    topology: "falling-terminal",
+  },
+  hiragana: {
+    lines: { main: "station-map-writing" },
+    topology: "downward-through",
+  },
+  introductions: {
+    lines: { main: "station-map-travel" },
+    topology: "rising-terminal",
+  },
   japanese: {
     lines: { main: "station-map-foundation" },
-    topology: "vertical-through",
+    topology: "vertical-start",
   },
   kana: {
-    ...WRITING_THROUGH,
+    lines: WRITING_BRANCH_LINES,
+    topology: "fork",
   },
-  katakana: WRITING_THROUGH,
+  katakana: {
+    lines: { main: "station-map-writing" },
+    topology: "upward-through",
+  },
   "mora-timing": {
     lines: { main: "station-map-sound" },
     topology: "horizontal-through",
   },
-  navigation: TRAVEL_TERMINAL,
+  navigation: {
+    lines: { main: "station-map-travel" },
+    topology: "rising-terminal",
+  },
   nouns: VOCABULARY_TERMINAL,
   "pitch-accent": {
     lines: { main: "station-map-sound" },
@@ -228,19 +367,25 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     lines: { main: "station-map-foundation" },
     topology: "vertical-through",
   },
-  shopping: TRAVEL_TERMINAL,
+  shopping: {
+    lines: { main: "station-map-travel" },
+    topology: "falling-terminal",
+  },
   sound: {
     lines: { main: "station-map-sound" },
     topology: "horizontal-through",
   },
   "sound-marks": {
-    lines: { main: "station-map-writing" },
-    topology: "horizontal-terminal",
+    lines: WRITING_BRANCH_LINES,
+    topology: "merge",
   },
   verbs: VOCABULARY_TERMINAL,
   japan: {
-    lines: { main: "station-map-travel" },
-    topology: "horizontal-through",
+    lines: {
+      horizontal: "station-map-travel",
+      vertical: "station-map-foundation",
+    },
+    topology: "spine-branch-interchange",
   },
   vowels: {
     lines: { main: "station-map-sound" },
@@ -250,7 +395,10 @@ export const NETWORK_GLYPH_DEFINITIONS: Readonly<
     lines: { main: "station-map-vocabulary" },
     topology: "horizontal-through",
   },
-  writing: WRITING_THROUGH,
+  writing: {
+    lines: { main: "station-map-writing" },
+    topology: "horizontal-through",
+  },
   words: {
     ...VOCABULARY_TERMINAL,
   },

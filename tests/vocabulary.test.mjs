@@ -41,10 +41,29 @@ function readWavFormat(audio) {
 
 test("Vocab stations contain distinct, playable word sets with canonical rōmaji", async () => {
   assert.deepEqual(VOCABULARY_STATION_IDS, ["words", "nouns", "verbs", "adjectives"]);
-  assert.equal(VOCABULARY_STATIONS.words.items.length, 13);
+  assert.deepEqual(
+    VOCABULARY_STATIONS.words.items.map(({ meaning, word }) => ({ meaning, word })),
+    [
+      { meaning: "this", word: "これ" },
+      { meaning: "here", word: "ここ" },
+      { meaning: "where", word: "どこ" },
+      { meaning: "what", word: "なに" },
+      { meaning: "I / me", word: "わたし" },
+      { meaning: "name", word: "なまえ" },
+      { meaning: "person", word: "ひと" },
+      { meaning: "water", word: "みず" },
+      { meaning: "food", word: "たべもの" },
+      { meaning: "toilet", word: "トイレ" },
+      { meaning: "station", word: "えき" },
+      { meaning: "train", word: "でんしゃ" },
+      { meaning: "to go", word: "いく" },
+      { meaning: "now", word: "いま" },
+      { meaning: "today", word: "きょう" },
+    ],
+  );
   assert.equal(
     VOCABULARY_STATIONS.words.description,
-    "Learn each word’s meaning, rhythm, and pitch together.",
+    "Start with words for finding your way, identifying people and things, and meeting immediate needs.",
   );
   assert.equal(VOCABULARY_STATIONS.nouns.items.length, 8);
   assert.equal(VOCABULARY_STATIONS.verbs.items.length, 8);
@@ -77,13 +96,13 @@ test("Vocab stations contain distinct, playable word sets with canonical rōmaji
   assert.deepEqual(adjectiveGroups, new Set(["い-adjective", "な-adjective"]));
 });
 
-test("Words supplies every word used by Mora and Pitch", async () => {
+test("Words stays independent from the pronunciation stations' teaching examples", async () => {
   const starterWords = new Set(
     VOCABULARY_STATIONS.words.items.map((item) => `${item.word}:${item.meaning}`),
   );
-  for (const item of PITCH_ACCENT_ITEMS) {
-    assert.ok(starterWords.has(`${item.word}:${item.meaning}`), `${item.id} must come from Words`);
-  }
+  assert.ok(PITCH_ACCENT_ITEMS.some(
+    (item) => !starterWords.has(`${item.word}:${item.meaning}`),
+  ));
 
   const moraGuide = await readFile(
     new URL("app/stations/mora-timing/mora-timing-guide.tsx", root),
@@ -97,9 +116,9 @@ test("Words supplies every word used by Mora and Pitch", async () => {
     ...reviewCards.matchAll(/meaning: "([^"]+)"[\s\S]*?word: "([^"]+)"/g),
   ].map((match) => `${match[2]}:${match[1]}`);
   assert.equal(moraWords.length, 9);
-  for (const word of moraWords) {
-    assert.ok(starterWords.has(word), `${word} must come from Words`);
-  }
+  assert.ok(moraWords.some((word) => !starterWords.has(word)));
+  assert.ok(!starterWords.has("あめ:candy"));
+  assert.ok(!starterWords.has("きって:stamp"));
 });
 
 test("Vocab uses the shared reference, flashcard, and private persistence contracts", async () => {
@@ -158,4 +177,35 @@ test("Vocab uses the shared reference, flashcard, and private persistence contra
   assert.match(styles, /\.vocabulary-reference-item\[data-playing="true"\] \.vocabulary-audio-indicator span\s*\{[^}]*animation:\s*hiragana-test-sound-pulse/s);
   assert.match(styles, /\.vocabulary-reference-item\[data-playing="true"\]:focus-visible\s*\{[^}]*outline-color:\s*transparent/s);
   assert.match(styles, /\.station-membership-vocabulary\s*\{/);
+});
+
+test("Words reviews in either direction without splitting item progress", async () => {
+  const guide = await readFile(
+    new URL("app/stations/vocabulary-guide.tsx", root),
+    "utf8",
+  );
+  const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
+
+  assert.match(
+    guide,
+    /type VocabularyReviewDirection = "japanese-to-meaning" \| "meaning-to-japanese"/,
+  );
+  assert.match(guide, /setActiveReview\(\{ cards: shuffle\(items\), direction \}\)/);
+  assert.match(guide, /stationId === "words"[\s\S]*className="vocabulary-review-launcher"/);
+  assert.match(guide, />\s*English → Japanese\s*<\/button>/);
+  assert.match(guide, />\s*Japanese → English\s*<\/button>/);
+  assert.match(guide, /meaningFirst \? "English → Japanese" : "Japanese → English"/);
+  assert.match(
+    guide,
+    /meaningFirst \? \([\s\S]*vocabulary-review-prompt[\s\S]*activeCard\.meaning[\s\S]*vocabulary-review-prompt-word[\s\S]*activeCard\.word/,
+  );
+  assert.match(
+    guide,
+    /answerRevealed \? \([\s\S]*meaningFirst \? \([\s\S]*<PitchContour[\s\S]*word=\{activeCard\.word\}[\s\S]*vocabulary-review-meaning[\s\S]*activeCard\.meaning/,
+  );
+  assert.match(guide, /if \(!meaningFirst \|\| answerRevealed\) playItem\(activeCard\)/);
+  assert.match(guide, /body: JSON\.stringify\(\{ itemId: id, known \}\)/);
+  assert.match(styles, /\.vocabulary-review-direction-menu\s*\{[^}]*top:\s*calc\(100% \+ 0\.5rem\)/s);
+  assert.match(styles, /\.vocabulary-review-launcher\[open\] \+ \.hiragana-test-tooltip\s*\{/);
+  assert.match(styles, /\.vocabulary-review-direction-label\s*\{/);
 });

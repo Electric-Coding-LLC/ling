@@ -228,7 +228,7 @@ export function SoundMarksGuide() {
     <KanaPatternGuide
       chart={(renderCard) => <SoundMarksChart renderCard={renderCard} />}
       flashcards={SOUND_MARK_FLASHCARDS}
-      intro={<p>Dakuten and handakuten are marks added to Kana you already know. Each mark changes the sound of the Kana it sits beside.</p>}
+      intro={<p>Dakuten and handakuten are marks added to Kana. Each mark changes the sound of the Kana it sits beside.</p>}
       stationName="Dakuten & Handakuten"
       stationSlug="sound-marks"
     />

@@ -34,10 +34,11 @@ export default function KanaPage() {
           </div>
 
           <p className="kana-table-intro">
-            Begin with the five shared sounds at{" "}
+            The{" "}
             <NavigationLink href="/stations/vowels" loadingStation="Vowels">
               Vowels
-            </NavigationLink>.
+            </NavigationLink>{" "}
+            station shows the five sounds shared across both sets.
           </p>
         </section>
       </div>

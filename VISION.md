@@ -185,17 +185,19 @@ playable example, and a translation.
 
 `Yōon` teaches how small `ゃ`, `ゅ`, and `ょ` and their Katakana matches join the Kana before them to make one sound. One complete three-column chart keeps every Hiragana and Katakana combination visible, and every entry opens the same flashcard and private progress interaction used by the preceding Kana stations.
 
-`Words` establishes the small starter vocabulary reused by the pronunciation
-stations. It is a listening-first reference with Japanese, canonical rōmaji,
-meaning, bundled audio, and an explicit flashcard review.
+`Words` establishes a small practical vocabulary for finding your way,
+identifying people and things, meeting immediate needs, moving around, and
+speaking about the present. It is a listening-first reference with Japanese,
+canonical rōmaji, meaning, bundled audio, and an explicit flashcard review in
+either the English-to-Japanese or Japanese-to-English direction.
 
 The earlier `Nouns`, `Verbs`, and `Adjectives` references are not stations on
 the mapped Foundations network. Their routes remain directly addressable while
 their material is reconsidered around more useful real-world groupings.
 
-`Mora` first defines a mora as one rhythmic timing unit, then presents playable words from the Words station with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division.
+`Mora` first defines a mora as one rhythmic timing unit, then presents purpose-chosen playable examples with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division.
 
-`Pitch` introduces standard Tokyo Japanese word-pitch contours as movement between low and high morae. Concise teaching examples group contours by whether pitch stays high, falls early, or falls later. Each bundled word comes from Words and plays directly beside one mora-aligned contour. Review begins with audio and a quiet listening window, then reveals the Japanese word, contour, and meaning before the learner marks it `Good` or `Not Yet`.
+`Pitch` introduces standard Tokyo Japanese word-pitch contours as movement between low and high morae. Concise teaching examples group contours by whether pitch stays high, falls early, or falls later. Its purpose-chosen examples play directly beside one mora-aligned contour rather than defining the starter vocabulary. Review begins with audio and a quiet listening window, then reveals the Japanese word, contour, and meaning before the learner marks it `Good` or `Not Yet`.
 
 All pronunciation is bundled synthetic speech played at its authored speed. Stations record no score. Kana chart and extension tests record only the learner's self-reported knowledge and show it through restrained progress rings on the chart and study rows.
 

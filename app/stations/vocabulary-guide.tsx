@@ -23,6 +23,13 @@ import { useFlashcardAudio } from "./use-flashcard-audio";
 
 const VOCABULARY_LINE_LABEL = "Vocabulary";
 
+type VocabularyReviewDirection = "japanese-to-meaning" | "meaning-to-japanese";
+
+type VocabularyReview = {
+  readonly cards: readonly VocabularyItem[];
+  readonly direction: VocabularyReviewDirection;
+};
+
 export function VocabularyGuide({
   stationId,
 }: {
@@ -41,12 +48,14 @@ export function VocabularyGuide({
     playAudio,
     stopAudio,
   } = useFlashcardAudio();
-  const [activeReview, setActiveReview] = useState<readonly VocabularyItem[] | null>(null);
+  const [activeReview, setActiveReview] = useState<VocabularyReview | null>(null);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [knowledgeError, setKnowledgeError] = useState(false);
   const [knownItems, setKnownItems] = useState<Set<string>>(() => new Set());
   const [reviewIndex, setReviewIndex] = useState(0);
-  const activeCard = activeReview?.[reviewIndex] ?? null;
+  const reviewLauncherRef = useRef<HTMLDetailsElement | null>(null);
+  const activeCard = activeReview?.cards[reviewIndex] ?? null;
+  const meaningFirst = activeReview?.direction !== "japanese-to-meaning";
   const activeCardMorae = activeCard ? getJapaneseMorae(activeCard.word) : null;
   const activeCardPitch = activeCardMorae && activeCard
     ? getPitchLevels(activeCardMorae.length, activeCard.pitchAccent)
@@ -79,6 +88,34 @@ export function VocabularyGuide({
   }, [stationId]);
 
   useEffect(() => {
+    function dismissReviewLauncher(event: PointerEvent) {
+      const launcher = reviewLauncherRef.current;
+      if (
+        launcher?.open
+        && event.target instanceof Node
+        && !launcher.contains(event.target)
+      ) {
+        launcher.open = false;
+      }
+    }
+
+    function closeReviewLauncherWithEscape(event: KeyboardEvent) {
+      const launcher = reviewLauncherRef.current;
+      if (event.key !== "Escape" || !launcher?.open) return;
+
+      launcher.open = false;
+      launcher.querySelector<HTMLElement>("summary")?.focus();
+    }
+
+    document.addEventListener("pointerdown", dismissReviewLauncher);
+    document.addEventListener("keydown", closeReviewLauncherWithEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismissReviewLauncher);
+      document.removeEventListener("keydown", closeReviewLauncherWithEscape);
+    };
+  }, []);
+
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (activeReview && dialog && !dialog.open) dialog.showModal();
   }, [activeReview]);
@@ -95,12 +132,16 @@ export function VocabularyGuide({
     });
   }
 
-  function openReview(items: readonly VocabularyItem[]) {
+  function openReview(
+    items: readonly VocabularyItem[],
+    direction: VocabularyReviewDirection,
+  ) {
+    if (reviewLauncherRef.current) reviewLauncherRef.current.open = false;
     stopAudio();
     setAnswerRevealed(false);
     setKnowledgeError(false);
     setReviewIndex(0);
-    setActiveReview(shuffle(items));
+    setActiveReview({ cards: shuffle(items), direction });
   }
 
   function closeReview() {
@@ -140,7 +181,7 @@ export function VocabularyGuide({
     });
 
     const nextIndex = reviewIndex + 1;
-    if (nextIndex >= activeReview.length) {
+    if (nextIndex >= activeReview.cards.length) {
       closeReview();
       return;
     }
@@ -195,16 +236,45 @@ export function VocabularyGuide({
               stationName={station.name}
             />
             <span className="hiragana-test-trigger-wrap">
-              <button
-                aria-label={reviewLabel}
-                className="hiragana-test-trigger"
-                data-complete={remainingCount === 0 ? "true" : undefined}
-                onClick={() => openReview(station.items)}
-                style={{ "--hiragana-test-progress": `${knownCount / station.items.length}turn` } as CSSProperties}
-                type="button"
-              >
-                <span className="hiragana-test-progress-text">{remainingCount === 0 ? "✓" : remainingCount}</span>
-              </button>
+              {stationId === "words" ? (
+                <details className="vocabulary-review-launcher" ref={reviewLauncherRef}>
+                  <summary
+                    aria-label={`${reviewLabel} Choose review direction.`}
+                    className="hiragana-test-trigger"
+                    data-complete={remainingCount === 0 ? "true" : undefined}
+                    style={{ "--hiragana-test-progress": `${knownCount / station.items.length}turn` } as CSSProperties}
+                  >
+                    <span className="hiragana-test-progress-text">{remainingCount === 0 ? "✓" : remainingCount}</span>
+                  </summary>
+                  <div aria-label="Review direction" className="station-options-menu vocabulary-review-direction-menu">
+                    <button
+                      className="station-options-action"
+                      onClick={() => openReview(station.items, "meaning-to-japanese")}
+                      type="button"
+                    >
+                      English → Japanese
+                    </button>
+                    <button
+                      className="station-options-action"
+                      onClick={() => openReview(station.items, "japanese-to-meaning")}
+                      type="button"
+                    >
+                      Japanese → English
+                    </button>
+                  </div>
+                </details>
+              ) : (
+                <button
+                  aria-label={reviewLabel}
+                  className="hiragana-test-trigger"
+                  data-complete={remainingCount === 0 ? "true" : undefined}
+                  onClick={() => openReview(station.items, "meaning-to-japanese")}
+                  style={{ "--hiragana-test-progress": `${knownCount / station.items.length}turn` } as CSSProperties}
+                  type="button"
+                >
+                  <span className="hiragana-test-progress-text">{remainingCount === 0 ? "✓" : remainingCount}</span>
+                </button>
+              )}
               <span className="network-tooltip hiragana-test-tooltip">{reviewLabel}</span>
             </span>
           </div>
@@ -271,38 +341,62 @@ export function VocabularyGuide({
           >
             <div className="hiragana-test-modal">
               <header className="hiragana-test-modal-heading">
-                <h2 id={`${stationId}-review-title`}>{station.name}</h2>
+                <div>
+                  <h2 id={`${stationId}-review-title`}>{station.name}</h2>
+                  {stationId === "words" ? (
+                    <p className="vocabulary-review-direction-label">
+                      {meaningFirst ? "English → Japanese" : "Japanese → English"}
+                    </p>
+                  ) : null}
+                </div>
                 <button aria-label="Close flashcards" className="hiragana-test-close" onClick={closeReview} type="button">
                   <span aria-hidden="true">×</span>
                 </button>
               </header>
               <FlashcardReview
-                activationLabel={answerRevealed ? `Play ${activeCard.word}` : `Recall the Japanese for ${activeCard.meaning}`}
+                activationLabel={meaningFirst && !answerRevealed
+                  ? `Recall the Japanese for ${activeCard.meaning}`
+                  : `Play ${activeCard.word}`}
                 announcement={answerRevealed
-                  ? vocabularyAnnouncement(activeCard)
+                  ? vocabularyAnnouncement(activeCard, meaningFirst)
                   : ""}
-                key={`${reviewIndex}-${activeCard.id}`}
+                key={`${activeReview.direction}-${reviewIndex}-${activeCard.id}`}
                 onActivate={() => {
-                  if (answerRevealed) playItem(activeCard);
+                  if (!meaningFirst || answerRevealed) playItem(activeCard);
                 }}
                 onAnswer={answerCard}
-                playing={audioPlaying}
+                playing={audioPlaying && activeAudioIndex === itemIndex(activeCard)}
               >
                 <span className="vocabulary-review-content">
-                  <span className="vocabulary-review-prompt">{activeCard.meaning}</span>
+                  {meaningFirst ? (
+                    <span className="vocabulary-review-prompt">{activeCard.meaning}</span>
+                  ) : (
+                    <span className="vocabulary-review-word vocabulary-review-prompt-word" lang="ja">
+                      {activeCard.word}
+                    </span>
+                  )}
                   <span className="vocabulary-review-answer-slot">
                     {answerRevealed ? (
                       <span className="vocabulary-review-answer">
-                        <PitchContour
-                          activeMoraIndex={audioPlaying && activeAudioIndex === itemIndex(activeCard)
-                            ? activeBeatIndex
-                            : null}
-                          morae={activeCardMorae}
-                          pitch={activeCardPitch}
-                          showPronunciation
-                          word={activeCard.word}
-                        />
-                        {activeCard.group ? <span className="vocabulary-reference-group">{activeCard.group}</span> : null}
+                        {meaningFirst ? (
+                          <>
+                            <PitchContour
+                              activeMoraIndex={audioPlaying && activeAudioIndex === itemIndex(activeCard)
+                                ? activeBeatIndex
+                                : null}
+                              morae={activeCardMorae}
+                              pitch={activeCardPitch}
+                              showPronunciation
+                              word={activeCard.word}
+                            />
+                            {activeCard.group ? <span className="vocabulary-reference-group">{activeCard.group}</span> : null}
+                          </>
+                        ) : (
+                          <>
+                            <span className="vocabulary-review-meaning">{activeCard.meaning}</span>
+                            <span className="vocabulary-review-romaji">{getJapaneseWordRomaji(activeCard.word)}</span>
+                          </>
+                        )}
                       </span>
                     ) : (
                       <FlashcardCountdown onComplete={() => setAnswerRevealed(true)} />
@@ -328,10 +422,13 @@ function VocabularyAudioIndicator() {
   );
 }
 
-function vocabularyAnnouncement(item: VocabularyItem) {
+function vocabularyAnnouncement(item: VocabularyItem, meaningFirst: boolean) {
   const morae = getJapaneseMorae(item.word);
   const pitch = getPitchLevels(morae.length, item.pitchAccent);
-  return `${item.meaning}: ${item.word}, Rōmaji ${getJapaneseWordRomaji(item.word)}. ${morae.length} ${morae.length === 1 ? "beat" : "beats"}. ${pitchLabel(pitch)}.`;
+  const answer = meaningFirst
+    ? `${item.meaning}: ${item.word}, Rōmaji ${getJapaneseWordRomaji(item.word)}`
+    : `${item.word}, Rōmaji ${getJapaneseWordRomaji(item.word)}: ${item.meaning}`;
+  return `${answer}. ${morae.length} ${morae.length === 1 ? "beat" : "beats"}. ${pitchLabel(pitch)}.`;
 }
 
 function shuffle<T>(entries: readonly T[]): T[] {

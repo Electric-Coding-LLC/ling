@@ -550,7 +550,7 @@ test("server-renders Kana in the Writing line", async () => {
   assert.match(html, /<h1>Kana<\/h1>/i);
   assert.match(html, /aria-label="Return to map from Kana"/i);
   assert.equal((html.match(/href="\/\?focus=kana"/gi) ?? []).length, 2);
-  assert.match(html, /<span aria-hidden="true">←<\/span> Map<\/a>/i);
+  assert.match(html, /<svg aria-hidden="true" viewBox="0 0 24 24">/i);
   assert.doesNotMatch(html, /data-line="sound"/i);
   assert.match(html, /data-line="writing"[^>]*>Writing</i);
   assert.match(html, /Kana is the collective name for Hiragana and Katakana/i);
@@ -569,7 +569,7 @@ test("server-renders the Vowels introduction", async () => {
   assert.match(html, /aria-label="Station navigation"/i);
   assert.match(html, /aria-label="Return to map from Vowels"/i);
   assert.equal((html.match(/href="\/\?focus=vowels"/gi) ?? []).length, 2);
-  assert.match(html, /<span aria-hidden="true">←<\/span> Map<\/a>/i);
+  assert.match(html, /<svg aria-hidden="true" viewBox="0 0 24 24">/i);
   assert.match(html, /data-line="sound"[^>]*>Sound</i);
   assert.match(html, /Japanese Kana are built around five vowel sounds/i);
   assert.match(html, /Hiragana and Katakana write each sound with a different shape/i);

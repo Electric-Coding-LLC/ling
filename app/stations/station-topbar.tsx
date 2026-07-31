@@ -26,7 +26,8 @@ export function StationTopbar({
           href={`/?focus=${networkFocus}`}
           title="Map"
         >
-          <span aria-hidden="true">←</span> Map
+          <span aria-hidden="true" className="station-map-chevron" />
+          Map
         </NavigationLink>
       </nav>
     </header>

@@ -17,12 +17,21 @@
   min-height: 2.75rem;
   flex: none;
   align-items: center;
+  gap: 0.4rem;
   justify-content: center;
   padding-inline: 0.25rem;
   color: var(--muted);
   font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
+}
+
+.station-map-chevron {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-bottom: 1.5px solid currentcolor;
+  border-left: 1.5px solid currentcolor;
+  transform: rotate(45deg);
 }
 
 .station-network-link:focus-visible {

@@ -22,6 +22,20 @@
     env(safe-area-inset-left);
 }
 
+html[data-pwa-pull-offset] .shell {
+  transform: translateY(var(--pwa-pull-distance, 0));
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-pwa-pull-offset],
+html[data-pwa-pull-offset] body {
+  background: var(--surface);
+}
+
+html[data-pwa-pull-active] .shell {
+  transition: none;
+}
+
 .topbar {
   display: flex;
   min-height: 3.75rem;
@@ -66,41 +80,58 @@
 .pwa-pull-indicator {
   position: fixed;
   z-index: 60;
-  top: max(0.75rem, env(safe-area-inset-top));
+  top: env(safe-area-inset-top);
   left: 50%;
-  display: flex;
-  min-height: 2.5rem;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
   opacity: 0;
-  color: var(--foreground);
-  background: color-mix(in srgb, var(--surface) 94%, var(--foreground));
-  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.24);
-  font-size: 0.75rem;
-  font-weight: 600;
+  color: var(--muted);
   pointer-events: none;
-  transition: opacity 120ms ease-out;
+  transform: translate(-50%, calc(var(--pwa-pull-distance, 0px) - 2.75rem));
+  transition:
+    opacity 100ms linear,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.pwa-pull-indicator[data-visible="true"] {
+html[data-pwa-pull-visible] .pwa-pull-indicator {
   opacity: 1;
 }
 
-.pwa-pull-arrow {
-  display: inline-grid;
-  width: 1rem;
-  place-items: center;
-  color: var(--vocabulary);
-  font-size: 1rem;
-  line-height: 1;
-  transition: transform 120ms ease-out;
+html[data-pwa-pull-active] .pwa-pull-indicator {
+  transition: opacity 100ms linear;
 }
 
-.pwa-pull-arrow[data-ready="true"] {
-  transform: rotate(180deg);
+.pwa-pull-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.pwa-pull-spinner circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--pwa-pull-progress, 0));
+  stroke-linecap: round;
+  stroke-width: 2.25;
+}
+
+.pwa-pull-spinner[data-refreshing="true"] {
+  animation: pwa-refresh-spin 720ms linear infinite;
+}
+
+.pwa-pull-spinner[data-refreshing="true"] circle {
+  stroke-dasharray: 0.72 0.28;
+  stroke-dashoffset: 0;
+}
+
+@keyframes pwa-refresh-spin {
+  to {
+    transform: rotate(270deg);
+  }
 }
 
 .pwa-update-toast {

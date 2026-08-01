@@ -15,8 +15,7 @@
     animation: none;
   }
 
-  .pwa-pull-indicator,
-  .pwa-pull-arrow {
+  .pwa-pull-indicator {
     transition: none;
   }
 

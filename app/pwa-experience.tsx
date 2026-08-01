@@ -6,6 +6,8 @@ const LAST_BUILD_STORAGE_KEY = "ling:last-running-build";
 const PULL_REFRESH_THRESHOLD = 96;
 const PULL_RESISTANCE = 0.5;
 const MAX_PULL_DISTANCE = 64;
+const REFRESH_HOLD_DISTANCE = 52;
+const PULL_SETTLE_DURATION = 320;
 
 type UpdateNotice = "available" | "updated" | null;
 
@@ -43,20 +45,46 @@ export function PwaExperience({
 }) {
   const pullStartRef = useRef<{ x: number; y: number; active: boolean } | null>(null);
   const rawPullDistanceRef = useRef(0);
+  const pullSettlementRef = useRef<number | undefined>(undefined);
+  const refreshTimeoutRef = useRef<number | undefined>(undefined);
   const refreshingRef = useRef(false);
-  const [pullDistance, setPullDistance] = useState(0);
-  const [pullReady, setPullReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [updateNotice, setUpdateNotice] = useState<UpdateNotice>(null);
 
   useEffect(() => {
     if (!isInstalledApp()) return;
 
+    const root = document.documentElement;
+
+    function clearPullSettlement() {
+      if (pullSettlementRef.current === undefined) return;
+      window.clearTimeout(pullSettlementRef.current);
+      pullSettlementRef.current = undefined;
+    }
+
+    function setPullPresentation(distance: number, progress: number) {
+      root.style.setProperty("--pwa-pull-distance", `${distance}px`);
+      root.style.setProperty("--pwa-pull-progress", `${progress}`);
+    }
+
+    function settlePull() {
+      root.removeAttribute("data-pwa-pull-active");
+      root.removeAttribute("data-pwa-pull-visible");
+      setPullPresentation(0, 0);
+      clearPullSettlement();
+      pullSettlementRef.current = window.setTimeout(() => {
+        root.removeAttribute("data-pwa-pull-offset");
+        root.style.removeProperty("--pwa-pull-distance");
+        root.style.removeProperty("--pwa-pull-progress");
+        pullSettlementRef.current = undefined;
+      }, PULL_SETTLE_DURATION);
+    }
+
     function resetPull() {
+      const wasActive = pullStartRef.current?.active === true;
       pullStartRef.current = null;
       rawPullDistanceRef.current = 0;
-      setPullDistance(0);
-      setPullReady(false);
+      if (wasActive) settlePull();
     }
 
     function onTouchStart(event: TouchEvent) {
@@ -83,13 +111,19 @@ export function PwaExperience({
 
       if (!start.active) {
         if (distanceY < 8 || Math.abs(distanceX) >= distanceY) return;
+        clearPullSettlement();
         start.active = true;
+        root.setAttribute("data-pwa-pull-active", "");
+        root.setAttribute("data-pwa-pull-offset", "");
+        root.setAttribute("data-pwa-pull-visible", "");
       }
 
       event.preventDefault();
       rawPullDistanceRef.current = distanceY;
-      setPullDistance(Math.min(distanceY * PULL_RESISTANCE, MAX_PULL_DISTANCE));
-      setPullReady(distanceY >= PULL_REFRESH_THRESHOLD);
+      setPullPresentation(
+        Math.min(distanceY * PULL_RESISTANCE, MAX_PULL_DISTANCE),
+        Math.min(distanceY / PULL_REFRESH_THRESHOLD, 1),
+      );
     }
 
     function onTouchEnd() {
@@ -99,9 +133,14 @@ export function PwaExperience({
       }
 
       refreshingRef.current = true;
+      pullStartRef.current = null;
+      rawPullDistanceRef.current = 0;
+      root.removeAttribute("data-pwa-pull-active");
+      root.setAttribute("data-pwa-pull-offset", "");
+      root.setAttribute("data-pwa-pull-visible", "");
+      setPullPresentation(REFRESH_HOLD_DISTANCE, 1);
       setRefreshing(true);
-      setPullDistance(MAX_PULL_DISTANCE);
-      window.setTimeout(() => window.location.reload(), 120);
+      refreshTimeoutRef.current = window.setTimeout(() => window.location.reload(), 180);
     }
 
     window.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -110,6 +149,15 @@ export function PwaExperience({
     window.addEventListener("touchcancel", resetPull, { passive: true });
 
     return () => {
+      clearPullSettlement();
+      if (refreshTimeoutRef.current !== undefined) {
+        window.clearTimeout(refreshTimeoutRef.current);
+      }
+      root.removeAttribute("data-pwa-pull-active");
+      root.removeAttribute("data-pwa-pull-offset");
+      root.removeAttribute("data-pwa-pull-visible");
+      root.style.removeProperty("--pwa-pull-distance");
+      root.style.removeProperty("--pwa-pull-progress");
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
@@ -168,24 +216,16 @@ export function PwaExperience({
     return () => window.clearTimeout(timeout);
   }, [updateNotice]);
 
-  const pullLabel = refreshing
-    ? "Refreshing"
-    : pullReady
-      ? "Release to refresh"
-      : "Pull to refresh";
-
   return (
     <>
-      <div
-        aria-hidden="true"
-        className="pwa-pull-indicator"
-        data-visible={pullDistance > 0 || refreshing ? "true" : undefined}
-        style={{ transform: `translate(-50%, ${pullDistance - MAX_PULL_DISTANCE}px)` }}
-      >
-        <span className="pwa-pull-arrow" data-ready={pullReady ? "true" : undefined}>
-          {refreshing ? "···" : "↓"}
-        </span>
-        <span>{pullLabel}</span>
+      <div aria-hidden="true" className="pwa-pull-indicator">
+        <svg
+          className="pwa-pull-spinner"
+          data-refreshing={refreshing ? "true" : undefined}
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" pathLength="1" r="9" />
+        </svg>
       </div>
       <span aria-live="polite" className="sr-only" role="status">
         {refreshing ? "Refreshing Ling" : ""}

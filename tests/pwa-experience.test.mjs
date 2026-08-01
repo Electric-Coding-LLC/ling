@@ -20,10 +20,14 @@ test("installed Ling supports guarded pull-to-refresh and build update feedback"
   assert.match(experience, /addEventListener\("touchmove", onTouchMove, \{ passive: false \}\)/);
   assert.match(experience, /event\.preventDefault\(\)/);
   assert.match(experience, /rawPullDistanceRef\.current < PULL_REFRESH_THRESHOLD/);
+  assert.match(experience, /setProperty\("--pwa-pull-distance"/);
+  assert.match(experience, /setProperty\("--pwa-pull-progress"/);
+  assert.match(experience, /setPullPresentation\(REFRESH_HOLD_DISTANCE, 1\)/);
   assert.match(experience, /window\.location\.reload\(\)/);
-  assert.match(experience, /Pull to refresh/);
-  assert.match(experience, /Release to refresh/);
   assert.match(experience, /Refreshing Ling/);
+  assert.match(experience, /className="pwa-pull-spinner"/);
+  assert.match(experience, /<circle cx="12" cy="12" pathLength="1" r="9" \/>/);
+  assert.doesNotMatch(experience, /Pull to refresh|Release to refresh|pwa-pull-arrow/);
 
   assert.match(experience, /fetch\("\/api\/pwa\/version", \{/);
   assert.match(experience, /cache: "no-store"/);
@@ -36,7 +40,12 @@ test("installed Ling supports guarded pull-to-refresh and build update feedback"
   assert.match(experience, /Ling updated/);
   assert.match(experience, /aria-live="polite"/);
 
-  assert.match(shellStyles, /\.pwa-pull-indicator\s*\{[^}]*position:\s*fixed/s);
+  assert.match(shellStyles, /html\[data-pwa-pull-offset\] \.shell\s*\{[^}]*transform:\s*translateY\(var\(--pwa-pull-distance, 0\)\)/s);
+  assert.match(shellStyles, /html\[data-pwa-pull-offset\],[\s\S]*html\[data-pwa-pull-offset\] body\s*\{[^}]*background:\s*var\(--surface\)/s);
+  assert.match(shellStyles, /\.pwa-pull-indicator\s*\{[^}]*position:\s*fixed[^}]*transform:\s*translate\(-50%, calc\(var\(--pwa-pull-distance, 0px\) - 2\.75rem\)\)/s);
+  assert.match(shellStyles, /\.pwa-pull-spinner circle\s*\{[^}]*stroke-dashoffset:\s*calc\(1 - var\(--pwa-pull-progress, 0\)\)/s);
+  assert.match(shellStyles, /\.pwa-pull-spinner\[data-refreshing="true"\]\s*\{[^}]*animation:\s*pwa-refresh-spin 720ms linear infinite/s);
+  assert.doesNotMatch(shellStyles, /\.pwa-pull-arrow|\.pwa-pull-indicator[^}]*border|\.pwa-pull-indicator[^}]*box-shadow/s);
   assert.match(shellStyles, /\.pwa-update-toast\s*\{[^}]*position:\s*fixed/s);
   assert.match(shellStyles, /env\(safe-area-inset-bottom\)/);
   assert.match(globalStyles, /prefers-reduced-motion: reduce[\s\S]*\.pwa-pull-indicator/);

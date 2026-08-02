@@ -1,37 +1,41 @@
 import { LingWordmark } from "../brand";
 import { MapIcon } from "../map-icon";
 import { NavigationLink } from "../navigation-feedback";
-import type { StationFocus } from "../network-map";
+import type { NetworkPlaceId } from "@/src/modules/learning/network";
+import { StationVisitRecorder } from "./station-visit-recorder";
 
 export function StationTopbar({
   current,
   networkFocus,
 }: {
   current: string;
-  networkFocus: StationFocus;
+  networkFocus: NetworkPlaceId;
 }) {
   return (
-    <header className="topbar station-topbar">
-      <NavigationLink
-        aria-label="Return to the Ling map"
-        className="brand-link"
-        href={`/?focus=${networkFocus}`}
-        loadingMap
-        title="Ling map"
-      >
-        <LingWordmark className="wordmark" />
-      </NavigationLink>
-      <nav aria-label="Station navigation" className="station-nav">
+    <>
+      <StationVisitRecorder placeId={networkFocus} />
+      <header className="topbar station-topbar">
         <NavigationLink
-          aria-label={`Return to map from ${current}`}
-          className="topbar-map-link"
+          aria-label="Return to the Ling map"
+          className="brand-link"
           href={`/?focus=${networkFocus}`}
           loadingMap
-          title="Map"
+          title="Ling map"
         >
-          <MapIcon />
+          <LingWordmark className="wordmark" />
         </NavigationLink>
-      </nav>
-    </header>
+        <nav aria-label="Station navigation" className="station-nav">
+          <NavigationLink
+            aria-label={`Return to map from ${current}`}
+            className="topbar-map-link"
+            href={`/?focus=${networkFocus}`}
+            loadingMap
+            title="Map"
+          >
+            <MapIcon />
+          </NavigationLink>
+        </nav>
+      </header>
+    </>
   );
 }

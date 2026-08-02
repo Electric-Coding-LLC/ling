@@ -243,6 +243,19 @@
   stroke: var(--travel);
 }
 
+.network-station-complete-icon {
+  fill: none;
+  stroke: var(--surface);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.network-station-complete-icon-interchange {
+  transform: scale(1.6);
+}
+
 .network-station-hit {
   fill: transparent;
 }
@@ -255,6 +268,15 @@
 
 .network-station-link {
   cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.network-station-link[data-visited="false"] {
+  opacity: 0.45;
+}
+
+.network-station-link[data-visited="false"]:is(:hover, :focus-visible) {
+  opacity: 1;
 }
 
 .network-station-link:focus-visible {
@@ -271,7 +293,8 @@
 
 .network-station-link[data-active="true"] :is(
   .network-interchange-inner,
-  .network-single-station-inner
+  .network-single-station-inner,
+  .network-station-complete-icon
 ) {
   animation: network-station-inner-pulse 2s ease-in-out infinite;
 }
@@ -293,11 +316,49 @@
 
   .network-station-link[data-active="true"] :is(
     .network-interchange-inner,
-    .network-single-station-inner
+    .network-single-station-inner,
+    .network-station-complete-icon
   ) {
     animation: none;
     opacity: 1;
   }
+}
+
+.network-location-button {
+  position: fixed;
+  z-index: 15;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--foreground);
+  background: var(--surface);
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.24);
+  cursor: pointer;
+}
+
+.network-location-button svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+}
+
+.network-location-button:hover {
+  border-color: var(--muted);
+}
+
+.network-location-button:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
 }
 
 @media (max-width: 600px) {
@@ -340,6 +401,10 @@
 
   .network-map-mobile .network-single-station-inner {
     r: 11.5px;
+  }
+
+  .network-map-mobile .network-station-complete-icon:not(.network-station-complete-icon-interchange) {
+    transform: scale(1.35);
   }
 
   .network-map-mobile .network-station-label-left {

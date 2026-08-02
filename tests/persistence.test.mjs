@@ -44,6 +44,10 @@ test("generated migrations create the account-scoped learning boundaries", async
     new URL("drizzle/0009_nostalgic_wallop.sql", root),
     "utf8",
   );
+  const networkPlaceVisitsMigration = await readFile(
+    new URL("drizzle/0010_lowly_kat_farrell.sql", root),
+    "utf8",
+  );
   const database = new DatabaseSync(":memory:");
   database.exec("PRAGMA foreign_keys = ON");
   database.exec(userMigration);
@@ -71,6 +75,7 @@ test("generated migrations create the account-scoped learning boundaries", async
     "INSERT INTO station_introductions (user_id, station_id, introduced_at) VALUES (?, ?, ?)",
   ).run("legacy-learner", "nouns", 5);
   database.exec(directionalVocabularyKnowledgeMigration);
+  database.exec(networkPlaceVisitsMigration.replaceAll("--> statement-breakpoint", ""));
 
   const migratedVocabularyKnowledge = database.prepare(
     "SELECT review_direction FROM vocabulary_knowledge WHERE user_id = ? AND item_id = ?",
@@ -89,6 +94,12 @@ test("generated migrations create the account-scoped learning boundaries", async
     ).all("legacy-learner").map(({ station_id }) => station_id),
     ["words"],
   );
+  assert.deepEqual(
+    database.prepare(
+      "SELECT place_id FROM network_place_visits WHERE user_id = ? ORDER BY place_id",
+    ).all("legacy-learner").map(({ place_id }) => place_id),
+    ["words"],
+  );
   assert.equal(
     database.prepare("PRAGMA table_info(vocabulary_knowledge)").all()
       .some(({ name }) => name === "station_id"),
@@ -105,6 +116,7 @@ test("generated migrations create the account-scoped learning boundaries", async
     "kana_extension_knowledge",
     "katakana_knowledge",
     "mora_timing_knowledge",
+    "network_place_visits",
     "pitch_accent_knowledge",
     "romaji_knowledge",
     "station_introductions",
@@ -124,6 +136,13 @@ test("generated migrations create the account-scoped learning boundaries", async
   assert.equal(introductionForeignKeys.length, 1);
   assert.equal(introductionForeignKeys[0].table, "users");
   assert.equal(introductionForeignKeys[0].on_delete, "CASCADE");
+
+  const networkPlaceVisitForeignKeys = database
+    .prepare("PRAGMA foreign_key_list(network_place_visits)")
+    .all();
+  assert.equal(networkPlaceVisitForeignKeys.length, 1);
+  assert.equal(networkPlaceVisitForeignKeys[0].table, "users");
+  assert.equal(networkPlaceVisitForeignKeys[0].on_delete, "CASCADE");
 
   const hiraganaKnowledgeForeignKeys = database
     .prepare("PRAGMA foreign_key_list(hiragana_knowledge)")
@@ -184,6 +203,15 @@ test("generated migrations create the account-scoped learning boundaries", async
     database.prepare(
       "INSERT INTO station_introductions (user_id, station_id, introduced_at) VALUES (?, ?, ?)",
     ).run("learner-1", "hiragana", 3);
+  }, /UNIQUE constraint failed/);
+
+  database.prepare(
+    "INSERT INTO network_place_visits (user_id, place_id, visited_at) VALUES (?, ?, ?)",
+  ).run("learner-1", "hiragana", 3);
+  assert.throws(() => {
+    database.prepare(
+      "INSERT INTO network_place_visits (user_id, place_id, visited_at) VALUES (?, ?, ?)",
+    ).run("learner-1", "hiragana", 4);
   }, /UNIQUE constraint failed/);
 
   database.prepare(
@@ -255,6 +283,10 @@ test("generated migrations create the account-scoped learning boundaries", async
   database.prepare("DELETE FROM users WHERE id = ?").run("learner-1");
   assert.equal(
     database.prepare("SELECT COUNT(*) AS count FROM station_introductions").get().count,
+    0,
+  );
+  assert.equal(
+    database.prepare("SELECT COUNT(*) AS count FROM network_place_visits").get().count,
     0,
   );
   assert.equal(

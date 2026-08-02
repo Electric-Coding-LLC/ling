@@ -37,6 +37,18 @@ export const stationIntroductions = sqliteTable(
   (table) => [primaryKey({ columns: [table.userId, table.stationId] })],
 );
 
+export const networkPlaceVisits = sqliteTable(
+  "network_place_visits",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    placeId: text("place_id").notNull(),
+    visitedAt: integer("visited_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.placeId] })],
+);
+
 export const hiraganaKnowledge = sqliteTable(
   "hiragana_knowledge",
   {

@@ -5,6 +5,7 @@ import {
   kanaExtensionKnowledge,
   katakanaKnowledge,
   moraTimingKnowledge,
+  networkPlaceVisits,
   pitchAccentKnowledge,
   romajiKnowledge,
   stationIntroductions,
@@ -27,6 +28,11 @@ import {
   SOUND_MARK_PATTERN_IDS,
   type KanaExtensionPatternId,
 } from "./kana-extensions";
+import {
+  type CompletableNetworkPlaceId,
+  isNetworkPlaceId,
+  type NetworkPlaceId,
+} from "./network";
 import {
   isStationId,
   type StationId,
@@ -92,73 +98,91 @@ export async function recordStationIntroduction(
 
 }
 
-export async function listCompletedStations(
+export async function listVisitedNetworkPlaces(
   userId: string,
-): Promise<StationId[]> {
-  const introductions = await listStationIntroductions(userId);
+): Promise<NetworkPlaceId[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ placeId: networkPlaceVisits.placeId })
+    .from(networkPlaceVisits)
+    .where(eq(networkPlaceVisits.userId, userId));
+
+  return rows.map((row) => row.placeId).filter(isNetworkPlaceId);
+}
+
+export async function recordNetworkPlaceVisit(
+  userId: string,
+  placeId: NetworkPlaceId,
+): Promise<void> {
+  const db = await getDb();
+  await db
+    .insert(networkPlaceVisits)
+    .values({ userId, placeId, visitedAt: new Date() })
+    .onConflictDoNothing();
+}
+
+export async function listCompletedNetworkPlaces(
+  userId: string,
+): Promise<CompletableNetworkPlaceId[]> {
   const [
     knownHiragana,
     knownKatakana,
     knownKanaExtensionPatterns,
     knownMoraTimingReviews,
     knownPitchAccentItems,
+    knownRomaji,
     knownWords,
   ] = await Promise.all([
-    introductions.includes("hiragana") ? listKnownHiragana(userId) : [],
-    introductions.includes("katakana") ? listKnownKatakana(userId) : [],
-    introductions.includes("sound-marks") || introductions.includes("combined-sounds")
-      ? listKnownKanaExtensionPatterns(userId)
-      : [] as KanaExtensionPatternId[],
-    introductions.includes("mora-timing")
-      ? listKnownMoraTimingReviews(userId)
-      : [] as MoraTimingReviewId[],
-    introductions.includes("pitch-accent")
-      ? listKnownPitchAccentItems(userId)
-      : [] as PitchAccentItemId[],
-    introductions.includes("words") ? listWordsKnowledge(userId) : [],
+    listKnownHiragana(userId),
+    listKnownKatakana(userId),
+    listKnownKanaExtensionPatterns(userId),
+    listKnownMoraTimingReviews(userId),
+    listKnownPitchAccentItems(userId),
+    listKnownRomajiKana(userId),
+    listWordsKnowledge(userId),
   ]);
-  const independentlyCompleted = introductions.filter(
-    (stationId) => (
-      (stationId !== "hiragana" || knownHiragana.length === BASIC_HIRAGANA.length)
-      && (stationId !== "katakana" || knownKatakana.length === BASIC_KATAKANA.length)
-      && (
-        stationId !== "sound-marks"
-        || SOUND_MARK_PATTERN_IDS.every((patternId) =>
-          knownKanaExtensionPatterns.includes(patternId),
-        )
-      )
-      && (
-        stationId !== "combined-sounds"
-        || COMBINED_SOUND_PATTERN_IDS.every((patternId) =>
-          knownKanaExtensionPatterns.includes(patternId),
-        )
-      )
-      && (
-        stationId !== "mora-timing"
-        || MORA_TIMING_REVIEW_IDS.every((reviewId) =>
-          knownMoraTimingReviews.includes(reviewId),
-        )
-      )
-      && (
-        stationId !== "pitch-accent"
-        || PITCH_ACCENT_ITEM_IDS.every((itemId) =>
-          knownPitchAccentItems.includes(itemId),
-        )
-      )
-      && (
-        stationId !== "words"
-        || VOCABULARY_REVIEW_DIRECTIONS.every((direction) =>
-          getVocabularyItemIds().every((itemId) =>
-            knownWords.some((knowledge) => (
-              knowledge.itemId === itemId && knowledge.direction === direction
-            )),
-          ),
-        )
-      )
-    ),
-  );
+  const completed: CompletableNetworkPlaceId[] = [];
 
-  return independentlyCompleted;
+  if (ROMAJI_KANA.every((kana) => knownRomaji.includes(kana))) {
+    completed.push("romaji");
+  }
+  if (
+    VOWEL_HIRAGANA.every((kana) => knownHiragana.includes(kana))
+    && VOWEL_KATAKANA.every((kana) => knownKatakana.includes(kana))
+  ) {
+    completed.push("vowels");
+  }
+  if (MORA_TIMING_REVIEW_IDS.every((reviewId) => knownMoraTimingReviews.includes(reviewId))) {
+    completed.push("mora");
+  }
+  if (PITCH_ACCENT_ITEM_IDS.every((itemId) => knownPitchAccentItems.includes(itemId))) {
+    completed.push("pitch");
+  }
+  if (BASIC_HIRAGANA.every((kana) => knownHiragana.includes(kana))) {
+    completed.push("hiragana");
+  }
+  if (BASIC_KATAKANA.every((kana) => knownKatakana.includes(kana))) {
+    completed.push("katakana");
+  }
+  if (SOUND_MARK_PATTERN_IDS.every((patternId) => knownKanaExtensionPatterns.includes(patternId))) {
+    completed.push("marks");
+  }
+  if (COMBINED_SOUND_PATTERN_IDS.every((patternId) => knownKanaExtensionPatterns.includes(patternId))) {
+    completed.push("combined");
+  }
+  if (
+    VOCABULARY_REVIEW_DIRECTIONS.every((direction) =>
+      getVocabularyItemIds().every((itemId) =>
+        knownWords.some((knowledge) => (
+          knowledge.itemId === itemId && knowledge.direction === direction
+        )),
+      ),
+    )
+  ) {
+    completed.push("words");
+  }
+
+  return completed;
 }
 
 export async function listKnownHiragana(

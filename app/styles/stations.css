@@ -1401,18 +1401,45 @@
   visibility: hidden;
 }
 
+.network-utilities .hiragana-test-tooltip {
+  top: calc(100% + 0.25rem);
+  right: auto;
+  left: 50%;
+  max-width: 10rem;
+  text-align: center;
+  transform: translate(-50%, -0.25rem);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .hiragana-test-trigger-wrap:hover .hiragana-test-tooltip {
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
   }
+
+  .network-utilities .hiragana-test-trigger-wrap:hover .hiragana-test-tooltip {
+    transform: translate(-50%, 0);
+  }
 }
 
-.hiragana-test-trigger:focus-visible + .hiragana-test-tooltip {
+.hiragana-test-trigger-wrap > :is(button, a):focus-visible + .hiragana-test-tooltip {
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
+}
+
+.network-utilities .hiragana-test-trigger-wrap > :is(button, a):focus-visible + .hiragana-test-tooltip {
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 600px) {
+  .network-utilities .hiragana-test-trigger-wrap:first-child .hiragana-test-tooltip {
+    max-width: 9rem;
+  }
+
+  .network-utilities .hiragana-test-trigger-wrap:last-child .hiragana-test-tooltip {
+    max-width: 3.5rem;
+  }
 }
 
 .vocabulary-review-launcher[open] + .hiragana-test-tooltip {

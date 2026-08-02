@@ -27,6 +27,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   const visuals = await readFile(new URL("app/network-visuals.tsx", root), "utf8");
   const page = await readFile(new URL("app/page.tsx", root), "utf8");
   const styles = await readFile(new URL("app/styles/network.css", root), "utf8");
+  const stationStyles = await readFile(new URL("app/styles/stations.css", root), "utf8");
   const foundation = await readFile(
     new URL("app/styles/foundation.css", root),
     "utf8",
@@ -152,9 +153,13 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   for (const line of ["sound", "writing", "vocabulary", "travel"]) {
     assert.match(
       styles,
-      new RegExp(`\\.network-single-station-inner-${line}[\\s\\S]*?fill:\\s*var\\(--${line}\\)[\\s\\S]*?stroke:\\s*var\\(--${line}\\)`),
+      new RegExp(`\\.network-single-station-inner-${line}[\\s\\S]*?--network-station-inner-color:\\s*var\\(--${line}\\)`),
     );
   }
+  assert.match(
+    styles,
+    /\.network-single-station-inner\s*\{[^}]*fill:\s*var\(--network-station-inner-color\)[^}]*stroke:\s*var\(--network-station-inner-color\)/s,
+  );
   assert.match(
     styles,
     /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-station-label-left\s*\{[^}]*transform:\s*translateX\(-6px\)[\s\S]*\.network-map-mobile \.network-station-label-right\s*\{[^}]*transform:\s*translateX\(9px\)[\s\S]*\.network-map-mobile \.network-station-label-above\s*\{[^}]*transform:\s*translateY\(-6px\)[\s\S]*\.network-map-mobile \.network-station-label-below\s*\{[^}]*transform:\s*translateY\(17px\)[\s\S]*\.network-map-mobile \.network-station-label-below-right\s*\{[^}]*transform:\s*translate\(9px, 17px\)/s,
@@ -288,12 +293,53 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     styles,
     /\.network-station-link\[data-active="true"\]\s*:is\([\s\S]*\.network-interchange-inner,[\s\S]*\.network-single-station-inner[\s\S]*animation:\s*network-station-inner-pulse 2s ease-in-out infinite/,
   );
-  assert.match(styles, /\.network-station-link\[data-visited="false"\]\s*\{[^}]*opacity:\s*0\.45/s);
-  assert.match(styles, /\.network-station-link\[data-visited="false"\]:is\(:hover, :focus-visible\)\s*\{[^}]*opacity:\s*1/s);
+  assert.doesNotMatch(styles, /\.network-station-link\[data-visited="false"\]\s*\{[^}]*opacity:/s);
+  assert.match(
+    styles,
+    /\.network-station-link\[data-visited="false"\]\s*:is\([\s\S]*\.network-interchange-inner,[\s\S]*\.network-single-station-inner[\s\S]*fill:\s*color-mix\(in srgb, var\(--network-station-inner-color\) 45%, var\(--surface\)\)[\s\S]*stroke:\s*color-mix\(in srgb, var\(--network-station-inner-color\) 45%, var\(--surface\)\)/,
+  );
+  assert.match(
+    styles,
+    /\.network-station-link\[data-visited="false"\]:is\(:hover, :focus-visible\)\s*:is\([\s\S]*fill:\s*var\(--network-station-inner-color\)[\s\S]*stroke:\s*var\(--network-station-inner-color\)/,
+  );
   assert.match(source, /fetch\("\/api\/network\/places"/);
-  assert.match(source, /aria-label=\{`Show current location: \$\{STATION_LABELS\[storedStationFocus\]\}`\}/);
+  assert.match(source, /const currentLocationLabel = `Show current location: \$\{STATION_LABELS\[storedStationFocus\]\}`/);
+  assert.match(source, /aria-describedby="network-location-tooltip"[\s\S]*aria-label=\{currentLocationLabel\}/);
   assert.match(source, /function showCurrentLocation\(\)[\s\S]*scrollIntoView\(\{[\s\S]*inline:\s*"center"/);
-  assert.match(styles, /\.network-location-button\s*\{[^}]*position:\s*fixed[^}]*border-radius:\s*50%/s);
+  assert.match(source, /className="network-utilities"[\s\S]*className="network-location-button"[\s\S]*className="network-help-link"/);
+  assert.match(source, /<circle cx="12" cy="12" r="7" \/>[\s\S]*network-location-target-dot/);
+  assert.match(source, /className="network-tooltip hiragana-test-tooltip" id="network-location-tooltip" role="tooltip"/);
+  assert.match(source, /id="network-location-tooltip" role="tooltip">\s*Current location/);
+  assert.match(source, /aria-describedby="network-help-tooltip"[\s\S]*aria-label="About Ling"/);
+  assert.match(source, /className="network-tooltip hiragana-test-tooltip" id="network-help-tooltip" role="tooltip"/);
+  assert.doesNotMatch(source, /title="(?:Show current location|About Ling)"/);
+  assert.doesNotMatch(source, /network-location-controls/);
+  assert.doesNotMatch(styles, /\.network-location-controls/);
+  assert.match(styles, /\.network-utilities\s*\{[^}]*display:\s*flex[^}]*gap:\s*0[^}]*margin-inline-end:\s*-0\.5rem/s);
+  assert.doesNotMatch(styles, /\.network-location-button\s*\{[^}]*position:\s*fixed/s);
+  assert.match(
+    styles,
+    /\.network-location-button\s*\{[^}]*width:\s*2\.75rem[^}]*height:\s*2\.75rem[^}]*border:\s*0[^}]*color:\s*var\(--foreground\)[^}]*background:\s*transparent/s,
+  );
+  assert.match(styles, /\.network-help-link\s*\{[^}]*color:\s*var\(--foreground\)/s);
+  for (const control of ["help-link", "location-button"]) {
+    assert.doesNotMatch(styles, new RegExp(`\\.network-${control}\\s*\\{[^}]*opacity:`));
+    assert.match(styles, new RegExp(`\\.network-${control}:hover svg\\s*\\{[^}]*transform:\\s*scale\\(1\\.08\\)`));
+  }
+  assert.doesNotMatch(styles, /\.network-location-button\s*\{[^}]*border-radius:\s*50%/s);
+  assert.match(styles, /\.network-location-button:focus-visible\s*\{[^}]*z-index:\s*1[^}]*outline:\s*2px solid var\(--foreground\)/s);
+  assert.match(
+    stationStyles,
+    /\.network-utilities \.hiragana-test-tooltip\s*\{[^}]*top:\s*calc\(100% \+ 0\.25rem\)[^}]*right:\s*auto[^}]*left:\s*50%[^}]*transform:\s*translate\(-50%, -0\.25rem\)/s,
+  );
+  assert.match(
+    stationStyles,
+    /\.network-utilities \.hiragana-test-trigger-wrap:hover \.hiragana-test-tooltip\s*\{[^}]*transform:\s*translate\(-50%, 0\)/s,
+  );
+  assert.match(
+    stationStyles,
+    /\.network-utilities \.hiragana-test-trigger-wrap > :is\(button, a\):focus-visible \+ \.hiragana-test-tooltip\s*\{[^}]*transform:\s*translate\(-50%, 0\)/s,
+  );
   assert.match(styles, /@keyframes network-station-inner-pulse[\s\S]*0%, 100%\s*\{[^}]*opacity:\s*0\.28[\s\S]*50%\s*\{[^}]*opacity:\s*1/);
   assert.match(styles, /\.network-keyboard-travel-beam\s*\{[^}]*stroke-dasharray:\s*16 200[^}]*animation:\s*network-keyboard-travel 320ms linear both/s);
   assert.match(styles, /\.network-keyboard-travel-beam-contrast\s*\{[^}]*drop-shadow\(0 0 4px rgb\(242 241 235 \/ 0\.9\)\)[^}]*stroke-width:\s*9/s);
@@ -349,7 +395,7 @@ test("station and Welcome pages share one plain, focused return to the map", asy
   assert.match(source, /network-single-station-outer-\$\{kind\}`\} r="15"/);
   assert.match(source, /network-single-station-inner-\$\{kind\}`\}/);
   assert.match(source, /className=\{`network-station-complete-icon/);
-  assert.match(source, /d="m-5 0 3 3 7-7"/);
+  assert.match(source, /d="m-5 1 3 3 7-7"/);
   assert.doesNotMatch(source, /LingMarkStrokes|network-brand-station|<rect/);
 });
 
@@ -980,7 +1026,7 @@ test("the Hiragana station provides the complete basic chart with bundled audio"
   assert.match(styles, /\.station-confirm-modal \.hiragana-test-answer\s*\{[^}]*min-height:\s*2\.75rem[^}]*padding:\s*0\.55rem 0\.85rem/s);
   assert.match(styles, /\.hiragana-test-answer\.station-confirm-reset\s*\{[^}]*background:\s*var\(--audio\)/s);
   assert.match(styles, /\.hiragana-test-trigger-wrap:hover \.hiragana-test-tooltip/);
-  assert.match(styles, /\.hiragana-test-trigger:focus-visible \+ \.hiragana-test-tooltip/);
+  assert.match(styles, /\.hiragana-test-trigger-wrap > :is\(button, a\):focus-visible \+ \.hiragana-test-tooltip/);
   assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*background:\s*conic-gradient\([^}]*var\(--hiragana-test-progress\)/s);
   assert.match(styles, /\.hiragana-test-trigger\s*\{[^}]*width:\s*2\.5rem[^}]*height:\s*2\.5rem/s);
   assert.match(styles, /\.hiragana-test-trigger::before\s*\{[^}]*inset:\s*0\.1875rem/s);

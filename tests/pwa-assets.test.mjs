@@ -169,7 +169,7 @@ test("the server-rendered boot screen remains until the current route is ready",
   assert.doesNotMatch(navigation, /<LoadingScreen boot overlay \/>|showBootLoader/);
   assert.match(
     navigation,
-    /\{pending \? <LoadingScreen overlay station=\{pending\.station\} \/> : null\}/,
+    /<LoadingScreen[\s\S]*departing=\{pending\.departing\}[\s\S]*overlay[\s\S]*returningToMap=\{pending\.returningToMap\}[\s\S]*station=\{pending\.station\}/,
   );
   assert.match(network, /<LoadingScreen boot overlay \/>/);
   assert.match(

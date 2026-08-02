@@ -32,6 +32,8 @@ type CategoryFocus = "japan" | "sound" | "vocabulary" | "writing";
 type LinkedStationFocus = Exclude<StationFocus, CategoryFocus>;
 type StationDirection = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp";
 type LineRole = "foundation" | "sound" | "travel" | "vocabulary" | "writing";
+type NetworkPoint = { x: number; y: number };
+type KeyboardTravel = { from: StationFocus; id: number; to: StationFocus };
 
 const DESKTOP_VIEW_WIDTH = 1500;
 const MOBILE_VIEW_WIDTH = 520;
@@ -40,7 +42,8 @@ const NETWORK_COLUMN_GAP = 180;
 const CATEGORY_ROW_GAP = NETWORK_ROW_GAP * 1.5;
 const DESKTOP_SPINE_X = (DESKTOP_VIEW_WIDTH - NETWORK_COLUMN_GAP) / 2;
 const MOBILE_SPINE_X = MOBILE_VIEW_WIDTH / 2;
-const ROOT_Y = 105;
+const FOUNDATIONS_TITLE_Y = 76;
+const ROOT_Y = FOUNDATIONS_TITLE_Y + 53;
 const JAPAN_BRANCH_HALF_SPAN = 160;
 const WRITING_BRANCH_HALF_SPAN = 70;
 const NETWORK_BOTTOM_PADDING = 150;
@@ -53,6 +56,7 @@ const VOCABULARY_Y = WRITING_Y + CATEGORY_ROW_GAP;
 const NETWORK_VIEW_HEIGHT = VOCABULARY_Y + NETWORK_BOTTOM_PADDING;
 const STATION_FOCUS_STORAGE_KEY = "ling:network-station-focus";
 const STATION_FOCUS_EVENT = "ling:network-station-focus-change";
+const NETWORK_TRAVEL_DURATION_MS = 320;
 
 const ROUTABLE_STATION_HREFS: Record<LinkedStationFocus, string> = {
   japanese: "/stations/japanese",
@@ -107,24 +111,133 @@ const STATION_NEIGHBORS: Record<
   navigation: { ArrowDown: "food", ArrowLeft: "japan", ArrowUp: "introductions" },
   food: { ArrowDown: "shopping", ArrowLeft: "japan", ArrowUp: "navigation" },
   shopping: { ArrowDown: "help", ArrowLeft: "japan", ArrowUp: "food" },
-  help: { ArrowDown: "mora", ArrowLeft: "japan", ArrowUp: "shopping" },
+  help: { ArrowLeft: "japan", ArrowUp: "shopping" },
   sound: { ArrowDown: "writing", ArrowRight: "vowels", ArrowUp: "japan" },
-  vowels: { ArrowDown: "kana", ArrowLeft: "sound", ArrowRight: "mora", ArrowUp: "japan" },
-  mora: { ArrowDown: "hiragana", ArrowLeft: "vowels", ArrowRight: "pitch", ArrowUp: "help" },
-  pitch: { ArrowDown: "marks", ArrowLeft: "mora" },
+  vowels: { ArrowLeft: "sound", ArrowRight: "mora" },
+  mora: { ArrowLeft: "vowels", ArrowRight: "pitch" },
+  pitch: { ArrowLeft: "mora" },
   writing: { ArrowDown: "vocabulary", ArrowRight: "kana", ArrowUp: "sound" },
-  kana: { ArrowDown: "words", ArrowLeft: "writing", ArrowRight: "hiragana", ArrowUp: "vowels" },
-  hiragana: { ArrowDown: "katakana", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "mora" },
-  katakana: { ArrowDown: "words", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "hiragana" },
-  marks: { ArrowDown: "words", ArrowLeft: "hiragana", ArrowRight: "combined", ArrowUp: "pitch" },
-  combined: { ArrowDown: "words", ArrowLeft: "marks", ArrowUp: "pitch" },
+  kana: { ArrowDown: "katakana", ArrowLeft: "writing", ArrowRight: "hiragana", ArrowUp: "hiragana" },
+  hiragana: { ArrowLeft: "kana", ArrowRight: "marks" },
+  katakana: { ArrowLeft: "kana", ArrowRight: "marks" },
+  marks: { ArrowDown: "katakana", ArrowLeft: "hiragana", ArrowRight: "combined", ArrowUp: "hiragana" },
+  combined: { ArrowLeft: "marks" },
   vocabulary: { ArrowRight: "words", ArrowUp: "writing" },
-  words: { ArrowLeft: "vocabulary", ArrowUp: "kana" },
+  words: { ArrowLeft: "vocabulary" },
 };
 
+const NETWORK_ROUTE_EDGES: readonly (readonly [StationFocus, StationFocus])[] = [
+  ["japanese", "romaji"],
+  ["romaji", "japan"],
+  ["japan", "sound"],
+  ["sound", "writing"],
+  ["writing", "vocabulary"],
+  ["japan", "introductions"],
+  ["japan", "navigation"],
+  ["japan", "food"],
+  ["japan", "shopping"],
+  ["japan", "help"],
+  ["sound", "vowels"],
+  ["vowels", "mora"],
+  ["mora", "pitch"],
+  ["writing", "kana"],
+  ["kana", "hiragana"],
+  ["kana", "katakana"],
+  ["hiragana", "marks"],
+  ["katakana", "marks"],
+  ["marks", "combined"],
+  ["vocabulary", "words"],
+];
+
+const ROUNDED_WRITING_EDGES = new Set([
+  "hiragana:kana",
+  "kana:katakana",
+  "hiragana:marks",
+  "katakana:marks",
+]);
+
+function routeEdgeKey(first: StationFocus, second: StationFocus) {
+  return [first, second].sort().join(":");
+}
+
+function findNetworkRoute(from: StationFocus, to: StationFocus) {
+  const routes: StationFocus[][] = [[from]];
+  const visited = new Set<StationFocus>([from]);
+
+  while (routes.length > 0) {
+    const route = routes.shift();
+    if (!route) break;
+    const current = route.at(-1);
+    if (!current) continue;
+    if (current === to) return route;
+
+    for (const [first, second] of NETWORK_ROUTE_EDGES) {
+      const neighbor = first === current ? second : second === current ? first : null;
+      if (!neighbor || visited.has(neighbor)) continue;
+      visited.add(neighbor);
+      routes.push([...route, neighbor]);
+    }
+  }
+
+  throw new Error(`Missing network route from ${from} to ${to}`);
+}
+
+function roundedWritingCommands(
+  from: StationFocus,
+  to: StationFocus,
+  positions: Record<StationFocus, NetworkPoint>,
+) {
+  const fromPoint = positions[from];
+  const toPoint = positions[to];
+  const fromIsBranch = fromPoint.y !== WRITING_Y;
+  const branch = fromIsBranch ? fromPoint : toPoint;
+  const convergence = fromIsBranch ? toPoint : fromPoint;
+  const direction = Math.sign(convergence.y - branch.y);
+  const horizontalDirection = Math.sign(convergence.x - branch.x);
+  const radius = Math.min(16, Math.abs(convergence.y - branch.y) / 2);
+  const beforeConvergenceX = convergence.x - horizontalDirection * radius;
+
+  if (fromIsBranch) {
+    return [
+      `H${beforeConvergenceX}`,
+      `Q${convergence.x} ${branch.y} ${convergence.x} ${branch.y + direction * radius}`,
+      `V${convergence.y}`,
+    ].join("");
+  }
+
+  return [
+    `V${branch.y + direction * radius}`,
+    `Q${convergence.x} ${branch.y} ${beforeConvergenceX} ${branch.y}`,
+    `H${branch.x}`,
+  ].join("");
+}
+
+function getKeyboardTravelPath(
+  from: StationFocus,
+  to: StationFocus,
+  positions: Record<StationFocus, NetworkPoint>,
+) {
+  const route = findNetworkRoute(from, to);
+  const start = positions[route[0]];
+  let d = `M${start.x} ${start.y}`;
+
+  for (let index = 1; index < route.length; index += 1) {
+    const previous = route[index - 1];
+    const current = route[index];
+    d += ROUNDED_WRITING_EDGES.has(routeEdgeKey(previous, current))
+      ? roundedWritingCommands(previous, current, positions)
+      : `L${positions[current].x} ${positions[current].y}`;
+  }
+
+  return d;
+}
+
 type NetworkViewProps = {
+  activeFocus: StationFocus;
+  keyboardTravel: KeyboardTravel | null;
   mobile?: boolean;
   onLinePointerLeave: () => void;
+  onStationActivate: (focus: StationFocus) => void;
   onStationFocus: (focus: StationFocus) => void;
   onTooltipPointerMove: (event: PointerEvent<Element>, label: string) => void;
 };
@@ -167,23 +280,27 @@ function storeStationFocus(focus: StationFocus) {
 }
 
 function LinkedStation({
+  active,
   backlightId,
   focus,
   hideLabel = false,
   kind,
   labelLines,
   labelPlacement = "above",
+  onActivate,
   onFocus,
   onPointerLeave,
   x,
   y,
 }: {
+  active: boolean;
   backlightId: string;
   focus: LinkedStationFocus;
   hideLabel?: boolean;
   kind: NetworkStationKind;
   labelLines?: readonly string[];
   labelPlacement?: "above" | "below" | "below-right" | "left" | "right";
+  onActivate: () => void;
   onFocus: () => void;
   onPointerLeave: () => void;
   x: number;
@@ -213,10 +330,16 @@ function LinkedStation({
     <NavigationLink
       aria-label={`Open ${label}`}
       className="network-station-link"
+      data-active={active || undefined}
       data-network-focus={focus}
       href={ROUTABLE_STATION_HREFS[focus]}
       loadingStation={label}
-      onFocus={onFocus}
+      navigationDelayMs={active ? 0 : NETWORK_TRAVEL_DURATION_MS}
+      onClick={onActivate}
+      onNavigationCommit={onFocus}
+      onFocus={(event) => {
+        if (event.currentTarget.matches(":focus-visible")) onFocus();
+      }}
       onPointerLeave={onPointerLeave}
       prefetch
     >
@@ -328,21 +451,42 @@ function roundedConvergingPath({
   ].join("");
 }
 
+function KeyboardTravelBeam({ d, id }: { d: string; id: number }) {
+  return (
+    <g aria-hidden="true" className="network-keyboard-travel" key={id}>
+      <path
+        className="network-keyboard-travel-beam network-keyboard-travel-beam-contrast"
+        d={d}
+        pathLength="100"
+      />
+      <path
+        className="network-keyboard-travel-beam network-keyboard-travel-beam-core"
+        d={d}
+        pathLength="100"
+      />
+    </g>
+  );
+}
+
 function CategoryStation({
+  active,
   backlightId,
   focus,
   label,
   line,
   href,
+  onActivate,
   onFocus,
   spineX,
   y,
 }: {
+  active: boolean;
   backlightId: string;
   focus: CategoryFocus;
   label: string;
   line: Exclude<LineRole, "foundation">;
   href?: string;
+  onActivate: () => void;
   onFocus: () => void;
   spineX: number;
   y: number;
@@ -384,10 +528,16 @@ function CategoryStation({
     <NavigationLink
       aria-label={`Open ${label}`}
       className="network-station-link"
+      data-active={active || undefined}
       data-network-focus={focus}
       href={href}
       loadingStation={label}
-      onFocus={onFocus}
+      navigationDelayMs={active ? 0 : NETWORK_TRAVEL_DURATION_MS}
+      onClick={onActivate}
+      onNavigationCommit={onFocus}
+      onFocus={(event) => {
+        if (event.currentTarget.matches(":focus-visible")) onFocus();
+      }}
       prefetch
     >
       {station}
@@ -396,8 +546,11 @@ function CategoryStation({
 }
 
 function NetworkView({
+  activeFocus,
+  keyboardTravel,
   mobile = false,
   onLinePointerLeave,
+  onStationActivate,
   onStationFocus,
   onTooltipPointerMove,
 }: NetworkViewProps) {
@@ -422,6 +575,31 @@ function NetworkView({
   const writingUpperY = WRITING_Y - WRITING_BRANCH_HALF_SPAN;
   const writingLowerY = WRITING_Y + WRITING_BRANCH_HALF_SPAN;
   const japanStationX = depthOneX;
+  const stationPositions: Record<StationFocus, NetworkPoint> = {
+    japanese: { x: spineX, y: ROOT_Y },
+    romaji: { x: spineX, y: ROMAJI_Y },
+    japan: { x: spineX, y: JAPAN_Y },
+    introductions: { x: japanStationX, y: japanPeerYs[0] },
+    navigation: { x: japanStationX, y: japanPeerYs[1] },
+    food: { x: japanStationX, y: japanPeerYs[2] },
+    shopping: { x: japanStationX, y: japanPeerYs[3] },
+    help: { x: japanStationX, y: japanPeerYs[4] },
+    sound: { x: spineX, y: SOUND_Y },
+    vowels: { x: depthOneX, y: SOUND_Y },
+    mora: { x: depthTwoX, y: SOUND_Y },
+    pitch: { x: depthThreeX, y: SOUND_Y },
+    writing: { x: spineX, y: WRITING_Y },
+    kana: { x: depthOneX, y: WRITING_Y },
+    hiragana: { x: depthTwoX, y: writingUpperY },
+    katakana: { x: depthTwoX, y: writingLowerY },
+    marks: { x: depthThreeX, y: WRITING_Y },
+    combined: { x: depthFourX, y: WRITING_Y },
+    vocabulary: { x: spineX, y: VOCABULARY_Y },
+    words: { x: depthOneX, y: VOCABULARY_Y },
+  };
+  const keyboardTravelPath = keyboardTravel
+    ? getKeyboardTravelPath(keyboardTravel.from, keyboardTravel.to, stationPositions)
+    : null;
 
   const network = (
     <>
@@ -519,39 +697,47 @@ function NetworkView({
         onTooltipPointerMove={onTooltipPointerMove}
       />
 
+      {keyboardTravel && keyboardTravelPath ? (
+        <KeyboardTravelBeam
+          d={keyboardTravelPath}
+          id={keyboardTravel.id}
+          key={keyboardTravel.id}
+        />
+      ) : null}
+
       <text
         className="network-station-label network-foundation-title"
         textAnchor="middle"
         x={spineX}
-        y="52"
+        y={FOUNDATIONS_TITLE_Y}
       >
         Foundations
       </text>
-      <CategoryStation backlightId={backlightId} focus="japan" label="Japan" line="travel" onFocus={() => onStationFocus("japan")} href="/stations/japan" spineX={spineX} y={JAPAN_Y} />
-      <CategoryStation backlightId={backlightId} focus="sound" label="Sound" line="sound" onFocus={() => onStationFocus("sound")} href="/stations/sound" spineX={spineX} y={SOUND_Y} />
-      <CategoryStation backlightId={backlightId} focus="writing" label="Writing" line="writing" onFocus={() => onStationFocus("writing")} href="/stations/writing" spineX={spineX} y={WRITING_Y} />
-      <CategoryStation backlightId={backlightId} focus="vocabulary" label="Vocabulary" line="vocabulary" onFocus={() => onStationFocus("vocabulary")} href="/stations/vocabulary" spineX={spineX} y={VOCABULARY_Y} />
+      <CategoryStation active={activeFocus === "japan"} backlightId={backlightId} focus="japan" label="Japan" line="travel" onActivate={() => onStationActivate("japan")} onFocus={() => onStationFocus("japan")} href="/stations/japan" spineX={spineX} y={JAPAN_Y} />
+      <CategoryStation active={activeFocus === "sound"} backlightId={backlightId} focus="sound" label="Sound" line="sound" onActivate={() => onStationActivate("sound")} onFocus={() => onStationFocus("sound")} href="/stations/sound" spineX={spineX} y={SOUND_Y} />
+      <CategoryStation active={activeFocus === "writing"} backlightId={backlightId} focus="writing" label="Writing" line="writing" onActivate={() => onStationActivate("writing")} onFocus={() => onStationFocus("writing")} href="/stations/writing" spineX={spineX} y={WRITING_Y} />
+      <CategoryStation active={activeFocus === "vocabulary"} backlightId={backlightId} focus="vocabulary" label="Vocabulary" line="vocabulary" onActivate={() => onStationActivate("vocabulary")} onFocus={() => onStationFocus("vocabulary")} href="/stations/vocabulary" spineX={spineX} y={VOCABULARY_Y} />
 
-      <LinkedStation backlightId={backlightId} focus="japanese" hideLabel kind="interchange" labelPlacement="left" onFocus={() => onStationFocus("japanese")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROOT_Y} />
-      <LinkedStation backlightId={backlightId} focus="romaji" kind="foundation" labelPlacement="left" onFocus={() => onStationFocus("romaji")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROMAJI_Y} />
+      <LinkedStation active={activeFocus === "japanese"} backlightId={backlightId} focus="japanese" hideLabel kind="interchange" labelPlacement="left" onActivate={() => onStationActivate("japanese")} onFocus={() => onStationFocus("japanese")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROOT_Y} />
+      <LinkedStation active={activeFocus === "romaji"} backlightId={backlightId} focus="romaji" kind="foundation" labelPlacement="left" onActivate={() => onStationActivate("romaji")} onFocus={() => onStationFocus("romaji")} onPointerLeave={onLinePointerLeave} x={spineX} y={ROMAJI_Y} />
 
-      <LinkedStation backlightId={backlightId} focus="introductions" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("introductions")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[0]} />
-      <LinkedStation backlightId={backlightId} focus="navigation" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("navigation")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[1]} />
-      <LinkedStation backlightId={backlightId} focus="food" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("food")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[2]} />
-      <LinkedStation backlightId={backlightId} focus="shopping" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("shopping")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[3]} />
-      <LinkedStation backlightId={backlightId} focus="help" kind="travel" labelPlacement="right" onFocus={() => onStationFocus("help")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[4]} />
+      <LinkedStation active={activeFocus === "introductions"} backlightId={backlightId} focus="introductions" kind="travel" labelPlacement="right" onActivate={() => onStationActivate("introductions")} onFocus={() => onStationFocus("introductions")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[0]} />
+      <LinkedStation active={activeFocus === "navigation"} backlightId={backlightId} focus="navigation" kind="travel" labelPlacement="right" onActivate={() => onStationActivate("navigation")} onFocus={() => onStationFocus("navigation")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[1]} />
+      <LinkedStation active={activeFocus === "food"} backlightId={backlightId} focus="food" kind="travel" labelPlacement="right" onActivate={() => onStationActivate("food")} onFocus={() => onStationFocus("food")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[2]} />
+      <LinkedStation active={activeFocus === "shopping"} backlightId={backlightId} focus="shopping" kind="travel" labelPlacement="right" onActivate={() => onStationActivate("shopping")} onFocus={() => onStationFocus("shopping")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[3]} />
+      <LinkedStation active={activeFocus === "help"} backlightId={backlightId} focus="help" kind="travel" labelPlacement="right" onActivate={() => onStationActivate("help")} onFocus={() => onStationFocus("help")} onPointerLeave={onLinePointerLeave} x={japanStationX} y={japanPeerYs[4]} />
 
-      <LinkedStation backlightId={backlightId} focus="vowels" kind="sound" labelPlacement="above" onFocus={() => onStationFocus("vowels")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={SOUND_Y} />
-      <LinkedStation backlightId={backlightId} focus="mora" kind="sound" labelPlacement="above" onFocus={() => onStationFocus("mora")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={SOUND_Y} />
-      <LinkedStation backlightId={backlightId} focus="pitch" kind="sound" labelPlacement="above" onFocus={() => onStationFocus("pitch")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={SOUND_Y} />
+      <LinkedStation active={activeFocus === "vowels"} backlightId={backlightId} focus="vowels" kind="sound" labelPlacement="above" onActivate={() => onStationActivate("vowels")} onFocus={() => onStationFocus("vowels")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={SOUND_Y} />
+      <LinkedStation active={activeFocus === "mora"} backlightId={backlightId} focus="mora" kind="sound" labelPlacement="above" onActivate={() => onStationActivate("mora")} onFocus={() => onStationFocus("mora")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={SOUND_Y} />
+      <LinkedStation active={activeFocus === "pitch"} backlightId={backlightId} focus="pitch" kind="sound" labelPlacement="above" onActivate={() => onStationActivate("pitch")} onFocus={() => onStationFocus("pitch")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={SOUND_Y} />
 
-      <LinkedStation backlightId={backlightId} focus="kana" kind="writing" labelPlacement="right" onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={WRITING_Y} />
-      <LinkedStation backlightId={backlightId} focus="hiragana" kind="writing" labelPlacement="above" onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingUpperY} />
-      <LinkedStation backlightId={backlightId} focus="katakana" kind="writing" labelPlacement="below" onFocus={() => onStationFocus("katakana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingLowerY} />
-      <LinkedStation backlightId={backlightId} focus="marks" kind="writing" labelLines={["Dakuten &", "Handakuten"]} labelPlacement="left" onFocus={() => onStationFocus("marks")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={WRITING_Y} />
-      <LinkedStation backlightId={backlightId} focus="combined" kind="writing" labelPlacement="below" onFocus={() => onStationFocus("combined")} onPointerLeave={onLinePointerLeave} x={depthFourX} y={WRITING_Y} />
+      <LinkedStation active={activeFocus === "kana"} backlightId={backlightId} focus="kana" kind="writing" labelPlacement="right" onActivate={() => onStationActivate("kana")} onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={WRITING_Y} />
+      <LinkedStation active={activeFocus === "hiragana"} backlightId={backlightId} focus="hiragana" kind="writing" labelPlacement="above" onActivate={() => onStationActivate("hiragana")} onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingUpperY} />
+      <LinkedStation active={activeFocus === "katakana"} backlightId={backlightId} focus="katakana" kind="writing" labelPlacement="below" onActivate={() => onStationActivate("katakana")} onFocus={() => onStationFocus("katakana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingLowerY} />
+      <LinkedStation active={activeFocus === "marks"} backlightId={backlightId} focus="marks" kind="writing" labelLines={["Dakuten &", "Handakuten"]} labelPlacement="left" onActivate={() => onStationActivate("marks")} onFocus={() => onStationFocus("marks")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={WRITING_Y} />
+      <LinkedStation active={activeFocus === "combined"} backlightId={backlightId} focus="combined" kind="writing" labelPlacement="below" onActivate={() => onStationActivate("combined")} onFocus={() => onStationFocus("combined")} onPointerLeave={onLinePointerLeave} x={depthFourX} y={WRITING_Y} />
 
-      <LinkedStation backlightId={backlightId} focus="words" kind="vocabulary" labelPlacement="above" onFocus={() => onStationFocus("words")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={VOCABULARY_Y} />
+      <LinkedStation active={activeFocus === "words"} backlightId={backlightId} focus="words" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("words")} onFocus={() => onStationFocus("words")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={VOCABULARY_Y} />
     </>
   );
 
@@ -621,6 +807,9 @@ export function NetworkMap({
   );
   const stationFocus = selectedStationFocus ?? storedStationFocus;
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
+  const [keyboardTravel, setKeyboardTravel] = useState<KeyboardTravel | null>(null);
+  const keyboardTravelId = useRef(0);
+  const keyboardScrollPending = useRef(false);
   const desktopViewport = useRef<HTMLDivElement>(null);
   const mobileViewport = useRef<HTMLDivElement>(null);
 
@@ -636,6 +825,14 @@ export function NetworkMap({
   }, [routeReady]);
 
   useEffect(() => {
+    if (!keyboardTravel) return;
+    const timeout = window.setTimeout(() => {
+      setKeyboardTravel((current) => current?.id === keyboardTravel.id ? null : current);
+    }, 360);
+    return () => window.clearTimeout(timeout);
+  }, [keyboardTravel]);
+
+  useEffect(() => {
     if (document.activeElement !== document.body) return;
     const viewport = window.matchMedia("(max-width: 600px)").matches
       ? mobileViewport.current
@@ -649,9 +846,12 @@ export function NetworkMap({
       : desktopViewport.current;
     if (!viewport) return;
     const target = getStationTarget(viewport, stationFocus);
+    const smoothKeyboardScroll = keyboardScrollPending.current
+      && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    keyboardScrollPending.current = false;
 
     target.scrollIntoView({
-      behavior: "auto",
+      behavior: smoothKeyboardScroll ? "smooth" : "auto",
       block: "center",
       inline: "center",
     });
@@ -660,6 +860,12 @@ export function NetworkMap({
   function selectStation(focus: StationFocus) {
     setSelectedStationFocus(focus);
     storeStationFocus(focus);
+  }
+
+  function startStationTravel(focus: StationFocus) {
+    if (focus === stationFocus) return;
+    keyboardTravelId.current += 1;
+    setKeyboardTravel({ from: stationFocus, id: keyboardTravelId.current, to: focus });
   }
 
   function getStationTarget(container: HTMLDivElement, focus: StationFocus) {
@@ -674,6 +880,8 @@ export function NetworkMap({
     event: KeyboardEvent<HTMLDivElement>,
     focus: StationFocus,
   ) {
+    keyboardScrollPending.current = true;
+    startStationTravel(focus);
     selectStation(focus);
     if (event.currentTarget === mobileViewport.current) {
       getStationTarget(event.currentTarget, focus).focus({ preventScroll: true });
@@ -715,7 +923,10 @@ export function NetworkMap({
   }
 
   const sharedViewProps = {
+    activeFocus: stationFocus,
+    keyboardTravel,
     onLinePointerLeave: () => setTooltip(null),
+    onStationActivate: startStationTravel,
     onStationFocus: selectStation,
     onTooltipPointerMove,
   };

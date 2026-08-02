@@ -15,6 +15,7 @@ export function WelcomeMapLink({
     <NavigationLink
       {...props}
       href="/"
+      loadingMap
       onClick={(event) => {
         const storage = getBrowserWelcomeStorage();
         if (storage) dismissWelcome(storage);

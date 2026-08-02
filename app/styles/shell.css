@@ -54,6 +54,32 @@ html[data-pwa-pull-active] .shell {
   outline-offset: 5px;
 }
 
+.topbar-map-link {
+  display: inline-flex;
+  width: 2.75rem;
+  min-height: 2.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.topbar-map-link svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+}
+
+.topbar-map-link:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 4px;
+}
+
 .wordmark {
   display: inline-flex;
   align-items: center;

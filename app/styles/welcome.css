@@ -7,57 +7,26 @@
   background: var(--surface);
 }
 
-.welcome-back-link {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.45rem;
-  color: var(--muted);
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.welcome-back-link svg {
-  width: 1rem;
-  height: 1rem;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.5;
-}
-
-.welcome-back-link:hover {
-  color: var(--foreground);
-}
-
-.welcome-back-link:focus-visible {
-  outline: 2px solid var(--foreground);
-  outline-offset: 3px;
-}
-
 .welcome-guide {
   width: min(100%, 46rem);
   margin-inline: auto;
   padding: clamp(2rem, 6vw, 4rem) clamp(1.25rem, 5vw, 3rem) 4rem;
 }
 
-.welcome-heading > p {
-  margin: 0 0 0.65rem;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .welcome-heading h1 {
   margin: 0;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   font-size: clamp(2.75rem, 8vw, 4.5rem);
   font-weight: 500;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.04em;
   line-height: 0.98;
+}
+
+.welcome-heading-translation {
+  margin: 0.65rem 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 .welcome-intro {
@@ -115,21 +84,36 @@
 }
 
 .welcome-cue-visual {
+  --welcome-cue-size: 2rem;
+
   display: grid;
   min-height: 3.75rem;
   place-items: center;
   pointer-events: none;
 }
 
-.welcome-cue-network {
+.welcome-cue-map svg,
+.welcome-cue-station,
+.welcome-cues .welcome-cue-progress,
+.welcome-cue-review {
+  width: var(--welcome-cue-size);
+  height: var(--welcome-cue-size);
+}
+
+.welcome-cue-map {
+  display: inline-flex;
   color: var(--foreground);
-  font-size: 0.75rem;
-  font-weight: 600;
+}
+
+.welcome-cue-map svg {
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
 }
 
 .welcome-cue-station {
-  width: 3.5rem;
-  height: 3.5rem;
   overflow: visible;
 }
 
@@ -139,17 +123,63 @@
   cursor: default;
 }
 
-.welcome-cues .welcome-cue-flashcard {
-  width: 3.5rem;
-  min-height: 3.5rem;
-  margin: 0;
-  padding: 0.35rem;
-  border-radius: 0.625rem;
-  cursor: default;
+.welcome-cue-review {
+  display: grid;
+  justify-items: center;
+  gap: 0.125rem;
 }
 
-.welcome-cue-flashcard .hiragana-test-card-kana {
-  font-size: 1.75rem;
+.welcome-cue-review-card {
+  display: grid;
+  width: 100%;
+  min-height: 1.35rem;
+  place-content: center;
+  padding: 0.1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  background: var(--background);
+  text-align: center;
+}
+
+.welcome-cue-review-kana {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.welcome-cue-review-actions {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.125rem;
+}
+
+.welcome-cue-review-actions > span {
+  display: grid;
+  min-height: 0.5rem;
+  border: 1px solid currentcolor;
+  border-radius: 0.1875rem;
+  place-items: center;
+}
+
+.welcome-cue-review-actions svg {
+  width: 0.375rem;
+  height: 0.375rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.welcome-cue-review-no {
+  color: var(--audio);
+}
+
+.welcome-cue-review-yes {
+  border-color: var(--known);
+  color: var(--background);
+  background: var(--known);
 }
 
 @media (max-width: 600px) {

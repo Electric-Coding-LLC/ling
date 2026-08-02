@@ -116,6 +116,8 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /aria-label="About Ling"/i);
   assert.match(html, /class="network-help-link"/i);
   assert.match(html, /title="About Ling"/i);
+  assert.match(html, /aria-label="Show current location: Japanese"/i);
+  assert.match(html, /class="network-location-button"/i);
   assert.doesNotMatch(html, /network-welcome-entry|A quick guide to the network, practice, and progress/i);
   assert.match(html, /Scroll down the Foundations spine to move through Japan, Sound, Writing, and Vocabulary/i);
   assert.match(html, /Move right along a line to go deeper/i);
@@ -622,6 +624,20 @@ test("the current-user API fails closed without production identity", async () =
   assert.equal(response.status, 401);
   assert.equal(response.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await response.json(), { error: "unauthorized" });
+
+  const networkPlaces = await request("/api/network/places");
+  assert.equal(networkPlaces.status, 401);
+  assert.equal(networkPlaces.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await networkPlaces.json(), { error: "unauthorized" });
+
+  const networkPlaceVisit = await request("/api/network/places", {
+    body: JSON.stringify({ placeId: "hiragana" }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  assert.equal(networkPlaceVisit.status, 401);
+  assert.equal(networkPlaceVisit.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await networkPlaceVisit.json(), { error: "unauthorized" });
 
   const introduction = await request(
     "/api/stations/hiragana/introduction",

@@ -9,7 +9,13 @@ export type NetworkStationKind =
   | "vocabulary"
   | "writing";
 
-export function NetworkStationSymbol({ kind }: { kind: NetworkStationKind }) {
+export function NetworkStationSymbol({
+  completed = false,
+  kind,
+}: {
+  completed?: boolean;
+  kind: NetworkStationKind;
+}) {
   const interchange = kind === "interchange"
     || kind === "travel-interchange"
     || kind === "sound-vocabulary-interchange";
@@ -22,6 +28,7 @@ export function NetworkStationSymbol({ kind }: { kind: NetworkStationKind }) {
           className={`network-interchange-inner network-interchange-inner-${kind}`}
           r="16"
         />
+        {completed ? <StationCompleteIcon interchange /> : null}
       </>
     );
   }
@@ -33,6 +40,17 @@ export function NetworkStationSymbol({ kind }: { kind: NetworkStationKind }) {
         className={`network-single-station-inner network-single-station-inner-${kind}`}
         r="7"
       />
+      {completed ? <StationCompleteIcon /> : null}
     </>
+  );
+}
+
+function StationCompleteIcon({ interchange = false }: { interchange?: boolean }) {
+  return (
+    <path
+      aria-hidden="true"
+      className={`network-station-complete-icon${interchange ? " network-station-complete-icon-interchange" : ""}`}
+      d="m-5 0 3 3 7-7"
+    />
   );
 }

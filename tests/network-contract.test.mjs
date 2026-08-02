@@ -68,7 +68,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   ]) {
     assert.match(
       source,
-      new RegExp(`<CategoryStation active=\\{activeFocus === "${focus}"\\} backlightId=\\{backlightId\\} focus="${focus}" label="${label}" line="${line}"[^\\n]*href="/stations/${focus}"`),
+      new RegExp(`<CategoryStation \\{\\.\\.\\.categoryStatus\\("${focus}"\\)\\} backlightId=\\{backlightId\\} focus="${focus}" label="${label}" line="${line}"[^\\n]*href="/stations/${focus}"`),
     );
   }
   assert.match(source, /data-category-station=\{line\}/);
@@ -175,7 +175,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /type LinkedStationFocus = Exclude<StationFocus, CategoryFocus>/);
   assert.match(source, /ROUTABLE_STATION_HREFS: Record<LinkedStationFocus, string>/);
   assert.match(source, /if \(focus === "visit"\) return "japan"/);
-  assert.match(source, /return focus && focus in STATION_LABELS/);
+  assert.match(source, /return isNetworkPlaceId\(focus\) \? focus : null/);
   assert.match(
     source,
     /<CategoryStation[\s\S]*focus="japan"[\s\S]*href="\/stations\/japan"/,
@@ -254,7 +254,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     /function moveSelection\([\s\S]*keyboardScrollPending\.current = true[\s\S]*startStationTravel\(focus\)/,
   );
   assert.match(source, /focus\(\{ preventScroll: true \}\)/);
-  assert.match(source, /STATION_FOCUS_STORAGE_KEY\s*=\s*"ling:network-station-focus"/);
+  assert.match(source, /NETWORK_LOCATION_STORAGE_KEY/);
   assert.match(source, /useSyncExternalStore\(\s*subscribeToStoredStationFocus,\s*getStoredStationFocus,\s*getServerStationFocus/s);
   assert.match(source, /new URLSearchParams\(window\.location\.search\)\.get\("focus"\)/);
   assert.match(source, /function onKeyDown\(event: KeyboardEvent<HTMLDivElement>\)/);
@@ -276,17 +276,24 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /"\[data-network-focus\]:focus"/);
   assert.match(source, /selectedTarget instanceof SVGAElement/);
   assert.match(source, /<NavigationLink[\s\S]*className="network-station-link"[\s\S]*href=\{ROUTABLE_STATION_HREFS\[focus\]\}[\s\S]*loadingStation=\{label\}[\s\S]*prefetch/);
-  assert.equal((source.match(/navigationDelayMs=\{active \? 0 : NETWORK_TRAVEL_DURATION_MS\}/g) ?? []).length, 2);
+  assert.equal((source.match(/navigationDelayMs=\{selected \? 0 : NETWORK_TRAVEL_DURATION_MS\}/g) ?? []).length, 2);
   assert.equal((source.match(/onClick=\{onActivate\}/g) ?? []).length, 2);
   assert.equal((source.match(/onNavigationCommit=\{onFocus\}/g) ?? []).length, 2);
   assert.equal((source.match(/event\.currentTarget\.matches\(":focus-visible"\)/g) ?? []).length, 2);
   assert.doesNotMatch(source, /<NavigationLink[\s\S]{0,420}className="network-station-link"[\s\S]{0,420}onFocus=\{onFocus\}/);
   assert.equal((source.match(/data-active=\{active \|\| undefined\}/g) ?? []).length, 2);
-  assert.match(source, /const sharedViewProps = \{\s*activeFocus: stationFocus,[\s\S]*onStationActivate: startStationTravel/);
+  assert.match(source, /const sharedViewProps = \{\s*activeFocus: storedStationFocus,[\s\S]*onStationActivate: startStationTravel/);
+  assert.match(source, /selectedFocus: stationFocus/);
   assert.match(
     styles,
     /\.network-station-link\[data-active="true"\]\s*:is\([\s\S]*\.network-interchange-inner,[\s\S]*\.network-single-station-inner[\s\S]*animation:\s*network-station-inner-pulse 2s ease-in-out infinite/,
   );
+  assert.match(styles, /\.network-station-link\[data-visited="false"\]\s*\{[^}]*opacity:\s*0\.45/s);
+  assert.match(styles, /\.network-station-link\[data-visited="false"\]:is\(:hover, :focus-visible\)\s*\{[^}]*opacity:\s*1/s);
+  assert.match(source, /fetch\("\/api\/network\/places"/);
+  assert.match(source, /aria-label=\{`Show current location: \$\{STATION_LABELS\[storedStationFocus\]\}`\}/);
+  assert.match(source, /function showCurrentLocation\(\)[\s\S]*scrollIntoView\(\{[\s\S]*inline:\s*"center"/);
+  assert.match(styles, /\.network-location-button\s*\{[^}]*position:\s*fixed[^}]*border-radius:\s*50%/s);
   assert.match(styles, /@keyframes network-station-inner-pulse[\s\S]*0%, 100%\s*\{[^}]*opacity:\s*0\.28[\s\S]*50%\s*\{[^}]*opacity:\s*1/);
   assert.match(styles, /\.network-keyboard-travel-beam\s*\{[^}]*stroke-dasharray:\s*16 200[^}]*animation:\s*network-keyboard-travel 320ms linear both/s);
   assert.match(styles, /\.network-keyboard-travel-beam-contrast\s*\{[^}]*drop-shadow\(0 0 4px rgb\(242 241 235 \/ 0\.9\)\)[^}]*stroke-width:\s*9/s);
@@ -321,7 +328,8 @@ test("station and Welcome pages share one plain, focused return to the map", asy
   const welcome = await readFile(new URL("app/welcome/page.tsx", root), "utf8");
   const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
 
-  assert.match(topbar, /import type \{ StationFocus \} from "\.\.\/network-map"/);
+  assert.match(topbar, /import type \{ NetworkPlaceId \} from "@\/src\/modules\/learning\/network"/);
+  assert.match(topbar, /<StationVisitRecorder placeId=\{networkFocus\} \/>/);
   assert.match(topbar, /className="topbar-map-link"/);
   assert.match(welcome, /className="topbar-map-link"/);
   assert.match(topbar, /<MapIcon \/>/);
@@ -334,12 +342,14 @@ test("station and Welcome pages share one plain, focused return to the map", asy
   assert.doesNotMatch(topbar, /NetworkGlyph|>←|>Map</);
   assert.doesNotMatch(welcome, />Back to map|M13 8H3/);
   assert.doesNotMatch(source, /NetworkGlyph|network-glyph-model/);
-  assert.match(networkMap, /<NetworkStationSymbol kind=\{kind\} \/>/);
+  assert.match(networkMap, /<NetworkStationSymbol completed=\{completed\} kind=\{kind\} \/>/);
   assert.match(networkMap, /<NetworkStationSymbol kind=\{line\} \/>/);
   assert.match(source, /<circle className="network-interchange-outer" r="28" \/>/);
   assert.match(source, /network-interchange-inner-\$\{kind\}`\}/);
   assert.match(source, /network-single-station-outer-\$\{kind\}`\} r="15"/);
   assert.match(source, /network-single-station-inner-\$\{kind\}`\}/);
+  assert.match(source, /className=\{`network-station-complete-icon/);
+  assert.match(source, /d="m-5 0 3 3 7-7"/);
   assert.doesNotMatch(source, /LingMarkStrokes|network-brand-station|<rect/);
 });
 
@@ -370,22 +380,36 @@ test("every mapped station is visible and directly accessible without completion
   const stations = await readFile(new URL("src/modules/learning/stations.ts", root), "utf8");
   const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
   const schema = await readFile(new URL("db/schema.ts", root), "utf8");
+  const network = await readFile(new URL("src/modules/learning/network.ts", root), "utf8");
+  const networkApi = await readFile(new URL("app/api/network/places/route.ts", root), "utf8");
+  const visitRecorder = await readFile(new URL("app/stations/station-visit-recorder.tsx", root), "utf8");
 
   assert.doesNotMatch(stations, /PREREQUISITE|isStationAvailable|retainPrerequisite/);
   assert.match(schema, /stationIntroductions = sqliteTable\(\s*"station_introductions"/s);
   assert.match(schema, /primaryKey\(\{ columns: \[table\.userId, table\.stationId\] \}\)/);
   assert.match(repository, /where\(eq\(stationIntroductions\.userId, userId\)\)/);
-  assert.match(repository, /knownHiragana\.length === BASIC_HIRAGANA\.length/);
-  assert.match(repository, /knownKatakana\.length === BASIC_KATAKANA\.length/);
+  assert.match(schema, /networkPlaceVisits = sqliteTable\(\s*"network_place_visits"/s);
+  assert.match(repository, /BASIC_HIRAGANA\.every\(\(kana\) => knownHiragana\.includes\(kana\)\)/);
+  assert.match(repository, /BASIC_KATAKANA\.every\(\(kana\) => knownKatakana\.includes\(kana\)\)/);
+  assert.match(repository, /ROMAJI_KANA\.every\(\(kana\) => knownRomaji\.includes\(kana\)\)/);
+  assert.match(repository, /VOWEL_HIRAGANA\.every\(\(kana\) => knownHiragana\.includes\(kana\)\)/);
   assert.match(repository, /SOUND_MARK_PATTERN_IDS\.every\(\(patternId\) =>/);
   assert.match(repository, /COMBINED_SOUND_PATTERN_IDS\.every\(\(patternId\) =>/);
   assert.match(repository, /PITCH_ACCENT_ITEM_IDS\.every\(\(itemId\) =>/);
   assert.match(repository, /getVocabularyItemIds\(\)\.every\(\(itemId\) =>/);
-  assert.match(repository, /return independentlyCompleted/);
+  assert.match(repository, /return completed/);
   assert.match(repository, /onConflictDoNothing\(\)/);
   assert.match(vowelsApi, /recordStationIntroduction\(user\.id, "vowels"\)/);
   assert.match(vowelsApi, /\{ recorded: true \}/);
   assert.match(repository, /row\.stationId === "kana" \? "vowels" : row\.stationId/);
+  assert.match(network, /COMPLETABLE_NETWORK_PLACE_IDS = \[[\s\S]*"romaji"[\s\S]*"words"/);
+  assert.match(networkApi, /listVisitedNetworkPlaces\(user\.id\)/);
+  assert.match(networkApi, /listCompletedNetworkPlaces\(user\.id\)/);
+  assert.match(networkApi, /Array\.from\(new Set\(\[\.\.\.visited, \.\.\.completed\]\)\)/);
+  assert.match(networkApi, /isNetworkPlaceId/);
+  assert.match(networkApi, /private, no-store/);
+  assert.match(visitRecorder, /localStorage\.setItem\(NETWORK_LOCATION_STORAGE_KEY, placeId\)/);
+  assert.match(visitRecorder, /fetch\("\/api\/network\/places"/);
   assert.match(api, /recordStationIntroduction\(user\.id, "hiragana"\)/);
   assert.match(api, /\{ recorded: true \}/);
   assert.doesNotMatch(api, /station_unavailable|status: 403/);

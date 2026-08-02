@@ -12,34 +12,6 @@
   margin-left: auto;
 }
 
-.station-network-link {
-  display: inline-flex;
-  width: 2.75rem;
-  min-height: 2.75rem;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  color: var(--muted);
-  text-decoration: none;
-}
-
-.station-network-link svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.5;
-}
-
-.station-network-link:focus-visible {
-  outline: 2px solid var(--foreground);
-  outline-offset: 4px;
-}
-
 .station-page {
   width: min(100%, 46rem);
   margin-inline: auto;

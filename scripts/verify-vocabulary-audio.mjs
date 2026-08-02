@@ -7,6 +7,7 @@ const root = new URL("../", import.meta.url);
 const EXPECTED_SAMPLE_RATE = 22_050;
 const MINIMUM_PITCH_SEPARATION_HZ = 8;
 const MAXIMUM_HEIBAN_DECLINATION_HZ = 4;
+const REQUIRED_HEIBAN_RISE_ITEMS = new Set(["iku", "koko", "watashi"]);
 
 function parsePcmWave(buffer) {
   assert.equal(buffer.toString("ascii", 0, 4), "RIFF");
@@ -105,6 +106,13 @@ function verifyPitchShape(item, trace) {
   const last = endpointMedian(trace, false);
 
   if (item.pitchAccent === 0) {
+    if (REQUIRED_HEIBAN_RISE_ITEMS.has(item.id)) {
+      const peak = Math.max(...trace.slice(1));
+      assert.ok(
+        peak - first >= MINIMUM_PITCH_SEPARATION_HZ,
+        `${item.id} must retain its verified heiban rise`,
+      );
+    }
     assert.ok(
       last - first >= -MAXIMUM_HEIBAN_DECLINATION_HZ,
       `${item.id} must not add an accented word-final fall to its heiban contour`,

@@ -17,16 +17,29 @@ const FRAME_SECONDS = 0.005;
 const MINIMUM_CLOSURE_SECONDS = 0.02;
 const SILENCE_RMS = 0.004;
 
-// A following と keeps heiban words inside an accent phrase. Cropping at the
-// consonant closure removes と while preserving the word's lexical L-H shape.
+// A following particle keeps heiban words inside an accent phrase. Cropping at
+// its consonant closure preserves the lexical L-H shape without keeping the
+// particle. Use a voiced carrier after final high vowels so the carrier does
+// not force pedagogically unhelpful devoicing.
 const HEIBAN_WORDS_WITH_FINAL_FALL = [
   { file: "ja-vocab-kore.wav", spoken: "これ" },
-  { file: "ja-vocab-watashi.wav", spoken: "私" },
+  { carrier: "で", closureRms: 0.012, file: "ja-vocab-koko.wav", spoken: "ここ" },
+  { carrier: "で", closureRms: 0.012, file: "ja-vocab-watashi.wav", spoken: "私" },
   { file: "ja-vocab-namae.wav", spoken: "名前" },
   { file: "ja-vocab-mizu.wav", spoken: "水" },
   { file: "ja-marks-densha.wav", spoken: "電車" },
-  { file: "ja-vocab-iku.wav", spoken: "行く" },
+  { carrier: "が", closureRms: 0.012, file: "ja-vocab-iku.wav", spoken: "行く" },
 ];
+
+const requestedFiles = new Set(process.argv.slice(2));
+const requestedItems = requestedFiles.size === 0
+  ? HEIBAN_WORDS_WITH_FINAL_FALL
+  : HEIBAN_WORDS_WITH_FINAL_FALL.filter((item) => requestedFiles.has(item.file));
+assert.equal(
+  requestedItems.length,
+  requestedFiles.size === 0 ? HEIBAN_WORDS_WITH_FINAL_FALL.length : requestedFiles.size,
+  "unknown vocabulary audio file requested",
+);
 
 function parsePcmWave(buffer) {
   assert.equal(buffer.toString("ascii", 0, 4), "RIFF");
@@ -80,16 +93,16 @@ function frameRms(samples, start, length) {
   return Math.sqrt(energy / length);
 }
 
-function findCarrierClosure(samples) {
+function findCarrierClosure(samples, silenceRms = SILENCE_RMS) {
   const frameSize = Math.round(SAMPLE_RATE * FRAME_SECONDS);
   const minimumFrames = Math.ceil(MINIMUM_CLOSURE_SECONDS / FRAME_SECONDS);
   const firstFrame = Math.floor(samples.length * 0.4 / frameSize);
-  const lastFrame = Math.floor(samples.length * 0.85 / frameSize);
+  const lastFrame = Math.floor(samples.length * 0.95 / frameSize);
   const quietRuns = [];
   let runStart = null;
 
   for (let frame = firstFrame; frame <= lastFrame; frame += 1) {
-    const quiet = frameRms(samples, frame * frameSize, frameSize) < SILENCE_RMS;
+    const quiet = frameRms(samples, frame * frameSize, frameSize) < silenceRms;
     if (quiet && runStart === null) runStart = frame;
     if (!quiet && runStart !== null) {
       if (frame - runStart >= minimumFrames) quietRuns.push([runStart, frame]);
@@ -137,10 +150,16 @@ assert.equal(process.platform, "darwin", "Kyoko audio generation requires macOS"
 const temporaryDirectory = await mkdtemp(join(tmpdir(), "ling-vocabulary-audio-"));
 
 try {
-  for (const item of HEIBAN_WORDS_WITH_FINAL_FALL) {
+  for (const item of requestedItems) {
     const aiff = join(temporaryDirectory, `${item.file}.aiff`);
     const wave = join(temporaryDirectory, item.file);
-    await execFile("/usr/bin/say", ["-v", "Kyoko", "-o", aiff, `${item.spoken}と`]);
+    await execFile("/usr/bin/say", [
+      "-v",
+      "Kyoko",
+      "-o",
+      aiff,
+      `${item.spoken}${item.carrier ?? "と"}`,
+    ]);
     await execFile("/usr/bin/afconvert", [
       "-f", "WAVE",
       "-d", `LEI16@${SAMPLE_RATE}`,
@@ -149,7 +168,10 @@ try {
     ]);
 
     const samples = parsePcmWave(await readFile(wave));
-    const cropped = cropAndFade(samples, findCarrierClosure(samples));
+    const cropped = cropAndFade(
+      samples,
+      findCarrierClosure(samples, item.closureRms),
+    );
     const destination = new URL(`public/audio/${item.file}`, root);
     await writeFile(destination, createWave(cropped));
     console.log(`${item.spoken}: ${(cropped.length / SAMPLE_RATE).toFixed(3)}s -> ${destination.pathname}`);

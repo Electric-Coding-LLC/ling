@@ -59,69 +59,6 @@
   outline: none;
 }
 
-.network-desktop-viewport:focus-visible[data-desktop-focus="vocabulary"]
-  [data-network-focus="vocabulary"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="writing"]
-  [data-network-focus="writing"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="sound"]
-  [data-network-focus="sound"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="japan"]
-  [data-network-focus="japan"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="help"]
-  [data-station="help"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="shopping"]
-  [data-station="shopping"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="food"]
-  [data-station="food"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="navigation"]
-  [data-station="navigation"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="introductions"]
-  [data-station="introductions"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="romaji"]
-  [data-station="romaji"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="japanese"]
-  [data-station="japanese"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="mora"]
-  [data-station="mora-timing"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="pitch"]
-  [data-station="pitch-accent"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="words"]
-  [data-station="words"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="combined"]
-  [data-station="combined-sounds"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="marks"]
-  [data-station="sound-marks"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="katakana"]
-  [data-station="katakana"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="hiragana"]
-  [data-station="hiragana"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="vowels"]
-  [data-station="vowels"]
-  .network-station-backlight,
-.network-desktop-viewport:focus-visible[data-desktop-focus="kana"]
-  [data-station="kana"]
-  .network-station-backlight {
-  opacity: 1;
-}
-
 .network-map-mobile {
   display: none;
 }
@@ -192,6 +129,39 @@
 .network-line-foundation {
   stroke: var(--foreground);
   stroke-width: 4;
+}
+
+.network-keyboard-travel {
+  pointer-events: none;
+}
+
+.network-keyboard-travel-beam {
+  fill: none;
+  stroke: var(--foreground);
+  stroke-dasharray: 16 200;
+  stroke-dashoffset: 16;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  animation: network-keyboard-travel 320ms linear both;
+}
+
+.network-keyboard-travel-beam-contrast {
+  filter: drop-shadow(0 0 4px rgb(242 241 235 / 0.9));
+  opacity: 1;
+  stroke: var(--foreground);
+  stroke-width: 9;
+}
+
+.network-keyboard-travel-beam-core {
+  opacity: 1;
+  stroke: var(--surface);
+  stroke-width: 4;
+}
+
+@keyframes network-keyboard-travel {
+  to {
+    stroke-dashoffset: -100;
+  }
 }
 
 .network-interchange-outer,
@@ -299,9 +269,35 @@
   opacity: 0.55;
 }
 
-.network-category-station:focus-visible .network-station-backlight,
-.network-station-link:focus-visible .network-station-backlight {
-  opacity: 1;
+.network-station-link[data-active="true"] :is(
+  .network-interchange-inner,
+  .network-single-station-inner
+) {
+  animation: network-station-inner-pulse 2s ease-in-out infinite;
+}
+
+@keyframes network-station-inner-pulse {
+  0%, 100% {
+    opacity: 0.28;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .network-keyboard-travel {
+    display: none;
+  }
+
+  .network-station-link[data-active="true"] :is(
+    .network-interchange-inner,
+    .network-single-station-inner
+  ) {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 @media (max-width: 600px) {
@@ -324,69 +320,6 @@
 
   .network-mobile-viewport:focus-visible {
     outline: none;
-  }
-
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="vocabulary"]
-    [data-network-focus="vocabulary"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="writing"]
-    [data-network-focus="writing"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="sound"]
-    [data-network-focus="sound"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="japan"]
-    [data-network-focus="japan"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="help"]
-    [data-station="help"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="shopping"]
-    [data-station="shopping"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="food"]
-    [data-station="food"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="navigation"]
-    [data-station="navigation"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="introductions"]
-    [data-station="introductions"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="romaji"]
-    [data-station="romaji"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="japanese"]
-    [data-station="japanese"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="mora"]
-    [data-station="mora-timing"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="pitch"]
-    [data-station="pitch-accent"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="words"]
-    [data-station="words"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="combined"]
-    [data-station="combined-sounds"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="marks"]
-    [data-station="sound-marks"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="katakana"]
-    [data-station="katakana"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="hiragana"]
-    [data-station="hiragana"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="vowels"]
-    [data-station="vowels"]
-    .network-station-backlight,
-  .network-mobile-viewport:focus-visible[data-mobile-station-focus="kana"]
-    [data-station="kana"]
-    .network-station-backlight {
-    opacity: 1;
   }
 
   .network-map-mobile {

@@ -12,6 +12,14 @@
   background: var(--surface);
 }
 
+.network-utilities {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0;
+  margin-inline-end: -0.5rem;
+}
+
 .network-help-link {
   display: inline-flex;
   width: 2.75rem;
@@ -19,8 +27,7 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  margin-inline-end: -0.5rem;
-  color: var(--muted);
+  color: var(--foreground);
   text-decoration: none;
 }
 
@@ -32,7 +39,7 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.75;
-  transition: color 150ms ease;
+  transition: transform 150ms ease;
 }
 
 .network-help-dot {
@@ -40,8 +47,8 @@
   stroke: none;
 }
 
-.network-help-link:hover {
-  color: var(--foreground);
+.network-help-link:hover svg {
+  transform: scale(1.08);
 }
 
 .network-help-link:focus-visible {
@@ -178,9 +185,12 @@
 }
 
 .network-interchange-inner {
-  fill: var(--foreground);
-  stroke: var(--foreground);
+  --network-station-inner-color: var(--foreground);
+
+  fill: var(--network-station-inner-color);
+  stroke: var(--network-station-inner-color);
   stroke-width: 5;
+  transition: fill 160ms ease, stroke 160ms ease;
 }
 
 .network-single-station-outer {
@@ -212,35 +222,33 @@
 }
 
 .network-single-station-inner {
-  fill: var(--foreground);
-  stroke: var(--foreground);
+  --network-station-inner-color: var(--foreground);
+
+  fill: var(--network-station-inner-color);
+  stroke: var(--network-station-inner-color);
   stroke-width: 4;
+  transition: fill 160ms ease, stroke 160ms ease;
 }
 
 .network-single-station-inner-sound {
-  fill: var(--sound);
-  stroke: var(--sound);
+  --network-station-inner-color: var(--sound);
 }
 
 .network-single-station-inner-local {
-  fill: var(--muted);
-  stroke: var(--muted);
+  --network-station-inner-color: var(--muted);
 }
 
 .network-single-station-inner-writing {
-  fill: var(--writing);
-  stroke: var(--writing);
+  --network-station-inner-color: var(--writing);
 }
 
 .network-single-station-inner-vocabulary {
-  fill: var(--vocabulary);
-  stroke: var(--vocabulary);
+  --network-station-inner-color: var(--vocabulary);
 }
 
 .network-single-station-inner-travel,
 .network-interchange-inner-travel-interchange {
-  fill: var(--travel);
-  stroke: var(--travel);
+  --network-station-inner-color: var(--travel);
 }
 
 .network-station-complete-icon {
@@ -268,15 +276,22 @@
 
 .network-station-link {
   cursor: pointer;
-  transition: opacity 160ms ease;
 }
 
-.network-station-link[data-visited="false"] {
-  opacity: 0.45;
+.network-station-link[data-visited="false"] :is(
+  .network-interchange-inner,
+  .network-single-station-inner
+) {
+  fill: color-mix(in srgb, var(--network-station-inner-color) 45%, var(--surface));
+  stroke: color-mix(in srgb, var(--network-station-inner-color) 45%, var(--surface));
 }
 
-.network-station-link[data-visited="false"]:is(:hover, :focus-visible) {
-  opacity: 1;
+.network-station-link[data-visited="false"]:is(:hover, :focus-visible) :is(
+  .network-interchange-inner,
+  .network-single-station-inner
+) {
+  fill: var(--network-station-inner-color);
+  stroke: var(--network-station-inner-color);
 }
 
 .network-station-link:focus-visible {
@@ -325,38 +340,42 @@
 }
 
 .network-location-button {
-  position: fixed;
-  z-index: 15;
-  right: max(1rem, env(safe-area-inset-right));
-  bottom: max(1rem, env(safe-area-inset-bottom));
   display: inline-flex;
   width: 2.75rem;
   height: 2.75rem;
+  flex: none;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
+  border: 0;
+  border-radius: 0.25rem;
   color: var(--foreground);
-  background: var(--surface);
-  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.24);
+  background: transparent;
   cursor: pointer;
 }
 
 .network-location-button svg {
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.25rem;
+  height: 1.25rem;
   fill: none;
   stroke: currentcolor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.75;
+  transition: transform 150ms ease;
 }
 
-.network-location-button:hover {
-  border-color: var(--muted);
+.network-location-target-dot {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.network-location-button:hover svg {
+  transform: scale(1.08);
 }
 
 .network-location-button:focus-visible {
+  position: relative;
+  z-index: 1;
   outline: 2px solid var(--foreground);
   outline-offset: 2px;
 }

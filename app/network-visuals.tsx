@@ -50,7 +50,7 @@ function StationCompleteIcon({ interchange = false }: { interchange?: boolean })
     <path
       aria-hidden="true"
       className={`network-station-complete-icon${interchange ? " network-station-complete-icon-interchange" : ""}`}
-      d="m-5 0 3 3 7-7"
+      d="m-5 1 3 3 7-7"
     />
   );
 }

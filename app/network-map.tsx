@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
 import {
@@ -9,6 +10,7 @@ import {
   NETWORK_LOCATION_STORAGE_KEY,
   type NetworkPlaceId,
 } from "@/src/modules/learning/network";
+import { LingWordmark } from "./brand";
 import { LoadingScreen } from "./loading-screen";
 import { NavigationLink, useRouteReady } from "./navigation-feedback";
 import { NetworkStationSymbol, type NetworkStationKind } from "./network-visuals";
@@ -1006,57 +1008,93 @@ export function NetworkMap({
     visitedPlaces: new Set<StationFocus>(networkStatus?.visited ?? []),
   };
   const stationAnnouncement = `${STATION_LABELS[stationFocus]} selected`;
+  const currentLocationLabel = `Show current location: ${STATION_LABELS[storedStationFocus]}`;
 
   return (
     <>
-      <LoadingScreen boot overlay />
-      <div className="network-views">
-        <div
-          aria-label="Explore the network with the arrow keys"
-          className="network-desktop-viewport"
-          data-desktop-focus={stationFocus}
-          onKeyDown={onKeyDown}
-          onPointerDown={(event) => {
-            if (event.target instanceof Element && event.target.closest("a")) return;
-            event.currentTarget.focus({ preventScroll: true });
-          }}
-          ref={desktopViewport}
-          role="group"
-          tabIndex={0}
-        >
-          <NetworkView {...sharedViewProps} />
-          <span aria-live="polite" className="sr-only">{stationAnnouncement}</span>
+      <header className="topbar network-topbar">
+        <Link aria-label="Ling home" className="brand-link" href="/">
+          <LingWordmark className="wordmark" />
+        </Link>
+        <div className="network-utilities">
+          <span className="hiragana-test-trigger-wrap">
+            <button
+              aria-describedby="network-location-tooltip"
+              aria-label={currentLocationLabel}
+              className="network-location-button"
+              onClick={showCurrentLocation}
+              type="button"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="7" />
+                <path d="M12 1.5V5M12 19v3.5M1.5 12H5M19 12h3.5" />
+                <circle className="network-location-target-dot" cx="12" cy="12" r="1.75" />
+              </svg>
+            </button>
+            <span className="network-tooltip hiragana-test-tooltip" id="network-location-tooltip" role="tooltip">
+              Current location
+            </span>
+          </span>
+          <span className="hiragana-test-trigger-wrap">
+            <NavigationLink
+              aria-describedby="network-help-tooltip"
+              aria-label="About Ling"
+              className="network-help-link"
+              href="/welcome"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.75 9a2.35 2.35 0 0 1 4.5 1c0 1.75-2.25 1.9-2.25 3.5" />
+                <circle className="network-help-dot" cx="12" cy="17" r="0.75" />
+              </svg>
+            </NavigationLink>
+            <span className="network-tooltip hiragana-test-tooltip" id="network-help-tooltip" role="tooltip">
+              About Ling
+            </span>
+          </span>
         </div>
-        <div
-          aria-label="Pan across the network or explore with the arrow keys"
-          className="network-mobile-viewport"
-          data-mobile-station-focus={stationFocus}
-          onKeyDown={onKeyDown}
-          ref={mobileViewport}
-          role="group"
-          tabIndex={0}
-        >
-          <NetworkView {...sharedViewProps} mobile />
-          <span aria-live="polite" className="sr-only">{stationAnnouncement}</span>
+      </header>
+      <section className="network-home" aria-labelledby="network-title">
+        <h1 className="sr-only" id="network-title">
+          Japanese mastery network
+        </h1>
+        <LoadingScreen boot overlay />
+        <div className="network-views">
+          <div
+            aria-label="Explore the network with the arrow keys"
+            className="network-desktop-viewport"
+            data-desktop-focus={stationFocus}
+            onKeyDown={onKeyDown}
+            onPointerDown={(event) => {
+              if (event.target instanceof Element && event.target.closest("a")) return;
+              event.currentTarget.focus({ preventScroll: true });
+            }}
+            ref={desktopViewport}
+            role="group"
+            tabIndex={0}
+          >
+            <NetworkView {...sharedViewProps} />
+            <span aria-live="polite" className="sr-only">{stationAnnouncement}</span>
+          </div>
+          <div
+            aria-label="Pan across the network or explore with the arrow keys"
+            className="network-mobile-viewport"
+            data-mobile-station-focus={stationFocus}
+            onKeyDown={onKeyDown}
+            ref={mobileViewport}
+            role="group"
+            tabIndex={0}
+          >
+            <NetworkView {...sharedViewProps} mobile />
+            <span aria-live="polite" className="sr-only">{stationAnnouncement}</span>
+          </div>
         </div>
-      </div>
-      <button
-        aria-label={`Show current location: ${STATION_LABELS[storedStationFocus]}`}
-        className="network-location-button"
-        onClick={showCurrentLocation}
-        title="Show current location"
-        type="button"
-      >
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-        </svg>
-      </button>
-      {tooltip ? (
-        <span className="network-tooltip" role="tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
-          {tooltip.label}
-        </span>
-      ) : null}
+        {tooltip ? (
+          <span className="network-tooltip" role="tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+            {tooltip.label}
+          </span>
+        ) : null}
+      </section>
     </>
   );
 }

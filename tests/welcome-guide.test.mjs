@@ -40,8 +40,9 @@ test("the Welcome dismissal is versioned, persistent, and safe without browser s
 });
 
 test("first visit, dismissal, and permanent map help stay outside station progress", async () => {
-  const [home, networkStyles, welcomeStyles, guard, link, guide, welcomePage, stations] = await Promise.all([
+  const [home, network, networkStyles, welcomeStyles, guard, link, guide, welcomePage, stations] = await Promise.all([
     readFile(new URL("app/page.tsx", root), "utf8"),
+    readFile(new URL("app/network-map.tsx", root), "utf8"),
     readFile(new URL("app/styles/network.css", root), "utf8"),
     readFile(new URL("app/styles/welcome.css", root), "utf8"),
     readFile(new URL("app/first-visit-welcome.tsx", root), "utf8"),
@@ -52,12 +53,13 @@ test("first visit, dismissal, and permanent map help stay outside station progre
   ]);
 
   assert.match(home, /<FirstVisitWelcome \/>/);
-  assert.match(home, /href="\/welcome"/);
-  assert.match(home, /aria-label="About Ling"/);
-  assert.match(home, /title="About Ling"/);
-  assert.match(home, /className="network-help-link"/);
+  assert.match(network, /href="\/welcome"/);
+  assert.match(network, /aria-label="About Ling"/);
+  assert.match(network, /aria-describedby="network-help-tooltip"/);
+  assert.doesNotMatch(network, /title="About Ling"/);
+  assert.match(network, /className="network-help-link"/);
   assert.doesNotMatch(home, /network-welcome-entry|A quick guide to the network/);
-  assert.match(networkStyles, /\.network-help-link \{[\s\S]*width: 2\.75rem;[\s\S]*height: 2\.75rem;[\s\S]*margin-inline-end: -0\.5rem;/);
+  assert.match(networkStyles, /\.network-help-link \{[\s\S]*width: 2\.75rem;[\s\S]*height: 2\.75rem;/);
   assert.doesNotMatch(networkStyles, /\.network-welcome-(?:entry|link|copy|affordance)/);
   assert.match(welcomeStyles, /\.welcome-cue-visual \{[\s\S]*--welcome-cue-size: 2rem;/);
   assert.match(welcomeStyles, /\.welcome-cue-map svg,[\s\S]*\.welcome-cue-station,[\s\S]*\.welcome-cues \.welcome-cue-progress,[\s\S]*\.welcome-cue-review \{[\s\S]*width: var\(--welcome-cue-size\);[\s\S]*height: var\(--welcome-cue-size\);/);

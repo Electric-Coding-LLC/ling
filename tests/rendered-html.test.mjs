@@ -115,9 +115,12 @@ test("server-renders the Ling network home", async () => {
   assert.match(html, /href="\/welcome"/i);
   assert.match(html, /aria-label="About Ling"/i);
   assert.match(html, /class="network-help-link"/i);
-  assert.match(html, /title="About Ling"/i);
+  assert.match(html, /aria-describedby="network-help-tooltip"/i);
+  assert.match(html, /role="tooltip"[^>]*>About Ling</i);
+  assert.doesNotMatch(html, /title="About Ling"/i);
   assert.match(html, /aria-label="Show current location: Japanese"/i);
   assert.match(html, /class="network-location-button"/i);
+  assert.match(html, /role="tooltip"[^>]*>Current location</i);
   assert.doesNotMatch(html, /network-welcome-entry|A quick guide to the network, practice, and progress/i);
   assert.match(html, /Scroll down the Foundations spine to move through Japan, Sound, Writing, and Vocabulary/i);
   assert.match(html, /Move right along a line to go deeper/i);

@@ -18,6 +18,85 @@
   padding: clamp(1.75rem, 5vw, 3rem) clamp(1.25rem, 5vw, 3rem) 4rem;
 }
 
+.route-transition-surface:has(.station-next-footer) .station-shell {
+  min-height: calc(100dvh - 4.5rem - env(safe-area-inset-bottom));
+}
+
+.station-next-footer {
+  min-height: calc(4.5rem + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+}
+
+.station-next-link {
+  display: flex;
+  width: min(100%, 46rem);
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+  border-top: 1px solid var(--line);
+  color: var(--foreground);
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.station-next-copy {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.25em;
+}
+
+.station-next-copy > span {
+  display: block;
+  line-height: 1;
+}
+
+.station-next-name {
+  color: var(--foreground);
+}
+
+.station-next-link-sound .station-next-name {
+  color: var(--sound);
+}
+
+.station-next-link-travel .station-next-name {
+  color: var(--travel);
+}
+
+.station-next-link-writing .station-next-name {
+  color: var(--writing);
+}
+
+.station-next-link-vocabulary .station-next-name {
+  color: var(--vocabulary);
+}
+
+.station-next-arrow {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+  transition: transform 120ms ease;
+}
+
+.station-next-link:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: -4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .station-next-link:hover .station-next-arrow {
+    transform: translateX(0.2rem);
+  }
+}
+
 .help-version {
   padding-top: 2.5rem;
   color: var(--muted);
@@ -155,47 +234,6 @@
   stroke: currentcolor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 1.5;
-}
-
-.station-options-close {
-  position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
-  z-index: 1;
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  flex: none;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  color: var(--muted);
-  background: transparent;
-  cursor: pointer;
-}
-
-.station-options-close + .station-options-action {
-  padding-right: 2.75rem;
-}
-
-.station-options-close:hover {
-  color: var(--foreground);
-  background: rgb(242 241 235 / 0.06);
-}
-
-.station-options-close:focus-visible {
-  outline: 2px solid var(--foreground);
-  outline-offset: -2px;
-}
-
-.station-options-close svg {
-  width: 0.875rem;
-  height: 0.875rem;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
   stroke-width: 1.5;
 }
 
@@ -2286,6 +2324,16 @@
   font-size: 0.9rem;
 }
 
+.vocabulary-reference-written {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: calc(var(--pitch-character-size, 1.8rem) * 1.05);
+  line-height: 1.2;
+}
+
+.vocabulary-reference-written + .pitch-contour {
+  --pitch-character-size: 1rem;
+}
+
 .vocabulary-reference-item .pitch-contour {
   margin-top: 0.2rem;
 }
@@ -2387,11 +2435,111 @@
 }
 
 .vocabulary-review-prompt-word {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
   color: var(--foreground);
+}
+
+.vocabulary-review-reading {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .vocabulary-review-meaning {
   font-size: 1.15rem;
+}
+
+.kanji-intro {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.kanji-intro p {
+  margin: 0;
+}
+
+.kanji-examples-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.kanji-examples-section h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.kanji-example-list {
+  display: grid;
+  width: min(100%, 38rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.kanji-example {
+  display: grid;
+  min-height: 13rem;
+  align-content: center;
+  justify-items: start;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 0;
+  border-radius: 0.55rem;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.kanji-example-meaning,
+.kanji-example-reading,
+.kanji-example-note {
+  color: var(--muted);
+}
+
+.kanji-example-word {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 2.25rem;
+  line-height: 1.2;
+}
+
+.kanji-example-word strong {
+  color: var(--writing);
+  font-weight: 600;
+}
+
+.kanji-example-reading {
+  font-size: 0.9rem;
+}
+
+.kanji-example-note {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.kanji-example[data-playing="true"] {
+  background: color-mix(in srgb, var(--audio) 8%, transparent);
+  box-shadow: inset 0 0 0 2px var(--audio);
+}
+
+.kanji-example:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kanji-example:hover:not([data-playing="true"]) {
+    background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  }
+}
+
+@media (max-width: 480px) {
+  .kanji-example-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {

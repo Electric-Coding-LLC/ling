@@ -28,6 +28,7 @@ const DESKTOP_VIEW_WIDTH = 1500;
 const MOBILE_VIEW_WIDTH = 520;
 const NETWORK_ROW_GAP = 180;
 const NETWORK_COLUMN_GAP = 180;
+const VOCABULARY_COLUMN_GAP = 110;
 const CATEGORY_ROW_GAP = NETWORK_ROW_GAP * 1.5;
 const DESKTOP_SPINE_X = (DESKTOP_VIEW_WIDTH - NETWORK_COLUMN_GAP) / 2;
 const MOBILE_SPINE_X = MOBILE_VIEW_WIDTH / 2;
@@ -36,7 +37,7 @@ const ROOT_Y = FOUNDATIONS_TITLE_Y + 53;
 const JAPAN_BRANCH_HALF_SPAN = 160;
 const WRITING_BRANCH_HALF_SPAN = 70;
 const NETWORK_BOTTOM_PADDING = 150;
-const MOBILE_CONTENT_WIDTH = MOBILE_VIEW_WIDTH + NETWORK_COLUMN_GAP * 4;
+const MOBILE_CONTENT_WIDTH = MOBILE_VIEW_WIDTH + VOCABULARY_COLUMN_GAP * 7;
 const ROMAJI_Y = ROOT_Y + NETWORK_ROW_GAP;
 const JAPAN_Y = ROMAJI_Y + NETWORK_ROW_GAP;
 const SOUND_Y = JAPAN_Y + JAPAN_BRANCH_HALF_SPAN + NETWORK_ROW_GAP;
@@ -58,10 +59,17 @@ const ROUTABLE_STATION_HREFS: Record<LinkedStationFocus, string> = {
   pitch: "/stations/pitch-accent",
   kana: "/stations/kana",
   hiragana: "/stations/hiragana",
+  kanji: "/stations/kanji",
   katakana: "/stations/katakana",
   marks: "/stations/sound-marks",
   combined: "/stations/combined-sounds",
-  words: "/stations/words",
+  pointing: "/stations/pointing",
+  people: "/stations/people",
+  needs: "/stations/needs",
+  movement: "/stations/movement",
+  time: "/stations/time",
+  actions: "/stations/actions",
+  descriptions: "/stations/descriptions",
 };
 
 const STATION_LABELS: Record<StationFocus, string> = {
@@ -80,11 +88,18 @@ const STATION_LABELS: Record<StationFocus, string> = {
   writing: "Writing",
   kana: "Kana",
   hiragana: "Hiragana",
+  kanji: "Kanji",
   katakana: "Katakana",
   marks: "Dakuten & Handakuten",
   combined: "Yōon",
   vocabulary: "Vocabulary",
-  words: "Words",
+  pointing: "Pointing",
+  people: "People",
+  needs: "Needs",
+  movement: "Movement",
+  time: "Time",
+  actions: "Actions",
+  descriptions: "Descriptions",
 };
 
 const STATION_NEIGHBORS: Record<
@@ -105,12 +120,19 @@ const STATION_NEIGHBORS: Record<
   pitch: { ArrowLeft: "mora" },
   writing: { ArrowDown: "vocabulary", ArrowRight: "kana", ArrowUp: "sound" },
   kana: { ArrowDown: "katakana", ArrowLeft: "writing", ArrowRight: "hiragana", ArrowUp: "hiragana" },
-  hiragana: { ArrowLeft: "kana", ArrowRight: "marks" },
+  hiragana: { ArrowDown: "kana", ArrowLeft: "kana", ArrowRight: "kanji" },
+  kanji: { ArrowDown: "marks", ArrowLeft: "hiragana" },
   katakana: { ArrowLeft: "kana", ArrowRight: "marks" },
-  marks: { ArrowDown: "katakana", ArrowLeft: "hiragana", ArrowRight: "combined", ArrowUp: "hiragana" },
+  marks: { ArrowDown: "katakana", ArrowLeft: "hiragana", ArrowRight: "combined", ArrowUp: "kanji" },
   combined: { ArrowLeft: "marks" },
-  vocabulary: { ArrowRight: "words", ArrowUp: "writing" },
-  words: { ArrowLeft: "vocabulary" },
+  vocabulary: { ArrowRight: "pointing", ArrowUp: "writing" },
+  pointing: { ArrowLeft: "vocabulary", ArrowRight: "people" },
+  people: { ArrowLeft: "pointing", ArrowRight: "needs" },
+  needs: { ArrowLeft: "people", ArrowRight: "movement" },
+  movement: { ArrowLeft: "needs", ArrowRight: "time" },
+  time: { ArrowLeft: "movement", ArrowRight: "actions" },
+  actions: { ArrowLeft: "time", ArrowRight: "descriptions" },
+  descriptions: { ArrowLeft: "actions" },
 };
 
 const NETWORK_ROUTE_EDGES: readonly (readonly [StationFocus, StationFocus])[] = [
@@ -129,17 +151,23 @@ const NETWORK_ROUTE_EDGES: readonly (readonly [StationFocus, StationFocus])[] = 
   ["mora", "pitch"],
   ["writing", "kana"],
   ["kana", "hiragana"],
+  ["hiragana", "kanji"],
   ["kana", "katakana"],
-  ["hiragana", "marks"],
+  ["kanji", "marks"],
   ["katakana", "marks"],
   ["marks", "combined"],
-  ["vocabulary", "words"],
+  ["vocabulary", "pointing"],
+  ["pointing", "people"],
+  ["people", "needs"],
+  ["needs", "movement"],
+  ["movement", "time"],
+  ["time", "actions"],
+  ["actions", "descriptions"],
 ];
 
 const ROUNDED_WRITING_EDGES = new Set([
   "hiragana:kana",
   "kana:katakana",
-  "hiragana:marks",
   "katakana:marks",
 ]);
 
@@ -239,6 +267,7 @@ function normalizeStationFocus(focus: string | null): StationFocus | null {
   if (focus === "mora-timing") return "mora";
   if (focus === "sound-marks" || focus === "kana-extensions") return "marks";
   if (focus === "combined-sounds") return "combined";
+  if (focus === "words") return "pointing";
   return isNetworkPlaceId(focus) ? focus : null;
 }
 
@@ -561,6 +590,13 @@ function NetworkView({
   const depthTwoX = depthOneX + NETWORK_COLUMN_GAP;
   const depthThreeX = depthTwoX + NETWORK_COLUMN_GAP;
   const depthFourX = depthThreeX + NETWORK_COLUMN_GAP;
+  const vocabularyDepthOneX = spineX + VOCABULARY_COLUMN_GAP;
+  const vocabularyDepthTwoX = vocabularyDepthOneX + VOCABULARY_COLUMN_GAP;
+  const vocabularyDepthThreeX = vocabularyDepthTwoX + VOCABULARY_COLUMN_GAP;
+  const vocabularyDepthFourX = vocabularyDepthThreeX + VOCABULARY_COLUMN_GAP;
+  const vocabularyDepthFiveX = vocabularyDepthFourX + VOCABULARY_COLUMN_GAP;
+  const vocabularyDepthSixX = vocabularyDepthFiveX + VOCABULARY_COLUMN_GAP;
+  const vocabularyDepthSevenX = vocabularyDepthSixX + VOCABULARY_COLUMN_GAP;
   const view = mobile ? "mobile" : "desktop";
   const backlightId = `${view}-station-backlight`;
 
@@ -592,11 +628,18 @@ function NetworkView({
     writing: { x: spineX, y: WRITING_Y },
     kana: { x: depthOneX, y: WRITING_Y },
     hiragana: { x: depthTwoX, y: writingUpperY },
+    kanji: { x: depthThreeX, y: writingUpperY },
     katakana: { x: depthTwoX, y: writingLowerY },
     marks: { x: depthThreeX, y: WRITING_Y },
     combined: { x: depthFourX, y: WRITING_Y },
     vocabulary: { x: spineX, y: VOCABULARY_Y },
-    words: { x: depthOneX, y: VOCABULARY_Y },
+    pointing: { x: vocabularyDepthOneX, y: VOCABULARY_Y },
+    people: { x: vocabularyDepthTwoX, y: VOCABULARY_Y },
+    needs: { x: vocabularyDepthThreeX, y: VOCABULARY_Y },
+    movement: { x: vocabularyDepthFourX, y: VOCABULARY_Y },
+    time: { x: vocabularyDepthFiveX, y: VOCABULARY_Y },
+    actions: { x: vocabularyDepthSixX, y: VOCABULARY_Y },
+    descriptions: { x: vocabularyDepthSevenX, y: VOCABULARY_Y },
   };
   const keyboardTravelPath = keyboardTravel
     ? getKeyboardTravelPath(keyboardTravel.from, keyboardTravel.to, stationPositions)
@@ -673,12 +716,7 @@ function NetworkView({
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={roundedConvergingPath({
-          endX: depthThreeX,
-          endY: WRITING_Y,
-          startX: depthTwoX,
-          startY: writingUpperY,
-        })}
+        d={`M${depthThreeX} ${writingUpperY}V${WRITING_Y}`}
         label="Writing"
         line="writing"
         onLinePointerLeave={onLinePointerLeave}
@@ -704,7 +742,14 @@ function NetworkView({
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={`M${spineX} ${VOCABULARY_Y}H${depthOneX}`}
+        d={`M${depthTwoX} ${writingUpperY}H${depthThreeX}`}
+        label="Writing"
+        line="writing"
+        onLinePointerLeave={onLinePointerLeave}
+        onTooltipPointerMove={onTooltipPointerMove}
+      />
+      <RoutePath
+        d={`M${spineX} ${VOCABULARY_Y}H${vocabularyDepthSevenX}`}
         label="Vocabulary"
         line="vocabulary"
         onLinePointerLeave={onLinePointerLeave}
@@ -747,11 +792,18 @@ function NetworkView({
 
       <LinkedStation {...linkedStatus("kana")} backlightId={backlightId} focus="kana" kind="writing" labelPlacement="right" onActivate={() => onStationActivate("kana")} onFocus={() => onStationFocus("kana")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={WRITING_Y} />
       <LinkedStation {...linkedStatus("hiragana")} backlightId={backlightId} focus="hiragana" kind="writing" labelPlacement="above" onActivate={() => onStationActivate("hiragana")} onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingUpperY} />
+      <LinkedStation {...linkedStatus("kanji")} backlightId={backlightId} focus="kanji" kind="writing" labelPlacement="above" onActivate={() => onStationActivate("kanji")} onFocus={() => onStationFocus("kanji")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={writingUpperY} />
       <LinkedStation {...linkedStatus("katakana")} backlightId={backlightId} focus="katakana" kind="writing" labelPlacement="below" onActivate={() => onStationActivate("katakana")} onFocus={() => onStationFocus("katakana")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={writingLowerY} />
       <LinkedStation {...linkedStatus("marks")} backlightId={backlightId} focus="marks" kind="writing" labelLines={["Dakuten &", "Handakuten"]} labelPlacement="left" onActivate={() => onStationActivate("marks")} onFocus={() => onStationFocus("marks")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={WRITING_Y} />
       <LinkedStation {...linkedStatus("combined")} backlightId={backlightId} focus="combined" kind="writing" labelPlacement="below" onActivate={() => onStationActivate("combined")} onFocus={() => onStationFocus("combined")} onPointerLeave={onLinePointerLeave} x={depthFourX} y={WRITING_Y} />
 
-      <LinkedStation {...linkedStatus("words")} backlightId={backlightId} focus="words" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("words")} onFocus={() => onStationFocus("words")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={VOCABULARY_Y} />
+      <LinkedStation {...linkedStatus("pointing")} backlightId={backlightId} focus="pointing" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("pointing")} onFocus={() => onStationFocus("pointing")} onPointerLeave={onLinePointerLeave} x={vocabularyDepthOneX} y={VOCABULARY_Y} />
+      <LinkedStation {...linkedStatus("people")} backlightId={backlightId} focus="people" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("people")} onFocus={() => onStationFocus("people")} onPointerLeave={onLinePointerLeave} x={vocabularyDepthTwoX} y={VOCABULARY_Y} />
+      <LinkedStation {...linkedStatus("needs")} backlightId={backlightId} focus="needs" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("needs")} onFocus={() => onStationFocus("needs")} onPointerLeave={onLinePointerLeave} x={vocabularyDepthThreeX} y={VOCABULARY_Y} />
+      <LinkedStation {...linkedStatus("movement")} backlightId={backlightId} focus="movement" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("movement")} onFocus={() => onStationFocus("movement")} onPointerLeave={onLinePointerLeave} x={vocabularyDepthFourX} y={VOCABULARY_Y} />
+      <LinkedStation {...linkedStatus("time")} backlightId={backlightId} focus="time" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("time")} onFocus={() => onStationFocus("time")} onPointerLeave={onLinePointerLeave} x={vocabularyDepthFiveX} y={VOCABULARY_Y} />
+      <LinkedStation {...linkedStatus("actions")} backlightId={backlightId} focus="actions" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("actions")} onFocus={() => onStationFocus("actions")} onPointerLeave={onLinePointerLeave} x={vocabularyDepthSixX} y={VOCABULARY_Y} />
+      <LinkedStation {...linkedStatus("descriptions")} backlightId={backlightId} focus="descriptions" kind="vocabulary" labelPlacement="above" onActivate={() => onStationActivate("descriptions")} onFocus={() => onStationFocus("descriptions")} onPointerLeave={onLinePointerLeave} x={vocabularyDepthSevenX} y={VOCABULARY_Y} />
     </>
   );
 
@@ -996,7 +1048,7 @@ export function NetworkMap({
   }
 
   const sharedViewProps = {
-    activeFocus: storedStationFocus,
+    activeFocus: stationFocus,
     completedPlaces: new Set<StationFocus>(networkStatus?.completed ?? []),
     keyboardTravel,
     onLinePointerLeave: () => setTooltip(null),

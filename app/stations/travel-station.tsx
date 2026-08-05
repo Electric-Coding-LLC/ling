@@ -18,7 +18,7 @@ export function TravelStation({
   framed = false,
   intro = [],
   items = [],
-  line = "Japan",
+  lines = ["Japan"],
   review = false,
   showPronunciation = false,
   meaningFirst = showPronunciation,
@@ -27,7 +27,7 @@ export function TravelStation({
   framed?: boolean;
   intro?: readonly (string | ReactElement)[];
   items?: readonly TravelReferenceItem[];
-  line?: "Foundations" | "Japan";
+  lines?: readonly ("Foundations" | "Japan")[];
   meaningFirst?: boolean;
   review?: boolean;
   showPronunciation?: boolean;
@@ -93,17 +93,23 @@ export function TravelStation({
     <section className="travel-guide">
       <header className="station-heading">
         <div className="station-heading-row">
-          <div aria-label="Network line" className="station-memberships">
-            <span
-              className={`station-membership ${
-                line === "Foundations"
-                  ? "station-membership-foundation"
-                  : "station-membership-travel"
-              }`}
-              data-line={line === "Foundations" ? "foundation" : "travel"}
-            >
-              {line}
-            </span>
+          <div
+            aria-label={lines.length === 1 ? "Network line" : "Network lines"}
+            className="station-memberships"
+          >
+            {lines.map((line) => (
+              <span
+                className={`station-membership ${
+                  line === "Foundations"
+                    ? "station-membership-foundation"
+                    : "station-membership-travel"
+                }`}
+                data-line={line === "Foundations" ? "foundation" : "travel"}
+                key={line}
+              >
+                {line}
+              </span>
+            ))}
           </div>
           {review ? (
             <span className="hiragana-test-trigger-wrap">

@@ -88,7 +88,7 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 ## Current Seed Network
 
 The current mapped network is the Foundations spine with four populated
-territories and twenty stations:
+territories and twenty-seven stations:
 
 ```text
 Japanese
@@ -103,11 +103,11 @@ Japanese
    │
  Sound ─────── Vowels ────── Mora ────── Pitch
    │
- Writing ───── Kana ──────┬─ Hiragana ──┐
-   │                       └─ Katakana ──┴─┬─ Dakuten & Handakuten
-   │                                       └─ Yōon
+ Writing ───── Kana ──────┬─ Hiragana ───── Kanji
+   │                       └─ Katakana ──┬─ Dakuten & Handakuten
+   │                                     └─ Yōon
    │
- Vocabulary ── Words
+ Vocabulary ── Pointing ── People ── Needs ── Movement ── Time ── Actions ── Descriptions
 ```
 
 `Japanese` opens the Foundations spine. `Rōmaji` follows as an orientation
@@ -120,11 +120,13 @@ Japan branches to the peer reference stations `Introductions`, `Navigation`,
 `Food`, `Shopping`, and `Help`. Their shared horizontal depth makes clear that
 one does not need to be completed before another.
 
-Sound moves from `Vowels` to `Mora` and `Pitch`. Writing begins at `Kana`, forks
-to `Hiragana` and `Katakana`, then rejoins before the related extensions
-`Dakuten & Handakuten` and `Yōon`. Vocabulary currently stops at `Words`; the
-visible line does not promise Kanji, grammar, or further vocabulary groupings
-before those stations have real interiors.
+Sound moves from `Vowels` to `Mora` and `Pitch`. Writing begins at `Kana` and
+forks to `Hiragana` and `Katakana`. `Kanji` follows Hiragana as a bridge from
+phonetic writing into meaning-bearing characters, while `Dakuten & Handakuten`
+and `Yōon` extend both Kana systems. Vocabulary moves through `Pointing`,
+`People`, `Needs`, `Movement`, `Time`, `Actions`, and `Descriptions`. That
+order builds communicative range without restricting direct access to any
+station.
 
 `Vowels` uses the five shared Japanese vowels:
 
@@ -181,19 +183,24 @@ playable example, and a translation.
 
 `Katakana` introduces why Japanese uses a second Kana system, then presents the same 46 basic sounds with the same chart and flashcard interaction as Hiragana. Its examples emphasize the borrowed words and foreign names for which Katakana is commonly used.
 
+`Kanji` introduces meaning-bearing characters through familiar, useful words
+rather than an isolated character chart. Four audible examples show a complete
+Kanji word, combined Kanji, and Kanji completed by Hiragana. Each example keeps
+the written form, Kana reading, meaning, and sound together and notes that a
+character may have other readings in other words.
+
 `Dakuten & Handakuten` teaches the two marks that change familiar Kana sounds. Enlarged mark forms lead into one complete five-column chart of marked Hiragana and Katakana. Every distinct chart entry opens a flashcard with pronunciation, a playable example, a translation, and private self-reported progress.
 
 `Yōon` teaches how small `ゃ`, `ゅ`, and `ょ` and their Katakana matches join the Kana before them to make one sound. One complete three-column chart keeps every Hiragana and Katakana combination visible, and every entry opens the same flashcard and private progress interaction used by the preceding Kana stations.
 
-`Words` establishes a small practical vocabulary for finding your way,
-identifying people and things, meeting immediate needs, moving around, and
-speaking about the present. It is a listening-first reference with Japanese,
-canonical rōmaji, meaning, bundled audio, and an explicit flashcard review in
-either the English-to-Japanese or Japanese-to-English direction.
-
-The earlier `Nouns`, `Verbs`, and `Adjectives` stations have been retired.
-Vocabulary grows through practical Words sets rather than abstract parts-of-speech
-routes.
+The Vocabulary line builds a practical lexicon in a useful communicative
+sequence: `Pointing`, `People`, `Needs`, `Movement`, `Time`, `Actions`, and
+`Descriptions`. Each independently accessible station is a listening-first
+reference with the Japanese written form, Kana reading where Kanji appears,
+canonical rōmaji, meaning, bundled audio, and flashcard review in either the
+English-to-Japanese or Japanese-to-English direction. Progress remains scoped
+to the active station. The retired `/stations/words` route leads to `Pointing`
+so existing links and stored learner state remain useful.
 
 `Mora` first defines a mora as one rhythmic timing unit, then presents purpose-chosen playable examples with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division.
 
@@ -203,7 +210,7 @@ All pronunciation is bundled synthetic speech played at its authored speed. Stat
 
 ## Not Yet
 
-The complete Japanese network, further Japan-line depth, a global romaji setting,
+The complete Japanese network, further Japan-line depth, grammar stations, a global romaji setting,
 generic graph infrastructure, automated recommendations or routing, deck
 management, automated scheduling, speech evaluation, content-management
 tooling, metrics, and a generic multilingual model wait until direct use

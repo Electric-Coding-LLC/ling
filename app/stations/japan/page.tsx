@@ -38,16 +38,16 @@ export default function JapanPage() {
                 aria-labelledby="japan-learning-title"
                 className="japan-learning"
               >
-                <h2 id="japan-learning-title">Start small</h2>
+                <h2 id="japan-learning-title">Three useful expressions</h2>
                 <p>
-                  You do not need to learn everything before a first trip. Start
-                  with these three expressions and tap each one to hear how it
-                  sounds.
+                  These expressions are useful on a first trip. Tap each one to
+                  hear how it sounds.
                 </p>
               </section>
             </section>,
           ]}
           items={JAPAN_STARTER_PHRASES}
+          lines={["Foundations", "Japan"]}
           meaningFirst={false}
           showPronunciation
           title="Japan"

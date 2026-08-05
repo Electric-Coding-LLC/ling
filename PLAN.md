@@ -8,6 +8,7 @@ This file routes to the active execution map. Status and checkbox state live the
 
 ## Completed Plans
 
+- [Vocabulary and Kanji Curriculum](./plans/vocabulary-kanji-curriculum/EXECMAP.md)
 - [Japanese & Travel Network](./plans/japanese-travel-network/EXECMAP.md)
 - [Pitch Accent](./plans/pitch-accent/EXECMAP.md)
 - [Foundation](./plans/foundation/EXECMAP.md)

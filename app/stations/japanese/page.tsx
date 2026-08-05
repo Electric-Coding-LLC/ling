@@ -1,4 +1,3 @@
-import { NavigationLink } from "../../navigation-feedback";
 import { StationTopbar } from "../station-topbar";
 import { TravelStation } from "../travel-station";
 
@@ -15,49 +14,35 @@ export default function JapanesePage() {
               key="japanese-orientation"
             >
               <p className="japanese-orientation-lead">
-                Japanese is the starting point of Ling&apos;s Foundations
-                network.{" "}
-                <NavigationLink
-                  href="/stations/romaji"
-                  loadingStation="Rōmaji"
-                >
-                  Rōmaji
-                </NavigationLink>{" "}
-                is an optional reading bridge on the spine. Japan, Sound,
-                Writing, and Vocabulary branch from Foundations.
+                Welcome to Japanese on Ling. You do not need to understand the
+                whole language before you begin. Ling lets you enter Japanese
+                one connected idea at a time and return as those ideas become
+                clearer.
               </p>
               <div className="japanese-lines">
                 <section className="japanese-line">
-                  <h2>Japan</h2>
+                  <h2>Foundations</h2>
                   <p>
-                    Practical Japanese for introductions, getting around,
-                    food, shopping, and asking for help.
+                    The Foundations line is the organizing spine of Ling&apos;s
+                    Japanese network. It connects the broad parts of the
+                    language and gives their branches a shared starting point,
+                    so you can see how what you are learning fits into the
+                    whole.
                   </p>
                 </section>
                 <section className="japanese-line">
-                  <h2>Sound</h2>
+                  <h2>How to use the line</h2>
                   <p>
-                    Vowels, mora timing, and pitch—how Japanese is heard and
-                    spoken.
-                  </p>
-                </section>
-                <section className="japanese-line">
-                  <h2>Writing</h2>
-                  <p>
-                    Kana and the sound patterns used to read and write
-                    Japanese.
-                  </p>
-                </section>
-                <section className="japanese-line">
-                  <h2>Vocabulary</h2>
-                  <p>
-                    Words studied through meaning, pronunciation, and recall.
+                    It is a map, not a lesson order or completion ladder. Open
+                    any station that feels useful, move along a connection when
+                    you want more depth, and return to the spine whenever you
+                    need to reorient.
                   </p>
                 </section>
               </div>
             </section>,
           ]}
-          line="Foundations"
+          lines={["Foundations"]}
           title="Japanese"
         />
       </div>

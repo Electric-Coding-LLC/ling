@@ -5,6 +5,7 @@ import { BootReady } from "./boot-ready";
 import { NavigationFeedbackProvider } from "./navigation-feedback";
 import { PwaCleanup } from "./pwa-cleanup";
 import { PwaExperience } from "./pwa-experience";
+import { StationNextFooter } from "./stations/station-next-footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -128,7 +129,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NavigationFeedbackProvider>{children}</NavigationFeedbackProvider>
+        <NavigationFeedbackProvider>
+          {children}
+          <StationNextFooter />
+        </NavigationFeedbackProvider>
         <BootReady />
         <PwaCleanup />
         <PwaExperience {...appVersion} />

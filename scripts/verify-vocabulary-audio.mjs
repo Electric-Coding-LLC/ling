@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { WORDS_STATION } from "../src/modules/learning/vocabulary.ts";
+import { PRONUNCIATION_VOCABULARY_ITEMS } from "../src/modules/learning/vocabulary.ts";
 
 const root = new URL("../", import.meta.url);
 const EXPECTED_SAMPLE_RATE = 22_050;
@@ -138,7 +138,7 @@ function verifyPitchShape(item, trace) {
 }
 
 const report = [];
-for (const item of WORDS_STATION.items) {
+for (const item of PRONUNCIATION_VOCABULARY_ITEMS) {
   const file = new URL(`public${item.audio}`, root);
   const wave = parsePcmWave(await readFile(file));
   const duration = wave.samples.length / wave.sampleRate;

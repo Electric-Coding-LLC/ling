@@ -6,39 +6,17 @@ type FoundationLine = "sound" | "vocabulary" | "writing";
 
 type LineIntroduction = {
   readonly overview: readonly string[];
-  readonly start: ReactElement;
+  readonly start?: ReactElement;
+  readonly startTitle?: string;
   readonly title: string;
 };
 
 const LINE_INTRODUCTIONS: Readonly<Record<FoundationLine, LineIntroduction>> = {
   sound: {
     overview: [
-      "Japanese pronunciation is built from a small set of clear vowels and a steady rhythm. Those regular beats are called morae, and they shape the timing of every word.",
-      "Pitch moves within a word as well. Listening for where the voice rises and falls helps speech sound natural and can distinguish words that otherwise sound alike.",
+      "The Sound line brings together the parts of Japanese pronunciation that shape how a word is heard: its vowel sounds, rhythm, and pitch.",
+      "Japanese is built from five core vowels and timed in short beats called morae. Pitch can rise or fall across those beats. Learning to hear all three makes unfamiliar words easier to recognize and repeat.",
     ],
-    start: (
-      <>
-        Begin with{" "}
-        <NavigationLink href="/stations/vowels" loadingStation="Vowels">
-          Vowels
-        </NavigationLink>{" "}
-        to establish the five core sounds. Continue to{" "}
-        <NavigationLink
-          href="/stations/mora-timing"
-          loadingStation="Mora Timing"
-        >
-          Mora Timing
-        </NavigationLink>{" "}
-        for rhythm, then{" "}
-        <NavigationLink
-          href="/stations/pitch-accent"
-          loadingStation="Pitch Accent"
-        >
-          Pitch Accent
-        </NavigationLink>{" "}
-        for the rise and fall across a word.
-      </>
-    ),
     title: "Sound",
   },
   writing: {
@@ -56,11 +34,15 @@ const LINE_INTRODUCTIONS: Readonly<Record<FoundationLine, LineIntroduction>> = {
         <NavigationLink href="/stations/hiragana" loadingStation="Hiragana">
           Hiragana
         </NavigationLink>{" "}
-        and{" "}
+        and meet{" "}
+        <NavigationLink href="/stations/kanji" loadingStation="Kanji">
+          Kanji
+        </NavigationLink>{" "}
+        through useful words. Explore{" "}
         <NavigationLink href="/stations/katakana" loadingStation="Katakana">
           Katakana
         </NavigationLink>{" "}
-        before moving to{" "}
+        on its own branch for borrowed words and names. Then{" "}
         <NavigationLink
           href="/stations/sound-marks"
           loadingStation="Dakuten & Handakuten"
@@ -68,40 +50,42 @@ const LINE_INTRODUCTIONS: Readonly<Record<FoundationLine, LineIntroduction>> = {
           Dakuten &amp; Handakuten
         </NavigationLink>{" "}
         and{" "}
-        <NavigationLink
-          href="/stations/combined-sounds"
-          loadingStation="Yōon"
-        >
+        <NavigationLink href="/stations/combined-sounds" loadingStation="Yōon">
           Yōon
-        </NavigationLink>
-        .
+        </NavigationLink>{" "}
+        extend both Kana systems. You can enter any station directly.
       </>
     ),
+    startTitle: "From Kana to combined sounds",
     title: "Writing",
   },
   vocabulary: {
     overview: [
       "A useful word is more than a translation. You need to recognize its meaning, writing, and sound together.",
-      "Ling keeps those parts on one reference surface: the English meaning, Japanese word, Rōmaji, and audio. The same words also appear in Mora Timing and Pitch Accent, so pronunciation stays connected to vocabulary.",
+      "Ling keeps those parts on one reference surface: the English meaning, Japanese word, Kana reading, Rōmaji, and audio. The stations move from pointing and people toward needs, movement, time, actions, and descriptions.",
     ],
     start: (
       <>
         Begin with{" "}
-        <NavigationLink href="/stations/words" loadingStation="Words">
-          Words
+        <NavigationLink href="/stations/pointing" loadingStation="Pointing">
+          Pointing
         </NavigationLink>
-        . Tap any entry to hear it, then use the review when you want to
-        practice recall.
+        , then continue through the line in a useful communicative order. Tap
+        any entry to hear it, or use either recall direction. Every station
+        remains directly accessible.
       </>
     ),
+    startTitle: "A useful order",
     title: "Vocabulary",
   },
 };
 
 export function FoundationLineIntroduction({
   line,
+  showFoundations = false,
 }: {
   line: FoundationLine;
+  showFoundations?: boolean;
 }) {
   const introduction = LINE_INTRODUCTIONS[line];
 
@@ -116,7 +100,18 @@ export function FoundationLineIntroduction({
       >
         <header className="station-heading">
           <div className="station-heading-row">
-            <div aria-label="Network line" className="station-memberships">
+            <div
+              aria-label={showFoundations ? "Network lines" : "Network line"}
+              className="station-memberships"
+            >
+              {showFoundations ? (
+                <span
+                  className="station-membership station-membership-foundation"
+                  data-line="foundation"
+                >
+                  Foundations
+                </span>
+              ) : null}
               <span
                 className={`station-membership station-membership-${line}`}
                 data-line={line}
@@ -137,13 +132,15 @@ export function FoundationLineIntroduction({
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-          <section
-            aria-labelledby={`${line}-learning-title`}
-            className="foundation-line-learning"
-          >
-            <h2 id={`${line}-learning-title`}>Start small</h2>
-            <p>{introduction.start}</p>
-          </section>
+          {introduction.start && introduction.startTitle ? (
+            <section
+              aria-labelledby={`${line}-learning-title`}
+              className="foundation-line-learning"
+            >
+              <h2 id={`${line}-learning-title`}>{introduction.startTitle}</h2>
+              <p>{introduction.start}</p>
+            </section>
+          ) : null}
         </section>
       </div>
     </main>

@@ -520,11 +520,6 @@ function KanaPatternGuide({
                 </svg>
               </summary>
               <div aria-label="Station options" className="station-options-menu">
-                <button aria-label="Close station options" className="station-options-close" onClick={closeStationOptions} type="button">
-                  <svg aria-hidden="true" viewBox="0 0 16 16">
-                    <path d="m4 4 8 8M12 4l-8 8" />
-                  </svg>
-                </button>
                 {!allPatternsKnown ? (
                   <button
                     className="station-options-action"

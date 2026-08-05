@@ -14,11 +14,18 @@ export const NETWORK_PLACE_IDS = [
   "writing",
   "kana",
   "hiragana",
+  "kanji",
   "katakana",
   "marks",
   "combined",
   "vocabulary",
-  "words",
+  "pointing",
+  "people",
+  "needs",
+  "movement",
+  "time",
+  "actions",
+  "descriptions",
 ] as const;
 
 export type NetworkPlaceId = (typeof NETWORK_PLACE_IDS)[number];
@@ -32,7 +39,13 @@ export const COMPLETABLE_NETWORK_PLACE_IDS = [
   "katakana",
   "marks",
   "combined",
-  "words",
+  "pointing",
+  "people",
+  "needs",
+  "movement",
+  "time",
+  "actions",
+  "descriptions",
 ] as const satisfies readonly NetworkPlaceId[];
 
 export type CompletableNetworkPlaceId =

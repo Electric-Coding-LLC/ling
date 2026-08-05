@@ -54,6 +54,7 @@ import {
   VOCABULARY_REVIEW_DIRECTIONS,
   type VocabularyKnowledge,
   type VocabularyReviewDirection,
+  type VocabularyStationId,
 } from "./vocabulary";
 import {
   isRomajiKana,
@@ -81,7 +82,11 @@ export async function listStationIntroductions(
 
   return Array.from(new Set(
     rows
-      .map((row) => row.stationId === "kana" ? "vowels" : row.stationId)
+      .map((row) => {
+        if (row.stationId === "kana") return "vowels";
+        if (row.stationId === "words") return "pointing";
+        return row.stationId;
+      })
       .filter(isStationId),
   ));
 }
@@ -107,7 +112,9 @@ export async function listVisitedNetworkPlaces(
     .from(networkPlaceVisits)
     .where(eq(networkPlaceVisits.userId, userId));
 
-  return rows.map((row) => row.placeId).filter(isNetworkPlaceId);
+  return rows
+    .map((row) => row.placeId === "words" ? "pointing" : row.placeId)
+    .filter(isNetworkPlaceId);
 }
 
 export async function recordNetworkPlaceVisit(
@@ -131,7 +138,7 @@ export async function listCompletedNetworkPlaces(
     knownMoraTimingReviews,
     knownPitchAccentItems,
     knownRomaji,
-    knownWords,
+    knownVocabulary,
   ] = await Promise.all([
     listKnownHiragana(userId),
     listKnownKatakana(userId),
@@ -139,7 +146,7 @@ export async function listCompletedNetworkPlaces(
     listKnownMoraTimingReviews(userId),
     listKnownPitchAccentItems(userId),
     listKnownRomajiKana(userId),
-    listWordsKnowledge(userId),
+    listVocabularyKnowledge(userId),
   ]);
   const completed: CompletableNetworkPlaceId[] = [];
 
@@ -170,16 +177,26 @@ export async function listCompletedNetworkPlaces(
   if (COMBINED_SOUND_PATTERN_IDS.every((patternId) => knownKanaExtensionPatterns.includes(patternId))) {
     completed.push("combined");
   }
-  if (
-    VOCABULARY_REVIEW_DIRECTIONS.every((direction) =>
-      getVocabularyItemIds().every((itemId) =>
-        knownWords.some((knowledge) => (
-          knowledge.itemId === itemId && knowledge.direction === direction
-        )),
-      ),
-    )
-  ) {
-    completed.push("words");
+  for (const stationId of [
+    "pointing",
+    "people",
+    "needs",
+    "movement",
+    "time",
+    "actions",
+    "descriptions",
+  ] as const satisfies readonly VocabularyStationId[]) {
+    if (
+      VOCABULARY_REVIEW_DIRECTIONS.every((direction) =>
+        getVocabularyItemIds(stationId).every((itemId) =>
+          knownVocabulary.some((knowledge) => (
+            knowledge.itemId === itemId && knowledge.direction === direction
+          )),
+        ),
+      )
+    ) {
+      completed.push(stationId);
+    }
   }
 
   return completed;
@@ -703,7 +720,7 @@ export async function setAllPitchAccentItemsKnown(
     });
 }
 
-export async function listWordsKnowledge(
+export async function listVocabularyKnowledge(
   userId: string,
 ): Promise<VocabularyKnowledge[]> {
   const db = await getDb();
@@ -722,7 +739,7 @@ export async function listWordsKnowledge(
     ));
 }
 
-export async function setWordsItemKnown(
+export async function setVocabularyItemKnown(
   userId: string,
   itemId: string,
   direction: VocabularyReviewDirection,
@@ -761,8 +778,9 @@ export async function setWordsItemKnown(
     });
 }
 
-export async function setAllWordsItemsKnown(
+export async function setVocabularyItemsKnown(
   userId: string,
+  itemIds: readonly string[],
   known: boolean,
 ): Promise<void> {
   const db = await getDb();
@@ -770,14 +788,17 @@ export async function setAllWordsItemsKnown(
   if (!known) {
     await db
       .delete(vocabularyKnowledge)
-      .where(eq(vocabularyKnowledge.userId, userId));
+      .where(and(
+        eq(vocabularyKnowledge.userId, userId),
+        inArray(vocabularyKnowledge.itemId, [...itemIds]),
+      ));
     return;
   }
 
   const knownAt = new Date();
   await db
     .insert(vocabularyKnowledge)
-    .values(getVocabularyItemIds().flatMap((itemId) =>
+    .values(itemIds.flatMap((itemId) =>
       VOCABULARY_REVIEW_DIRECTIONS.map((reviewDirection) => ({
         userId,
         itemId,

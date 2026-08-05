@@ -1,15 +1,2 @@
-import { StationTopbar } from "../station-topbar";
-import { VocabularyGuide } from "../vocabulary-guide";
-
-export const dynamic = "force-dynamic";
-
-export default function WordsPage() {
-  return (
-    <main className="shell station-shell">
-      <StationTopbar current="Words" networkFocus="words" />
-      <div className="station-page station-page-vocabulary station-page-words">
-        <VocabularyGuide />
-      </div>
-    </main>
-  );
-}
+import { redirect } from "next/navigation";
+export default function WordsPage() { redirect("/stations/pointing"); }

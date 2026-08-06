@@ -1,7 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getJapaneseMorae,
   getJapaneseWordRomaji,
@@ -21,6 +20,7 @@ import { FlashcardCountdown, FlashcardReview } from "./flashcard-review";
 import { PitchContour, pitchLabel } from "./pitch-contour";
 import { StationOptions } from "./station-options";
 import { useFlashcardAudio } from "./use-flashcard-audio";
+import { WordAudioIndicator, WordReviewDialog, WordReviewLauncher } from "./word-review";
 
 const VOCABULARY_LINE_LABEL = "Vocabulary";
 
@@ -30,7 +30,6 @@ type VocabularyReview = {
 };
 
 export function VocabularyGuide({ station }: { readonly station: VocabularyStation }) {
-  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const {
     activeAudioIndex,
     activeBeatIndex,
@@ -49,7 +48,6 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
     createEmptyKnownItems,
   );
   const [reviewIndex, setReviewIndex] = useState(0);
-  const reviewLauncherRef = useRef<HTMLDetailsElement | null>(null);
   const activeCard = activeReview?.cards[reviewIndex] ?? null;
   const meaningFirst = activeReview?.direction !== "japanese-to-meaning";
   const activeCardMorae = activeCard ? getJapaneseMorae(activeCard.reading) : null;
@@ -83,39 +81,6 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
     return () => controller.abort();
   }, [station.id]);
 
-  useEffect(() => {
-    function dismissReviewLauncher(event: PointerEvent) {
-      const launcher = reviewLauncherRef.current;
-      if (
-        launcher?.open
-        && event.target instanceof Node
-        && !launcher.contains(event.target)
-      ) {
-        launcher.open = false;
-      }
-    }
-
-    function closeReviewLauncherWithEscape(event: KeyboardEvent) {
-      const launcher = reviewLauncherRef.current;
-      if (event.key !== "Escape" || !launcher?.open) return;
-
-      launcher.open = false;
-      launcher.querySelector<HTMLElement>("summary")?.focus();
-    }
-
-    document.addEventListener("pointerdown", dismissReviewLauncher);
-    document.addEventListener("keydown", closeReviewLauncherWithEscape);
-    return () => {
-      document.removeEventListener("pointerdown", dismissReviewLauncher);
-      document.removeEventListener("keydown", closeReviewLauncherWithEscape);
-    };
-  }, []);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (activeReview && dialog && !dialog.open) dialog.showModal();
-  }, [activeReview]);
-
   function itemIndex(item: VocabularyItem) {
     return station.items.findIndex((candidate) => candidate.id === item.id);
   }
@@ -128,11 +93,16 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
     });
   }
 
+  function activateCard() {
+    if (!activeCard) return;
+    setAnswerRevealed(true);
+    playItem(activeCard);
+  }
+
   function openReview(
     items: readonly VocabularyItem[],
     direction: VocabularyReviewDirection,
   ) {
-    if (reviewLauncherRef.current) reviewLauncherRef.current.open = false;
     stopAudio();
     setAnswerRevealed(false);
     setKnowledgeError(false);
@@ -142,7 +112,6 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
 
   function closeReview() {
     stopAudio();
-    dialogRef.current?.close();
     setActiveReview(null);
     setAnswerRevealed(false);
     setReviewIndex(0);
@@ -243,41 +212,23 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
               stationId={station.id}
               stationName={station.name}
             />
-            <span className="hiragana-test-trigger-wrap">
-              <details className="vocabulary-review-launcher" ref={reviewLauncherRef}>
-                <summary
-                  aria-label={`${reviewLabel} Choose review direction.`}
-                  className="hiragana-test-trigger"
-                  data-complete={remainingRecallCount === 0 ? "true" : undefined}
-                  style={{ "--hiragana-test-progress": `${knownRecallCount / totalRecallCount}turn` } as CSSProperties}
-                >
-                  <span className="hiragana-test-progress-text">{remainingRecallCount === 0 ? "✓" : remainingRecallCount}</span>
-                </summary>
-                <div aria-label="Review direction" className="station-options-menu vocabulary-review-direction-menu">
-                  <button
-                    className="station-options-action"
-                    onClick={() => openReview(station.items, "meaning-to-japanese")}
-                    type="button"
-                  >
-                    <span>English → Japanese</span>
-                    <span className="vocabulary-review-direction-progress">
-                      {formatDirectionProgress(station, knownItems, "meaning-to-japanese")}
-                    </span>
-                  </button>
-                  <button
-                    className="station-options-action"
-                    onClick={() => openReview(station.items, "japanese-to-meaning")}
-                    type="button"
-                  >
-                    <span>Japanese → English</span>
-                    <span className="vocabulary-review-direction-progress">
-                      {formatDirectionProgress(station, knownItems, "japanese-to-meaning")}
-                    </span>
-                  </button>
-                </div>
-              </details>
-              <span className="network-tooltip hiragana-test-tooltip">{reviewLabel}</span>
-            </span>
+            <WordReviewLauncher
+              directions={[
+                {
+                  label: "English → Japanese",
+                  onSelect: () => openReview(station.items, "meaning-to-japanese"),
+                  progress: formatDirectionProgress(station, knownItems, "meaning-to-japanese"),
+                },
+                {
+                  label: "Japanese → English",
+                  onSelect: () => openReview(station.items, "japanese-to-meaning"),
+                  progress: formatDirectionProgress(station, knownItems, "japanese-to-meaning"),
+                },
+              ]}
+              knownCount={knownRecallCount}
+              reviewLabel={reviewLabel}
+              totalCount={totalRecallCount}
+            />
           </div>
         </div>
         <h1>{station.name}</h1>
@@ -324,7 +275,7 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
                   showPronunciation
                   word={item.reading}
                 />
-                <VocabularyAudioIndicator />
+                <WordAudioIndicator />
               </button>
             );
           })}
@@ -334,43 +285,25 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
         {knowledgeError ? <p className="station-knowledge-error" role="alert">Your {station.name} progress could not sync. Try again.</p> : null}
 
         {activeReview && activeCard && activeCardMorae && activeCardPitch ? (
-          <dialog
-            aria-labelledby={`${station.id}-review-title`}
-            className="hiragana-test-dialog"
-            onCancel={(event) => {
-              event.preventDefault();
-              closeReview();
-            }}
-            onClose={() => setActiveReview(null)}
-            ref={dialogRef}
+          <WordReviewDialog
+            directionLabel={meaningFirst ? "English → Japanese" : "Japanese → English"}
+            onDismiss={closeReview}
+            stationId={station.id}
+            stationName={station.name}
           >
-            <div className="hiragana-test-modal">
-              <header className="hiragana-test-modal-heading">
-                <div>
-                  <h2 id={`${station.id}-review-title`}>{station.name}</h2>
-                  <p className="vocabulary-review-direction-label">
-                    {meaningFirst ? "English → Japanese" : "Japanese → English"}
-                  </p>
-                </div>
-                <button aria-label="Close flashcards" className="hiragana-test-close" onClick={closeReview} type="button">
-                  <span aria-hidden="true">×</span>
-                </button>
-              </header>
-              <FlashcardReview
-                activationLabel={meaningFirst && !answerRevealed
-                  ? `Recall the Japanese for ${activeCard.meaning}`
-                  : `Play ${activeCard.word}`}
-                announcement={answerRevealed
-                  ? vocabularyAnnouncement(activeCard, meaningFirst)
-                  : ""}
-                key={`${activeReview.direction}-${reviewIndex}-${activeCard.id}`}
-                onActivate={() => {
-                  if (!meaningFirst || answerRevealed) playItem(activeCard);
-                }}
-                onAnswer={answerCard}
-                playing={audioPlaying && activeAudioIndex === itemIndex(activeCard)}
-              >
-                <span className="vocabulary-review-content">
+            <FlashcardReview
+              activationLabel={meaningFirst && !answerRevealed
+                ? `Recall the Japanese for ${activeCard.meaning}`
+                : `Play ${activeCard.word}`}
+              announcement={answerRevealed
+                ? vocabularyAnnouncement(activeCard, meaningFirst)
+                : ""}
+              key={`${activeReview.direction}-${reviewIndex}-${activeCard.id}`}
+              onActivate={activateCard}
+              onAnswer={answerCard}
+              playing={audioPlaying && activeAudioIndex === itemIndex(activeCard)}
+            >
+              <span className="vocabulary-review-content">
                   {meaningFirst ? (
                     <span className="vocabulary-review-prompt">{activeCard.meaning}</span>
                   ) : (
@@ -402,26 +335,15 @@ export function VocabularyGuide({ station }: { readonly station: VocabularyStati
                         )}
                       </span>
                     ) : (
-                      <FlashcardCountdown onComplete={() => setAnswerRevealed(true)} />
+                      <FlashcardCountdown onComplete={activateCard} />
                     )}
                   </span>
-                </span>
-              </FlashcardReview>
-            </div>
-          </dialog>
+              </span>
+            </FlashcardReview>
+          </WordReviewDialog>
         ) : null}
       </section>
     </>
-  );
-}
-
-function VocabularyAudioIndicator() {
-  return (
-    <span aria-hidden="true" className="vocabulary-audio-indicator">
-      <span />
-      <span />
-      <span />
-    </span>
   );
 }
 

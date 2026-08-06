@@ -62,6 +62,17 @@
   width: 100%;
 }
 
+.network-desktop-viewport {
+  overflow-x: auto;
+  overflow-y: clip;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.network-desktop-viewport::-webkit-scrollbar {
+  display: none;
+}
+
 .network-desktop-viewport:focus {
   outline: none;
 }
@@ -125,8 +136,16 @@
   stroke: var(--writing);
 }
 
+.network-line-kanji {
+  stroke: var(--kanji);
+}
+
 .network-line-vocabulary {
   stroke: var(--vocabulary);
+}
+
+.network-line-grammar {
+  stroke: var(--grammar);
 }
 
 .network-line-travel {
@@ -213,8 +232,16 @@
   stroke: var(--writing);
 }
 
+.network-single-station-outer-kanji {
+  stroke: var(--kanji);
+}
+
 .network-single-station-outer-vocabulary {
   stroke: var(--vocabulary);
+}
+
+.network-single-station-outer-grammar {
+  stroke: var(--grammar);
 }
 
 .network-single-station-outer-travel {
@@ -242,8 +269,16 @@
   --network-station-inner-color: var(--writing);
 }
 
+.network-single-station-inner-kanji {
+  --network-station-inner-color: var(--kanji);
+}
+
 .network-single-station-inner-vocabulary {
   --network-station-inner-color: var(--vocabulary);
+}
+
+.network-single-station-inner-grammar {
+  --network-station-inner-color: var(--grammar);
 }
 
 .network-single-station-inner-travel,
@@ -420,6 +455,10 @@
 
   .network-map-mobile .network-single-station-inner {
     r: 11.5px;
+  }
+
+  .network-map-mobile .network-interchange-inner {
+    r: 15px;
   }
 
   .network-map-mobile .network-station-complete-icon:not(.network-station-complete-icon-interchange) {

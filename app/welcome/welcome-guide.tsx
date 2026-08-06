@@ -12,7 +12,7 @@ export function WelcomeGuide() {
       <div className="welcome-intro">
         <p>
           Think of Ling as a map of Japanese. The stations cover things like
-          sounds, writing, vocabulary, and everyday situations, and the lines
+          sounds, Kana, Kanji, vocabulary, and everyday situations, and the lines
           show how those ideas connect.
         </p>
         <p>

@@ -1,7 +1,7 @@
-import { FoundationLineIntroduction } from "../foundation-line-introduction";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-static";
 
 export default function WritingPage() {
-  return <FoundationLineIntroduction line="writing" />;
+  redirect("/stations/kana");
 }

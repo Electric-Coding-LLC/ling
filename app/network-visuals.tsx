@@ -1,6 +1,8 @@
 export type NetworkStationKind =
   | "foundation"
+  | "grammar"
   | "interchange"
+  | "kanji"
   | "local"
   | "sound"
   | "sound-vocabulary-interchange"

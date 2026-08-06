@@ -1,6 +1,7 @@
 # Plan Index
 
-This file routes to the active execution map. Status and checkbox state live there.
+This file points to the active initiative map for the repo. Status and
+checkbox state live in the linked `EXECMAP.md`, not here.
 
 ## Active Plan
 
@@ -8,6 +9,9 @@ This file routes to the active execution map. Status and checkbox state live the
 
 ## Completed Plans
 
+- [Foundations Teaching Pass](./plans/foundations-teaching-pass/EXECMAP.md)
+- [Grammar Track](./plans/grammar-track/EXECMAP.md)
+- [Kanji Track](./plans/kanji-track/EXECMAP.md)
 - [Vocabulary and Kanji Curriculum](./plans/vocabulary-kanji-curriculum/EXECMAP.md)
 - [Japanese & Travel Network](./plans/japanese-travel-network/EXECMAP.md)
 - [Pitch Accent](./plans/pitch-accent/EXECMAP.md)

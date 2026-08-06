@@ -1,5 +1,6 @@
 import { StationTopbar } from "../station-topbar";
 import { TravelStation } from "../travel-station";
+import { FoundationLineTour } from "../foundation-line-tour";
 
 export default function JapanesePage() {
   return (
@@ -15,31 +16,16 @@ export default function JapanesePage() {
             >
               <p className="japanese-orientation-lead">
                 Welcome to Japanese on Ling. You do not need to understand the
-                whole language before you begin. Ling lets you enter Japanese
-                one connected idea at a time and return as those ideas become
-                clearer.
+                whole language before you begin. Japanese becomes easier to
+                understand when its sound, writing, words, and sentence
+                structure are studied as connected systems.
               </p>
-              <div className="japanese-lines">
-                <section className="japanese-line">
-                  <h2>Foundations</h2>
-                  <p>
-                    The Foundations line is the organizing spine of Ling&apos;s
-                    Japanese network. It connects the broad parts of the
-                    language and gives their branches a shared starting point,
-                    so you can see how what you are learning fits into the
-                    whole.
-                  </p>
-                </section>
-                <section className="japanese-line">
-                  <h2>How to use the line</h2>
-                  <p>
-                    It is a map, not a lesson order or completion ladder. Open
-                    any station that feels useful, move along a connection when
-                    you want more depth, and return to the spine whenever you
-                    need to reorient.
-                  </p>
-                </section>
-              </div>
+              <p>
+                The Foundations spine separates those systems long enough to
+                show what each one contributes. Together they form the base for
+                understanding and producing complete Japanese.
+              </p>
+              <FoundationLineTour tourId="foundations" />
             </section>,
           ]}
           lines={["Foundations"]}

@@ -1,91 +1,41 @@
-import type { ReactElement } from "react";
-import { NavigationLink } from "../navigation-feedback";
+import { FoundationLineTour } from "./foundation-line-tour";
 import { StationTopbar } from "./station-topbar";
 
-type FoundationLine = "sound" | "vocabulary" | "writing";
+type FoundationLine = "grammar" | "sound" | "vocabulary";
 
 type LineIntroduction = {
   readonly overview: readonly string[];
-  readonly start?: ReactElement;
-  readonly startTitle?: string;
   readonly title: string;
 };
 
 const LINE_INTRODUCTIONS: Readonly<Record<FoundationLine, LineIntroduction>> = {
+  grammar: {
+    overview: [
+      "Japanese grammar connects words by marking their relationships. Particles identify the topic, an owner, an object, a place, or a destination; sentence endings express politeness, tense, and negation.",
+      "These first structures are enough to identify things, ask questions, describe relationships, say that something exists, and talk about actions and qualities.",
+    ],
+    title: "Grammar",
+  },
   sound: {
     overview: [
-      "The Sound line brings together the parts of Japanese pronunciation that shape how a word is heard: its vowel sounds, rhythm, and pitch.",
-      "Japanese is built from five core vowels and timed in short beats called morae. Pitch can rise or fall across those beats. Learning to hear all three makes unfamiliar words easier to recognize and repeat.",
+      "Japanese pronunciation depends on three things working together: the vowel sounds themselves, the morae that organize rhythm, and the high-low pitch pattern carried across those beats.",
+      "Listen for each layer separately at first. Together they explain why two words with familiar sounds can still differ in timing or spoken shape.",
     ],
     title: "Sound",
   },
-  writing: {
-    overview: [
-      "Japanese uses two Kana scripts to represent the same set of sounds. Hiragana carries most Japanese words and grammar; Katakana handles borrowed words, foreign names, emphasis, and sound effects.",
-      "The basic charts are only the beginning. Dakuten and handakuten change consonants, while small や, ゆ, and よ combine with a preceding Kana to make Yōon sounds such as きゃ, きゅ, and きょ.",
-    ],
-    start: (
-      <>
-        Begin with{" "}
-        <NavigationLink href="/stations/kana" loadingStation="Kana">
-          Kana
-        </NavigationLink>{" "}
-        for the relationship between the scripts. Then study{" "}
-        <NavigationLink href="/stations/hiragana" loadingStation="Hiragana">
-          Hiragana
-        </NavigationLink>{" "}
-        and meet{" "}
-        <NavigationLink href="/stations/kanji" loadingStation="Kanji">
-          Kanji
-        </NavigationLink>{" "}
-        through useful words. Explore{" "}
-        <NavigationLink href="/stations/katakana" loadingStation="Katakana">
-          Katakana
-        </NavigationLink>{" "}
-        on its own branch for borrowed words and names. Then{" "}
-        <NavigationLink
-          href="/stations/sound-marks"
-          loadingStation="Dakuten & Handakuten"
-        >
-          Dakuten &amp; Handakuten
-        </NavigationLink>{" "}
-        and{" "}
-        <NavigationLink href="/stations/combined-sounds" loadingStation="Yōon">
-          Yōon
-        </NavigationLink>{" "}
-        extend both Kana systems. You can enter any station directly.
-      </>
-    ),
-    startTitle: "From Kana to combined sounds",
-    title: "Writing",
-  },
   vocabulary: {
     overview: [
-      "A useful word is more than a translation. You need to recognize its meaning, writing, and sound together.",
-      "Ling keeps those parts on one reference surface: the English meaning, Japanese word, Kana reading, Rōmaji, and audio. The stations move from pointing and people toward needs, movement, time, actions, and descriptions.",
+      "A Japanese word is learned as a complete unit: what it means, how it is written, and how it sounds. A translation alone is not enough if the word cannot be recognized in speech or recalled when it is needed.",
+      "This vocabulary begins with the people, objects, places, times, actions, and qualities that support an early conversation.",
     ],
-    start: (
-      <>
-        Begin with{" "}
-        <NavigationLink href="/stations/pointing" loadingStation="Pointing">
-          Pointing
-        </NavigationLink>
-        , then continue through the line in a useful communicative order. Tap
-        any entry to hear it, or use either recall direction. Every station
-        remains directly accessible.
-      </>
-    ),
-    startTitle: "A useful order",
     title: "Vocabulary",
   },
 };
 
 export function FoundationLineIntroduction({
   line,
-  showFoundations = false,
 }: {
   line: FoundationLine;
-  showFoundations?: boolean;
 }) {
   const introduction = LINE_INTRODUCTIONS[line];
 
@@ -101,17 +51,15 @@ export function FoundationLineIntroduction({
         <header className="station-heading">
           <div className="station-heading-row">
             <div
-              aria-label={showFoundations ? "Network lines" : "Network line"}
+              aria-label="Network lines"
               className="station-memberships"
             >
-              {showFoundations ? (
-                <span
-                  className="station-membership station-membership-foundation"
-                  data-line="foundation"
-                >
-                  Foundations
-                </span>
-              ) : null}
+              <span
+                className="station-membership station-membership-foundation"
+                data-line="foundation"
+              >
+                Foundations
+              </span>
               <span
                 className={`station-membership station-membership-${line}`}
                 data-line={line}
@@ -132,15 +80,7 @@ export function FoundationLineIntroduction({
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-          {introduction.start && introduction.startTitle ? (
-            <section
-              aria-labelledby={`${line}-learning-title`}
-              className="foundation-line-learning"
-            >
-              <h2 id={`${line}-learning-title`}>{introduction.startTitle}</h2>
-              <p>{introduction.start}</p>
-            </section>
-          ) : null}
+          <FoundationLineTour tourId={line} />
         </section>
       </div>
     </main>

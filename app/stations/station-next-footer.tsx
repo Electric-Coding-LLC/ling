@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { NavigationLink } from "../navigation-feedback";
 
-type StationLine = "foundation" | "sound" | "travel" | "vocabulary" | "writing";
+type StationLine = "foundation" | "grammar" | "kanji" | "sound" | "travel" | "vocabulary" | "writing";
 
 type NextStation = {
   readonly href: string;
@@ -23,14 +23,15 @@ const NEXT_STATIONS: Readonly<Record<string, NextStation>> = {
   "/stations/sound": { href: "/stations/vowels", label: "Vowels", line: "sound" },
   "/stations/vowels": { href: "/stations/mora-timing", label: "Mora", line: "sound" },
   "/stations/mora-timing": { href: "/stations/pitch-accent", label: "Pitch", line: "sound" },
-  "/stations/pitch-accent": { href: "/stations/writing", label: "Writing", line: "writing" },
-  "/stations/writing": { href: "/stations/kana", label: "Kana", line: "writing" },
+  "/stations/pitch-accent": { href: "/stations/kana", label: "Kana", line: "writing" },
   "/stations/kana": { href: "/stations/hiragana", label: "Hiragana", line: "writing" },
-  "/stations/hiragana": { href: "/stations/kanji", label: "Kanji", line: "writing" },
-  "/stations/kanji": { href: "/stations/katakana", label: "Katakana", line: "writing" },
+  "/stations/hiragana": { href: "/stations/katakana", label: "Katakana", line: "writing" },
   "/stations/katakana": { href: "/stations/sound-marks", label: "Dakuten & Handakuten", line: "writing" },
   "/stations/sound-marks": { href: "/stations/combined-sounds", label: "Yōon", line: "writing" },
-  "/stations/combined-sounds": { href: "/stations/vocabulary", label: "Vocabulary", line: "vocabulary" },
+  "/stations/combined-sounds": { href: "/stations/kanji", label: "Kanji", line: "kanji" },
+  "/stations/kanji": { href: "/stations/compounds", label: "Compounds", line: "kanji" },
+  "/stations/compounds": { href: "/stations/endings", label: "Endings", line: "kanji" },
+  "/stations/endings": { href: "/stations/vocabulary", label: "Vocabulary", line: "vocabulary" },
   "/stations/vocabulary": { href: "/stations/pointing", label: "Pointing", line: "vocabulary" },
   "/stations/pointing": { href: "/stations/people", label: "People", line: "vocabulary" },
   "/stations/people": { href: "/stations/needs", label: "Needs", line: "vocabulary" },
@@ -38,6 +39,15 @@ const NEXT_STATIONS: Readonly<Record<string, NextStation>> = {
   "/stations/movement": { href: "/stations/time", label: "Time", line: "vocabulary" },
   "/stations/time": { href: "/stations/actions", label: "Actions", line: "vocabulary" },
   "/stations/actions": { href: "/stations/descriptions", label: "Descriptions", line: "vocabulary" },
+  "/stations/descriptions": { href: "/stations/grammar", label: "Grammar", line: "grammar" },
+  "/stations/grammar": { href: "/stations/statements", label: "Statements", line: "grammar" },
+  "/stations/statements": { href: "/stations/questions", label: "Questions", line: "grammar" },
+  "/stations/questions": { href: "/stations/possession", label: "Possession", line: "grammar" },
+  "/stations/possession": { href: "/stations/existence", label: "Existence", line: "grammar" },
+  "/stations/existence": { href: "/stations/verbs", label: "Verbs", line: "grammar" },
+  "/stations/verbs": { href: "/stations/tense", label: "Tense", line: "grammar" },
+  "/stations/tense": { href: "/stations/negation", label: "Negation", line: "grammar" },
+  "/stations/negation": { href: "/stations/adjectives", label: "Adjectives", line: "grammar" },
 };
 
 function NextArrowIcon() {
@@ -55,12 +65,12 @@ function NextArrowIcon() {
 export function StationNextFooter() {
   const pathname = usePathname();
 
-  if (pathname === "/stations/descriptions") {
+  if (pathname === "/stations/adjectives") {
     return (
       <footer aria-label="Station navigation" className="station-next-footer">
         <NavigationLink
           className="station-next-link"
-          href="/?focus=descriptions"
+          href="/?focus=adjectives"
           loadingMap
         >
           <span>Return to map</span>
@@ -82,8 +92,7 @@ export function StationNextFooter() {
         loadingStation={nextStation.label}
       >
         <span className="station-next-copy">
-          <span>Next station:</span>
-          <span className="station-next-name">{nextStation.label}</span>
+          Next station: {nextStation.label}
         </span>
         <NextArrowIcon />
       </NavigationLink>

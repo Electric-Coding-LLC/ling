@@ -44,34 +44,7 @@
 }
 
 .station-next-copy {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 0.25em;
-}
-
-.station-next-copy > span {
-  display: block;
   line-height: 1;
-}
-
-.station-next-name {
-  color: var(--foreground);
-}
-
-.station-next-link-sound .station-next-name {
-  color: var(--sound);
-}
-
-.station-next-link-travel .station-next-name {
-  color: var(--travel);
-}
-
-.station-next-link-writing .station-next-name {
-  color: var(--writing);
-}
-
-.station-next-link-vocabulary .station-next-name {
-  color: var(--vocabulary);
 }
 
 .station-next-arrow {
@@ -111,6 +84,7 @@
 .station-page-mora .station-heading,
 .station-page-pitch-accent .station-heading,
 .station-page-vocabulary .station-heading,
+.station-page-grammar .station-heading,
 .station-page-kana .station-heading,
 .station-page-hiragana .station-heading,
 .station-page-katakana .station-heading,
@@ -262,8 +236,16 @@
   color: var(--writing);
 }
 
+.station-membership-kanji {
+  color: var(--kanji);
+}
+
 .station-membership-vocabulary {
   color: var(--vocabulary);
+}
+
+.station-membership-grammar {
+  color: var(--grammar);
 }
 
 .station-membership-travel {
@@ -305,8 +287,14 @@
   gap: 0.65rem;
 }
 
-.travel-intro p {
+.travel-intro p,
+.kanji-intro p {
   margin: 0;
+}
+
+.kanji-intro {
+  display: grid;
+  gap: 0.65rem;
 }
 
 .japanese-orientation {
@@ -317,28 +305,6 @@
 .japanese-orientation-lead {
   color: var(--foreground);
   font-size: 1.05rem;
-}
-
-.japanese-lines {
-  display: grid;
-  gap: 1.15rem;
-  margin: -0.15rem 0 0;
-}
-
-.japanese-line {
-  display: grid;
-  gap: 0.3rem;
-}
-
-.japanese-line h2 {
-  margin: 0;
-  color: var(--foreground);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.japanese-line p {
-  margin: 0;
 }
 
 .japan-orientation,
@@ -360,23 +326,82 @@
   font-size: 1.05rem;
 }
 
-.japan-learning,
-.foundation-line-learning {
+.japan-learning {
   display: grid;
   gap: 0.75rem;
 }
 
-.japan-learning h2,
-.foundation-line-learning h2 {
+.japan-learning h2 {
   margin: 0;
   color: var(--foreground);
   font-size: 1.35rem;
   font-weight: 600;
 }
 
-.foundation-line-orientation-lead p,
-.foundation-line-learning p {
+.foundation-line-orientation-lead p {
   margin: 0;
+}
+
+.foundation-line-tour {
+  display: grid;
+  width: min(100%, 38rem);
+  gap: 1rem;
+}
+
+.foundation-line-tour > h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.foundation-line-tour-list {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.foundation-line-tour-stop {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.foundation-line-tour-stop h3,
+.foundation-line-tour-stop p {
+  margin: 0;
+}
+
+.foundation-line-tour-stop h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.foundation-line-tour-stop a {
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.foundation-line-tour-stop a:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+.foundation-line-tour-stop p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.japan-learning > .foundation-line-tour,
+.kana-guide > .foundation-line-tour,
+.kanji-guide > .foundation-line-tour {
+  margin-bottom: 1.25rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .foundation-line-tour-stop a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
 }
 
 .station-page-japan .travel-reference,
@@ -2395,6 +2420,10 @@
 }
 
 .vocabulary-review-content {
+  --vocabulary-review-japanese-size: clamp(1.75rem, 9vw, 2.5rem);
+  --vocabulary-review-latin-size: clamp(1.5rem, 7vw, 2rem);
+  --vocabulary-review-secondary-size: 0.8rem;
+
   display: flex;
   width: 100%;
   min-height: 12rem;
@@ -2402,6 +2431,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 1rem;
+  color: var(--foreground);
+  text-align: center;
 }
 
 .vocabulary-review-direction-label {
@@ -2410,9 +2441,11 @@
   font-size: 0.75rem;
 }
 
-.vocabulary-review-prompt {
-  color: var(--muted);
-  font-size: 1rem;
+.vocabulary-review-prompt,
+.vocabulary-review-meaning {
+  color: var(--foreground);
+  font-size: var(--vocabulary-review-latin-size);
+  line-height: 1.2;
 }
 
 .vocabulary-review-answer-slot {
@@ -2431,7 +2464,22 @@
 }
 
 .vocabulary-review-answer .pitch-contour {
-  --pitch-character-size: clamp(1.75rem, 9vw, 2.5rem);
+  --pitch-character-size: var(--vocabulary-review-japanese-size);
+}
+
+.vocabulary-review-answer .pitch-contour-word {
+  line-height: 1.2;
+}
+
+.vocabulary-review-content .pitch-contour-romaji {
+  color: var(--muted);
+  font-size: var(--vocabulary-review-secondary-size);
+}
+
+.vocabulary-review-word {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: var(--vocabulary-review-japanese-size);
+  line-height: 1.2;
 }
 
 .vocabulary-review-prompt-word {
@@ -2443,11 +2491,97 @@
 
 .vocabulary-review-reading {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: var(--vocabulary-review-secondary-size);
+  line-height: 1.25;
 }
 
-.vocabulary-review-meaning {
-  font-size: 1.15rem;
+.vocabulary-review-romaji {
+  color: var(--muted);
+  font-size: var(--vocabulary-review-secondary-size);
+  line-height: 1.25;
+}
+
+.grammar-guide {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grammar-intro {
+  display: grid;
+  max-width: 43rem;
+  gap: 0.65rem;
+}
+
+.grammar-intro p {
+  margin: 0;
+}
+
+.grammar-reference-list {
+  display: grid;
+  width: min(100%, 43rem);
+  gap: 0.75rem;
+}
+
+.grammar-reference-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+.grammar-reference-item p {
+  margin: 0;
+}
+
+.grammar-reference-japanese {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: clamp(1.4rem, 5vw, 1.85rem);
+  line-height: 1.35;
+}
+
+.grammar-reference-meaning {
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+.grammar-reference-pattern {
+  margin-top: 0.2rem !important;
+  color: var(--grammar);
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.grammar-reference-note,
+.grammar-review-note {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.grammar-reference-item[data-known="true"] .grammar-reference-japanese {
+  color: var(--known);
+}
+
+.grammar-review-content {
+  min-height: 15rem;
+}
+
+.grammar-review-answer {
+  gap: 0.7rem;
+}
+
+.grammar-review-pattern {
+  color: var(--grammar);
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: var(--vocabulary-review-secondary-size);
+  font-weight: 600;
+}
+
+.grammar-review-note {
+  max-width: 28rem;
 }
 
 .kanji-intro {

@@ -141,3 +141,45 @@ export const vocabularyKnowledge = sqliteTable(
     }),
   ],
 );
+
+export const kanjiKnowledge = sqliteTable(
+  "kanji_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemId: text("item_id").notNull(),
+    reviewDirection: text("review_direction").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [
+        table.userId,
+        table.itemId,
+        table.reviewDirection,
+      ],
+    }),
+  ],
+);
+
+export const grammarKnowledge = sqliteTable(
+  "grammar_knowledge",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemId: text("item_id").notNull(),
+    reviewDirection: text("review_direction").notNull(),
+    knownAt: integer("known_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [
+        table.userId,
+        table.itemId,
+        table.reviewDirection,
+      ],
+    }),
+  ],
+);

@@ -1,4 +1,5 @@
 import { NavigationLink } from "../../navigation-feedback";
+import { FoundationLineTour } from "../foundation-line-tour";
 import { StationTopbar } from "../station-topbar";
 
 export const dynamic = "force-static";
@@ -11,8 +12,11 @@ export default function KanaPage() {
         <header className="station-heading">
           <div className="station-heading-row">
             <div aria-label="Lines" className="station-memberships">
-              <span className="station-membership station-membership-writing" data-line="writing">
-                Writing
+              <span className="station-membership station-membership-foundation" data-line="foundation">
+                Foundations
+              </span>
+              <span className="station-membership station-membership-writing" data-line="kana">
+                Kana
               </span>
             </div>
           </div>
@@ -33,12 +37,14 @@ export default function KanaPage() {
             </p>
           </div>
 
+          <FoundationLineTour tourId="kana" />
+
           <p className="kana-table-intro">
-            The{" "}
+            Both scripts use the five sounds introduced at{" "}
             <NavigationLink href="/stations/vowels" loadingStation="Vowels">
               Vowels
             </NavigationLink>{" "}
-            station shows the five sounds shared across both sets.
+            on the Sound line.
           </p>
         </section>
       </div>

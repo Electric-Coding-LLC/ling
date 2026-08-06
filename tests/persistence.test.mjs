@@ -48,6 +48,14 @@ test("generated migrations create the account-scoped learning boundaries", async
     new URL("drizzle/0010_lowly_kat_farrell.sql", root),
     "utf8",
   );
+  const kanjiKnowledgeMigration = await readFile(
+    new URL("drizzle/0011_oval_mathemanic.sql", root),
+    "utf8",
+  );
+  const grammarKnowledgeMigration = await readFile(
+    new URL("drizzle/0012_last_misty_knight.sql", root),
+    "utf8",
+  );
   const database = new DatabaseSync(":memory:");
   database.exec("PRAGMA foreign_keys = ON");
   database.exec(userMigration);
@@ -76,6 +84,8 @@ test("generated migrations create the account-scoped learning boundaries", async
   ).run("legacy-learner", "nouns", 5);
   database.exec(directionalVocabularyKnowledgeMigration);
   database.exec(networkPlaceVisitsMigration.replaceAll("--> statement-breakpoint", ""));
+  database.exec(kanjiKnowledgeMigration);
+  database.exec(grammarKnowledgeMigration);
 
   const migratedVocabularyKnowledge = database.prepare(
     "SELECT review_direction FROM vocabulary_knowledge WHERE user_id = ? AND item_id = ?",
@@ -112,8 +122,10 @@ test("generated migrations create the account-scoped learning boundaries", async
     .all()
     .map(({ name }) => name);
   assert.deepEqual(tables, [
+    "grammar_knowledge",
     "hiragana_knowledge",
     "kana_extension_knowledge",
+    "kanji_knowledge",
     "katakana_knowledge",
     "mora_timing_knowledge",
     "network_place_visits",
@@ -186,6 +198,20 @@ test("generated migrations create the account-scoped learning boundaries", async
   assert.equal(vocabularyKnowledgeForeignKeys[0].table, "users");
   assert.equal(vocabularyKnowledgeForeignKeys[0].on_delete, "CASCADE");
 
+  const kanjiKnowledgeForeignKeys = database
+    .prepare("PRAGMA foreign_key_list(kanji_knowledge)")
+    .all();
+  assert.equal(kanjiKnowledgeForeignKeys.length, 1);
+  assert.equal(kanjiKnowledgeForeignKeys[0].table, "users");
+  assert.equal(kanjiKnowledgeForeignKeys[0].on_delete, "CASCADE");
+
+  const grammarKnowledgeForeignKeys = database
+    .prepare("PRAGMA foreign_key_list(grammar_knowledge)")
+    .all();
+  assert.equal(grammarKnowledgeForeignKeys.length, 1);
+  assert.equal(grammarKnowledgeForeignKeys[0].table, "users");
+  assert.equal(grammarKnowledgeForeignKeys[0].on_delete, "CASCADE");
+
   const romajiKnowledgeForeignKeys = database
     .prepare("PRAGMA foreign_key_list(romaji_knowledge)")
     .all();
@@ -234,6 +260,30 @@ test("generated migrations create the account-scoped learning boundaries", async
   database.prepare(
     "INSERT INTO vocabulary_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
   ).run("learner-1", "neko", "japanese-to-meaning", 18);
+
+  database.prepare(
+    "INSERT INTO kanji_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "mizu", "writing-to-reading", 19);
+  assert.throws(() => {
+    database.prepare(
+      "INSERT INTO kanji_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+    ).run("learner-1", "mizu", "writing-to-reading", 20);
+  }, /UNIQUE constraint failed/);
+  database.prepare(
+    "INSERT INTO kanji_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "mizu", "reading-to-writing", 21);
+
+  database.prepare(
+    "INSERT INTO grammar_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "watashi-wa-kurisu-desu", "meaning-to-japanese", 22);
+  assert.throws(() => {
+    database.prepare(
+      "INSERT INTO grammar_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+    ).run("learner-1", "watashi-wa-kurisu-desu", "meaning-to-japanese", 23);
+  }, /UNIQUE constraint failed/);
+  database.prepare(
+    "INSERT INTO grammar_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
+  ).run("learner-1", "watashi-wa-kurisu-desu", "japanese-to-meaning", 24);
 
   database.prepare(
     "INSERT INTO mora_timing_knowledge (user_id, review_id, known_at) VALUES (?, ?, ?)",
@@ -311,6 +361,14 @@ test("generated migrations create the account-scoped learning boundaries", async
   );
   assert.equal(
     database.prepare("SELECT COUNT(*) AS count FROM vocabulary_knowledge").get().count,
+    0,
+  );
+  assert.equal(
+    database.prepare("SELECT COUNT(*) AS count FROM kanji_knowledge").get().count,
+    0,
+  );
+  assert.equal(
+    database.prepare("SELECT COUNT(*) AS count FROM grammar_knowledge").get().count,
     0,
   );
   assert.equal(

@@ -354,8 +354,8 @@ export function HiraganaGuide() {
       <header className="station-heading">
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
-            <span className="station-membership station-membership-writing" data-line="writing">
-              Writing
+            <span className="station-membership station-membership-writing" data-line="kana">
+              Kana
             </span>
           </div>
           <div className="station-heading-actions">

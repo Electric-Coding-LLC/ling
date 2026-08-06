@@ -1,7 +1,9 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
+  grammarKnowledge,
   hiraganaKnowledge,
+  kanjiKnowledge,
   kanaExtensionKnowledge,
   katakanaKnowledge,
   moraTimingKnowledge,
@@ -12,10 +14,28 @@ import {
   vocabularyKnowledge,
 } from "@/db/schema";
 import {
+  getGrammarItemIds,
+  GRAMMAR_REVIEW_DIRECTIONS,
+  GRAMMAR_STATION_IDS,
+  isGrammarItemId,
+  isGrammarReviewDirection,
+  type GrammarKnowledge,
+  type GrammarReviewDirection,
+} from "./grammar";
+import {
   BASIC_HIRAGANA,
   isBasicHiragana,
   type BasicHiragana,
 } from "./hiragana";
+import {
+  getKanjiItemIds,
+  isKanjiItemId,
+  isKanjiReviewDirection,
+  KANJI_REVIEW_DIRECTIONS,
+  KANJI_STATION_IDS,
+  type KanjiKnowledge,
+  type KanjiReviewDirection,
+} from "./kanji";
 import {
   BASIC_KATAKANA,
   isBasicKatakana,
@@ -113,7 +133,11 @@ export async function listVisitedNetworkPlaces(
     .where(eq(networkPlaceVisits.userId, userId));
 
   return rows
-    .map((row) => row.placeId === "words" ? "pointing" : row.placeId)
+    .map((row) => {
+      if (row.placeId === "words") return "pointing";
+      if (row.placeId === "writing") return "kana";
+      return row.placeId;
+    })
     .filter(isNetworkPlaceId);
 }
 
@@ -132,7 +156,9 @@ export async function listCompletedNetworkPlaces(
   userId: string,
 ): Promise<CompletableNetworkPlaceId[]> {
   const [
+    knownGrammar,
     knownHiragana,
+    knownKanji,
     knownKatakana,
     knownKanaExtensionPatterns,
     knownMoraTimingReviews,
@@ -140,7 +166,9 @@ export async function listCompletedNetworkPlaces(
     knownRomaji,
     knownVocabulary,
   ] = await Promise.all([
+    listGrammarKnowledge(userId),
     listKnownHiragana(userId),
+    listKanjiKnowledge(userId),
     listKnownKatakana(userId),
     listKnownKanaExtensionPatterns(userId),
     listKnownMoraTimingReviews(userId),
@@ -168,6 +196,19 @@ export async function listCompletedNetworkPlaces(
   if (BASIC_HIRAGANA.every((kana) => knownHiragana.includes(kana))) {
     completed.push("hiragana");
   }
+  for (const stationId of KANJI_STATION_IDS) {
+    if (
+      KANJI_REVIEW_DIRECTIONS.every((direction) =>
+        getKanjiItemIds(stationId).every((itemId) =>
+          knownKanji.some((knowledge) => (
+            knowledge.itemId === itemId && knowledge.direction === direction
+          )),
+        ),
+      )
+    ) {
+      completed.push(stationId);
+    }
+  }
   if (BASIC_KATAKANA.every((kana) => knownKatakana.includes(kana))) {
     completed.push("katakana");
   }
@@ -190,6 +231,19 @@ export async function listCompletedNetworkPlaces(
       VOCABULARY_REVIEW_DIRECTIONS.every((direction) =>
         getVocabularyItemIds(stationId).every((itemId) =>
           knownVocabulary.some((knowledge) => (
+            knowledge.itemId === itemId && knowledge.direction === direction
+          )),
+        ),
+      )
+    ) {
+      completed.push(stationId);
+    }
+  }
+  for (const stationId of GRAMMAR_STATION_IDS) {
+    if (
+      GRAMMAR_REVIEW_DIRECTIONS.every((direction) =>
+        getGrammarItemIds(stationId).every((itemId) =>
+          knownGrammar.some((knowledge) => (
             knowledge.itemId === itemId && knowledge.direction === direction
           )),
         ),
@@ -737,6 +791,192 @@ export async function listVocabularyKnowledge(
       isVocabularyItemId(row.itemId)
       && isVocabularyReviewDirection(row.direction)
     ));
+}
+
+export async function listKanjiKnowledge(
+  userId: string,
+): Promise<KanjiKnowledge[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({
+      direction: kanjiKnowledge.reviewDirection,
+      itemId: kanjiKnowledge.itemId,
+    })
+    .from(kanjiKnowledge)
+    .where(eq(kanjiKnowledge.userId, userId));
+
+  return rows.filter((row): row is KanjiKnowledge => (
+    isKanjiItemId(row.itemId)
+    && isKanjiReviewDirection(row.direction)
+  ));
+}
+
+export async function listGrammarKnowledge(
+  userId: string,
+): Promise<GrammarKnowledge[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({
+      direction: grammarKnowledge.reviewDirection,
+      itemId: grammarKnowledge.itemId,
+    })
+    .from(grammarKnowledge)
+    .where(eq(grammarKnowledge.userId, userId));
+
+  return rows.filter((row): row is GrammarKnowledge => (
+    isGrammarItemId(row.itemId)
+    && isGrammarReviewDirection(row.direction)
+  ));
+}
+
+export async function setGrammarItemKnown(
+  userId: string,
+  itemId: string,
+  direction: GrammarReviewDirection,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(grammarKnowledge)
+      .where(and(
+        eq(grammarKnowledge.userId, userId),
+        eq(grammarKnowledge.itemId, itemId),
+        eq(grammarKnowledge.reviewDirection, direction),
+      ));
+    return;
+  }
+
+  await db
+    .insert(grammarKnowledge)
+    .values({
+      userId,
+      itemId,
+      reviewDirection: direction,
+      knownAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [
+        grammarKnowledge.userId,
+        grammarKnowledge.itemId,
+        grammarKnowledge.reviewDirection,
+      ],
+      set: { knownAt: new Date() },
+    });
+}
+
+export async function setGrammarItemsKnown(
+  userId: string,
+  itemIds: readonly string[],
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(grammarKnowledge)
+      .where(and(
+        eq(grammarKnowledge.userId, userId),
+        inArray(grammarKnowledge.itemId, [...itemIds]),
+      ));
+    return;
+  }
+
+  const knownAt = new Date();
+  await db
+    .insert(grammarKnowledge)
+    .values(itemIds.flatMap((itemId) =>
+      GRAMMAR_REVIEW_DIRECTIONS.map((reviewDirection) => ({
+        userId,
+        itemId,
+        reviewDirection,
+        knownAt,
+      })),
+    ))
+    .onConflictDoUpdate({
+      target: [
+        grammarKnowledge.userId,
+        grammarKnowledge.itemId,
+        grammarKnowledge.reviewDirection,
+      ],
+      set: { knownAt },
+    });
+}
+
+export async function setKanjiItemKnown(
+  userId: string,
+  itemId: string,
+  direction: KanjiReviewDirection,
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(kanjiKnowledge)
+      .where(and(
+        eq(kanjiKnowledge.userId, userId),
+        eq(kanjiKnowledge.itemId, itemId),
+        eq(kanjiKnowledge.reviewDirection, direction),
+      ));
+    return;
+  }
+
+  await db
+    .insert(kanjiKnowledge)
+    .values({
+      userId,
+      itemId,
+      reviewDirection: direction,
+      knownAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [
+        kanjiKnowledge.userId,
+        kanjiKnowledge.itemId,
+        kanjiKnowledge.reviewDirection,
+      ],
+      set: { knownAt: new Date() },
+    });
+}
+
+export async function setKanjiItemsKnown(
+  userId: string,
+  itemIds: readonly string[],
+  known: boolean,
+): Promise<void> {
+  const db = await getDb();
+
+  if (!known) {
+    await db
+      .delete(kanjiKnowledge)
+      .where(and(
+        eq(kanjiKnowledge.userId, userId),
+        inArray(kanjiKnowledge.itemId, [...itemIds]),
+      ));
+    return;
+  }
+
+  const knownAt = new Date();
+  await db
+    .insert(kanjiKnowledge)
+    .values(itemIds.flatMap((itemId) =>
+      KANJI_REVIEW_DIRECTIONS.map((reviewDirection) => ({
+        userId,
+        itemId,
+        reviewDirection,
+        knownAt,
+      })),
+    ))
+    .onConflictDoUpdate({
+      target: [
+        kanjiKnowledge.userId,
+        kanjiKnowledge.itemId,
+        kanjiKnowledge.reviewDirection,
+      ],
+      set: { knownAt },
+    });
 }
 
 export async function setVocabularyItemKnown(

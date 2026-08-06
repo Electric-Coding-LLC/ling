@@ -33,6 +33,7 @@ The network describes the language itself, not a course-completion ladder. These
 - Teaching, drilling, and testing happen inside stations.
 - Every connection expresses a meaningful linguistic relationship.
 - An interchange is one concept belonging to multiple lines, not duplicated content.
+- A category station on a named spine teaches a concise overview of every current station on its branch.
 - The whole mapped network remains browsable.
 - The network grows from real study needs, one useful addition at a time.
 - Existing geography stays stable when possible so the learner can build a mental map.
@@ -87,8 +88,8 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 
 ## Current Seed Network
 
-The current mapped network is the Foundations spine with four populated
-territories and twenty-seven stations:
+The current mapped network is the Foundations spine with six populated
+territories and thirty-seven stations:
 
 ```text
 Japanese
@@ -103,16 +104,19 @@ Japanese
    │
  Sound ─────── Vowels ────── Mora ────── Pitch
    │
- Writing ───── Kana ──────┬─ Hiragana ───── Kanji
-   │                       └─ Katakana ──┬─ Dakuten & Handakuten
-   │                                     └─ Yōon
+ Kana ────────────────────┬─ Hiragana ─────────────┐
+   │                      └─ Katakana ─────────────┴─ Dakuten & Handakuten ── Yōon
+   │
+ Kanji ─────── Compounds ─────── Endings
    │
  Vocabulary ── Pointing ── People ── Needs ── Movement ── Time ── Actions ── Descriptions
+   │
+ Grammar ───── Statements ── Questions ── Possession ── Existence ── Verbs ── Tense ── Negation ── Adjectives
 ```
 
 `Japanese` opens the Foundations spine. `Rōmaji` follows as an orientation
-station before the spine reaches four regular category stations: Japan, Sound,
-Writing, and Vocabulary. These category stations organize their horizontal
+station before the spine reaches six regular category stations: Japan, Sound,
+Kana, Kanji, Vocabulary, and Grammar. These category stations organize their horizontal
 branches. Japan also provides the visitor orientation at its station interior.
 The spine is an organizing axis rather than a prerequisite chain.
 
@@ -120,13 +124,17 @@ Japan branches to the peer reference stations `Introductions`, `Navigation`,
 `Food`, `Shopping`, and `Help`. Their shared horizontal depth makes clear that
 one does not need to be completed before another.
 
-Sound moves from `Vowels` to `Mora` and `Pitch`. Writing begins at `Kana` and
-forks to `Hiragana` and `Katakana`. `Kanji` follows Hiragana as a bridge from
-phonetic writing into meaning-bearing characters, while `Dakuten & Handakuten`
-and `Yōon` extend both Kana systems. Vocabulary moves through `Pointing`,
+Sound moves from `Vowels` to `Mora` and `Pitch`. Kana branches into `Hiragana`
+and `Katakana`, which converge into `Dakuten & Handakuten` and `Yōon`. Kanji
+has its own Foundation line and continues through word-level `Compounds` and
+`Endings`; those stations are
+the current content boundary, not the end of Kanji study. Vocabulary moves through `Pointing`,
 `People`, `Needs`, `Movement`, `Time`, `Actions`, and `Descriptions`. That
 order builds communicative range without restricting direct access to any
-station.
+station. Grammar then turns that early vocabulary into complete thoughts through
+`Statements`, `Questions`, `Possession`, `Existence`, `Verbs`, `Tense`,
+`Negation`, and `Adjectives`. Its serial row communicates conceptual dependency,
+not a prerequisite gate.
 
 `Vowels` uses the five shared Japanese vowels:
 
@@ -146,14 +154,16 @@ stations.
 
 ## Current Station Interiors
 
-`Japanese` introduces `日本語`, Ling, and the network in a compact orientation.
-It explains lines, stations, listening, and revisiting without imposing a
-course route.
+`Japanese` introduces the connected systems that make up the Foundations
+spine: Rōmaji, practical Japanese in context, sound, Kana, Kanji, vocabulary,
+and grammar. It teaches what each system contributes without imposing a course
+route.
 
 `Japan` introduces `日本`, gives a concise orientation to the country, and
-frames the Japan line as a small visitor reference. Its three starter
-expressions include short English sound cues so the orientation remains usable
-without first completing Rōmaji.
+teaches what the `Introductions`, `Navigation`, `Food`, `Shopping`, and `Help`
+stations prepare a visitor to do. Its three starter expressions include
+canonical Rōmaji so the orientation remains usable without first completing
+the Rōmaji station.
 
 `Rōmaji` presents the basic and combined Japanese sound charts in the same
 five-column form used by Hiragana and Katakana. Each cell shows only the
@@ -172,8 +182,12 @@ stations have a shuffled flashcard test but no score, progress, completion,
 scheduling, or persistence. `Help` covers urgent assistance, illness, emergency
 services, a lost passport, and finding an English speaker.
 
+`Sound` teaches the three layers developed by its branch: five stable vowel
+sounds, mora-based rhythm, and high-low pitch patterns.
+
 `Kana` defines the two phonetic scripts and explains the different roles of
-Hiragana and Katakana. It begins the Writing territory.
+Hiragana and Katakana, then teaches how Dakuten, Handakuten, and Yōon extend
+their basic sound sets. It begins the Kana territory.
 
 `Vowels` begins Sound study with the five sounds shared by Hiragana and
 Katakana. Each of the ten Kana opens a flashcard with bundled pronunciation, a
@@ -184,23 +198,32 @@ playable example, and a translation.
 `Katakana` introduces why Japanese uses a second Kana system, then presents the same 46 basic sounds with the same chart and flashcard interaction as Hiragana. Its examples emphasize the borrowed words and foreign names for which Katakana is commonly used.
 
 `Kanji` introduces meaning-bearing characters through familiar, useful words
-rather than an isolated character chart. Four audible examples show a complete
-Kanji word, combined Kanji, and Kanji completed by Hiragana. Each example keeps
-the written form, Kana reading, meaning, and sound together and notes that a
-character may have other readings in other words.
+rather than an isolated character chart. It also teaches how `Compounds` join
+multiple Kanji into one word and how `Endings` pair a Kanji core with Kana.
+Each example keeps the written form, Kana reading, meaning, and sound together
+and notes that a character may have other readings in other words.
 
 `Dakuten & Handakuten` teaches the two marks that change familiar Kana sounds. Enlarged mark forms lead into one complete five-column chart of marked Hiragana and Katakana. Every distinct chart entry opens a flashcard with pronunciation, a playable example, a translation, and private self-reported progress.
 
 `Yōon` teaches how small `ゃ`, `ゅ`, and `ょ` and their Katakana matches join the Kana before them to make one sound. One complete three-column chart keeps every Hiragana and Katakana combination visible, and every entry opens the same flashcard and private progress interaction used by the preceding Kana stations.
 
-The Vocabulary line builds a practical lexicon in a useful communicative
-sequence: `Pointing`, `People`, `Needs`, `Movement`, `Time`, `Actions`, and
+The Vocabulary category station teaches the practical role of every current
+group: `Pointing`, `People`, `Needs`, `Movement`, `Time`, `Actions`, and
 `Descriptions`. Each independently accessible station is a listening-first
 reference with the Japanese written form, Kana reading where Kanji appears,
 canonical rōmaji, meaning, bundled audio, and flashcard review in either the
 English-to-Japanese or Japanese-to-English direction. Progress remains scoped
 to the active station. The retired `/stations/words` route leads to `Pointing`
 so existing links and stored learner state remain useful.
+
+The Grammar category station teaches what each current sentence tool contributes:
+the topic-comment shape, questions, noun relationships, existence, polite
+action sentences, nonpast and past, negation, and the two main adjective
+patterns. Every station uses complete Japanese sentences, concise pattern
+notes, and the same two-way hidden-answer review flow used by other recall-based
+stations. Grammar progress is private and separate from Vocabulary progress.
+`Adjectives` is only the current content boundary; later sentence systems
+extend the line when they are ready to be taught.
 
 `Mora` first defines a mora as one rhythmic timing unit, then presents purpose-chosen playable examples with plain inline beat divisions. It teaches small `っ` and `ッ` as a held beat and the Katakana long-vowel mark `ー` as an added beat. Audible Kana units are independently playable; silent timing marks remain visible in the beat division.
 
@@ -210,7 +233,7 @@ All pronunciation is bundled synthetic speech played at its authored speed. Stat
 
 ## Not Yet
 
-The complete Japanese network, further Japan-line depth, grammar stations, a global romaji setting,
+The complete Japanese network, further Japan-line depth, later grammar stations, a global romaji setting,
 generic graph infrastructure, automated recommendations or routing, deck
 management, automated scheduling, speech evaluation, content-management
 tooling, metrics, and a generic multilingual model wait until direct use

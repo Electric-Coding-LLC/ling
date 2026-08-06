@@ -109,10 +109,11 @@ test("Kanji-bearing vocabulary keeps display writing separate from pronunciation
 
 test("all vocabulary stations reuse one station-scoped review and persistence surface", async () => {
   const guide = await readFile(new URL("app/stations/vocabulary-guide.tsx", root), "utf8");
+  const wordReview = await readFile(new URL("app/stations/word-review.tsx", root), "utf8");
+  const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
   const handlers = await readFile(new URL("app/api/stations/vocabulary-route-handlers.ts", root), "utf8");
   const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
   const dynamicKnowledge = await readFile(new URL("app/api/stations/[vocabularyStation]/knowledge/route.ts", root), "utf8");
-  const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
 
   assert.match(guide, /VocabularyGuide\(\{ station \}/);
   assert.match(guide, /`\/api\/stations\/\$\{station\.id\}\/introduction`/);
@@ -123,8 +124,26 @@ test("all vocabulary stations reuse one station-scoped review and persistence su
   assert.match(guide, /<span className="vocabulary-reference-written"/);
   assert.match(guide, /<FlashcardCountdown/);
   assert.match(guide, /onAnswer=\{answerCard\}/);
-  assert.match(guide, /<span>English → Japanese<\/span>/);
-  assert.match(guide, /<span>Japanese → English<\/span>/);
+  assert.match(guide, /<WordReviewLauncher/);
+  assert.match(guide, /<WordReviewDialog/);
+  assert.match(guide, /label: "English → Japanese"/);
+  assert.match(guide, /label: "Japanese → English"/);
+  assert.match(guide, /function activateCard\(\) \{[\s\S]*setAnswerRevealed\(true\);[\s\S]*playItem\(activeCard\);[\s\S]*\}/);
+  assert.match(guide, /onActivate=\{activateCard\}/);
+  assert.match(guide, /<FlashcardCountdown onComplete=\{activateCard\} \/>/);
+  assert.match(wordReview, /export function WordReviewLauncher/);
+  assert.match(wordReview, /export function WordReviewDialog/);
+  assert.match(wordReview, /className="vocabulary-review-launcher"/);
+  assert.match(wordReview, /className="hiragana-test-dialog"/);
+  assert.match(wordReview, /event\.key !== "Escape"/);
+  assert.match(wordReview, /dialog\.showModal\(\)/);
+  assert.match(styles, /\.vocabulary-review-prompt,\s*\.vocabulary-review-meaning\s*\{[^}]*font-size:\s*var\(--vocabulary-review-latin-size\)/s);
+  assert.match(styles, /\.vocabulary-review-word\s*\{[^}]*font-family:\s*"Hiragino Sans"[^}]*font-size:\s*var\(--vocabulary-review-japanese-size\)/s);
+  assert.match(styles, /\.vocabulary-review-answer \.pitch-contour\s*\{[^}]*--pitch-character-size:\s*var\(--vocabulary-review-japanese-size\)/s);
+  assert.match(styles, /\.vocabulary-review-answer \.pitch-contour-word\s*\{[^}]*line-height:\s*1\.2/s);
+  assert.match(styles, /\.vocabulary-review-content \.pitch-contour-romaji\s*\{[^}]*color:\s*var\(--muted\)[^}]*font-size:\s*var\(--vocabulary-review-secondary-size\)/s);
+  assert.match(styles, /\.vocabulary-review-reading\s*\{[^}]*font-size:\s*var\(--vocabulary-review-secondary-size\)/s);
+  assert.match(styles, /\.vocabulary-review-romaji\s*\{[^}]*color:\s*var\(--muted\)[^}]*font-size:\s*var\(--vocabulary-review-secondary-size\)/s);
   assert.match(handlers, /getVocabularyItemIds\(stationId\)/);
   assert.match(handlers, /getVocabularyStation\(stationId\)\.items\.some/);
   assert.match(handlers, /setVocabularyItemsKnown\(user\.id, itemIds, body\.known\)/);
@@ -145,21 +164,22 @@ test("each vocabulary route is a thin direct page and the legacy Words route red
   assert.match(legacyPage, /redirect\("\/stations\/pointing"\)/);
 });
 
-test("Kanji introduces characters through useful words rather than an isolated chart", async () => {
-  const guide = await readFile(new URL("app/stations/kanji/kanji-guide.tsx", root), "utf8");
-  assert.match(guide, /Kanji are characters that carry meaning inside Japanese words/);
-  assert.match(guide, /Ling introduces Kanji through words you can use/);
-  assert.match(guide, /id: "hito"/);
-  assert.match(guide, /id: "namae"/);
-  assert.match(guide, /id: "taberu"/);
-  assert.match(guide, /id: "ookii"/);
-  assert.doesNotMatch(guide, /Kanji chart|memorize.*characters/i);
-});
-
-test("the optional station footer follows the approved Kanji and vocabulary sequence", async () => {
+test("the optional station footer follows the approved Kanji, vocabulary, and Grammar sequence", async () => {
   const footer = await readFile(new URL("app/stations/station-next-footer.tsx", root), "utf8");
-  assert.match(footer, /"\/stations\/hiragana": \{ href: "\/stations\/kanji", label: "Kanji"/);
-  assert.match(footer, /"\/stations\/kanji": \{ href: "\/stations\/katakana", label: "Katakana"/);
+  const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
+  assert.match(footer, /<span className="station-next-copy">\s*Next station: \{nextStation\.label\}\s*<\/span>/s);
+  assert.doesNotMatch(styles, /\.station-next-name/);
+  for (const [from, to] of [
+    ["hiragana", "katakana"],
+    ["katakana", "sound-marks"],
+    ["sound-marks", "combined-sounds"],
+    ["combined-sounds", "kanji"],
+    ["kanji", "compounds"],
+    ["compounds", "endings"],
+    ["endings", "vocabulary"],
+  ]) {
+    assert.match(footer, new RegExp(`"/stations/${from}": \\{ href: "/stations/${to}"`));
+  }
   for (const [from, to] of [
     ["vocabulary", "pointing"],
     ["pointing", "people"],
@@ -168,9 +188,18 @@ test("the optional station footer follows the approved Kanji and vocabulary sequ
     ["movement", "time"],
     ["time", "actions"],
     ["actions", "descriptions"],
+    ["descriptions", "grammar"],
+    ["grammar", "statements"],
+    ["statements", "questions"],
+    ["questions", "possession"],
+    ["possession", "existence"],
+    ["existence", "verbs"],
+    ["verbs", "tense"],
+    ["tense", "negation"],
+    ["negation", "adjectives"],
   ]) {
     assert.match(footer, new RegExp(`"/stations/${from}": \\{ href: "/stations/${to}"`));
   }
-  assert.match(footer, /pathname === "\/stations\/descriptions"/);
-  assert.match(footer, /href="\/\?focus=descriptions"/);
+  assert.match(footer, /pathname === "\/stations\/adjectives"/);
+  assert.match(footer, /href="\/\?focus=adjectives"/);
 });

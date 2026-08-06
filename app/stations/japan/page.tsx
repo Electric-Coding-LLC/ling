@@ -1,4 +1,5 @@
 import { JAPAN_STARTER_PHRASES } from "../../../src/modules/travel";
+import { FoundationLineTour } from "../foundation-line-tour";
 import { StationTopbar } from "../station-topbar";
 import { TravelStation } from "../travel-station";
 
@@ -38,10 +39,11 @@ export default function JapanPage() {
                 aria-labelledby="japan-learning-title"
                 className="japan-learning"
               >
+                <FoundationLineTour tourId="japan" />
                 <h2 id="japan-learning-title">Three useful expressions</h2>
                 <p>
-                  These expressions are useful on a first trip. Tap each one to
-                  hear how it sounds.
+                  Listen to three expressions that are useful throughout a first
+                  trip: excuse me, thank you, and please.
                 </p>
               </section>
             </section>,

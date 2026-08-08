@@ -139,8 +139,9 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     /style=\{\{[\s\S]*width: `\$\{\([\s\S]*width \/ \(mobile \? MOBILE_VIEW_WIDTH : DESKTOP_VIEW_WIDTH\)[\s\S]*\) \* 100\}%`/,
   );
   assert.match(source, /className=\{`network-line network-line-\$\{line\}`\}/);
-  assert.match(styles, /\.network-line\s*\{[^}]*stroke-width:\s*4[^}]*stroke-linecap:\s*round[^}]*stroke-linejoin:\s*round/s);
-  assert.match(styles, /\.network-line-foundation\s*\{[^}]*stroke:\s*var\(--foreground\)[^}]*stroke-width:\s*4/s);
+  assert.match(styles, /\.network-line\s*\{[^}]*stroke-width:\s*6[^}]*stroke-linecap:\s*round[^}]*stroke-linejoin:\s*round/s);
+  assert.match(styles, /\.network-line\s*\{[^}]*vector-effect:\s*non-scaling-stroke/s);
+  assert.match(styles, /\.network-line-foundation\s*\{[^}]*stroke:\s*var\(--foreground\)[^}]*stroke-width:\s*6/s);
   assert.match(styles, /\.network-station-label\s*\{[^}]*font-size:\s*20px/s);
   assert.match(
     styles,
@@ -153,19 +154,20 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   );
   assert.match(
     styles,
-    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-outer\s*\{[^}]*r:\s*24px/s,
+    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-outer,[\s\S]*?\.network-map-mobile \.network-single-station-inner\s*\{[^}]*r:\s*16px/s,
   );
   assert.match(visuals, /network-interchange-inner/);
   assert.match(visuals, /network-single-station-inner/);
   assert.match(
     styles,
-    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-single-station-inner\s*\{[^}]*r:\s*11\.5px/s,
+    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-interchange-outer,[\s\S]*?\.network-map-mobile \.network-interchange-inner\s*\{[^}]*r:\s*20px/s,
   );
+  assert.match(styles, /\.network-interchange-outer\s*\{[^}]*fill:\s*var\(--surface\)[^}]*stroke-width:\s*22/s);
+  assert.match(styles, /\.network-single-station-outer\s*\{[^}]*fill:\s*var\(--surface\)[^}]*stroke-width:\s*22/s);
   assert.match(
     styles,
-    /@media \(max-width: 600px\)[\s\S]*\.network-map-mobile \.network-interchange-inner\s*\{[^}]*r:\s*15px/s,
+    /\.network-interchange-outer,[\s\S]*?\.network-single-station-inner\s*\{[^}]*vector-effect:\s*non-scaling-stroke/s,
   );
-  assert.match(styles, /\.network-single-station-outer\s*\{[^}]*stroke-width:\s*3/s);
   for (const line of ["sound", "writing", "kanji", "vocabulary", "grammar", "travel"]) {
     assert.match(
       styles,
@@ -180,7 +182,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   }
   assert.match(
     styles,
-    /\.network-single-station-inner\s*\{[^}]*fill:\s*var\(--network-station-inner-color\)[^}]*stroke:\s*var\(--network-station-inner-color\)/s,
+    /\.network-single-station-inner\s*\{[^}]*fill:\s*var\(--network-station-inner-color\)[^}]*stroke:\s*var\(--surface\)[^}]*stroke-width:\s*11[^}]*paint-order:\s*stroke fill/s,
   );
   assert.match(
     styles,
@@ -323,7 +325,7 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.match(source, /function startStationTravel\(focus: StationFocus\)[\s\S]*if \(focus === stationFocus\) return[\s\S]*setKeyboardTravel\(\{ from: stationFocus, id: keyboardTravelId\.current, to: focus \}\)/);
   assert.doesNotMatch(source, /function activateStation\(/);
   assert.match(source, /setTimeout\([\s\S]*360\);/);
-  assert.match(source, /<KeyboardTravelBeam[\s\S]*d=\{keyboardTravelPath\}[\s\S]*id=\{keyboardTravel\.id\}/);
+  assert.match(source, /<KeyboardTravelCapsule[\s\S]*d=\{keyboardTravelPath\}[\s\S]*id=\{keyboardTravel\.id\}/);
   assert.match(source, /new MouseEvent\("click", \{ bubbles: true, cancelable: true, view: window \}\)/);
   assert.equal((source.match(/aria-label="Explore the network with the arrow keys"/g) ?? []).length, 1);
   assert.match(source, /aria-label="Pan across the network or explore with the arrow keys"/);
@@ -348,11 +350,15 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
   assert.doesNotMatch(styles, /\.network-station-link\[data-visited="false"\]\s*\{[^}]*opacity:/s);
   assert.match(
     styles,
-    /\.network-station-link\[data-visited="false"\]\s*:is\([\s\S]*\.network-interchange-inner,[\s\S]*\.network-single-station-inner[\s\S]*fill:\s*color-mix\(in srgb, var\(--network-station-inner-color\) 45%, var\(--surface\)\)[\s\S]*stroke:\s*color-mix\(in srgb, var\(--network-station-inner-color\) 45%, var\(--surface\)\)/,
+    /\.network-station-link\[data-visited="false"\]\s*:is\([\s\S]*\.network-interchange-inner,[\s\S]*\.network-single-station-inner[\s\S]*fill:\s*color-mix\(in srgb, var\(--network-station-inner-color\) 45%, var\(--surface\)\)/,
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.network-station-link\[data-visited="false"\]\s*:is\([\s\S]*?\)\s*\{[^}]*stroke:/,
   );
   assert.match(
     styles,
-    /\.network-station-link\[data-visited="false"\]:is\(:hover, :focus-visible\)\s*:is\([\s\S]*fill:\s*var\(--network-station-inner-color\)[\s\S]*stroke:\s*var\(--network-station-inner-color\)/,
+    /\.network-station-link\[data-visited="false"\]:is\(:hover, :focus-visible\)\s*:is\([\s\S]*fill:\s*var\(--network-station-inner-color\)/,
   );
   assert.match(source, /fetch\("\/api\/network\/places"/);
   assert.match(source, /const currentLocationLabel = `Show current location: \$\{STATION_LABELS\[storedStationFocus\]\}`/);
@@ -392,11 +398,14 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     stationStyles,
     /\.network-utilities \.hiragana-test-trigger-wrap > :is\(button, a\):focus-visible \+ \.hiragana-test-tooltip\s*\{[^}]*transform:\s*translate\(-50%, 0\)/s,
   );
-  assert.match(styles, /@keyframes network-station-inner-pulse[\s\S]*0%, 100%\s*\{[^}]*opacity:\s*0\.28[\s\S]*50%\s*\{[^}]*opacity:\s*1/);
-  assert.match(styles, /\.network-keyboard-travel-beam\s*\{[^}]*stroke-dasharray:\s*16 200[^}]*animation:\s*network-keyboard-travel 320ms linear both/s);
-  assert.match(styles, /\.network-keyboard-travel-beam-contrast\s*\{[^}]*drop-shadow\(0 0 4px rgb\(242 241 235 \/ 0\.9\)\)[^}]*stroke-width:\s*9/s);
+  assert.match(styles, /@keyframes network-station-inner-pulse[\s\S]*0%, 100%\s*\{[^}]*fill:\s*color-mix\(in srgb, var\(--network-station-inner-color\) 45%, var\(--surface\)\)[\s\S]*50%\s*\{[^}]*fill:\s*var\(--network-station-inner-color\)/);
+  assert.match(styles, /\.network-station-link\[data-active="true"\] \.network-station-complete-icon\s*\{[^}]*animation:\s*network-station-complete-icon-pulse 2s ease-in-out infinite/s);
+  assert.match(source, /function KeyboardTravelCapsule\([\s\S]*motionRef\.current\?\.beginElement\(\)[\s\S]*<animateMotion[\s\S]*begin="indefinite"[\s\S]*dur=\{`\$\{NETWORK_TRAVEL_DURATION_MS\}ms`\}[\s\S]*path=\{d\}[\s\S]*ref=\{motionRef\}[\s\S]*rotate="auto"/);
+  assert.match(styles, /\.network-keyboard-travel-beam\s*\{[^}]*stroke-linecap:\s*round[^}]*vector-effect:\s*non-scaling-stroke/s);
+  assert.match(styles, /\.network-keyboard-travel-beam-contrast\s*\{[^}]*drop-shadow\(0 0 4px rgb\(242 241 235 \/ 0\.9\)\)[^}]*stroke-width:\s*12/s);
   assert.match(styles, /\.network-keyboard-travel-beam-core\s*\{[^}]*stroke:\s*var\(--surface\)[^}]*stroke-width:\s*4/s);
-  assert.match(styles, /@keyframes network-keyboard-travel\s*\{[\s\S]*stroke-dashoffset:\s*-100/);
+  assert.doesNotMatch(styles, /stroke-dasharray|stroke-dashoffset|@keyframes network-keyboard-travel/);
+  assert.match(source, /<KeyboardTravelCapsule[\s\S]*network-foundation-title/);
   assert.doesNotMatch(styles, /\.network-station-link:focus-visible[\s\S]{0,180}stroke-width/);
   assert.match(
     styles,
@@ -427,6 +436,7 @@ test("station and Welcome pages share one plain, focused return to the map", asy
   const shellStyles = await readFile(new URL("app/styles/shell.css", root), "utf8");
   const welcome = await readFile(new URL("app/welcome/page.tsx", root), "utf8");
   const networkMap = await readFile(new URL("app/network-map.tsx", root), "utf8");
+  const styles = await readFile(new URL("app/styles/network.css", root), "utf8");
 
   assert.match(topbar, /import type \{ NetworkPlaceId \} from "@\/src\/modules\/learning\/network"/);
   assert.match(topbar, /<StationVisitRecorder placeId=\{networkFocus\} \/>/);
@@ -444,11 +454,15 @@ test("station and Welcome pages share one plain, focused return to the map", asy
   assert.doesNotMatch(source, /NetworkGlyph|network-glyph-model/);
   assert.match(networkMap, /<NetworkStationSymbol completed=\{completed\} kind=\{kind\} \/>/);
   assert.match(networkMap, /<NetworkStationSymbol completed=\{completed\} kind=\{line\} \/>/);
-  assert.match(source, /<circle className="network-interchange-outer" r="28" \/>/);
+  assert.match(source, /<circle className="network-interchange-outer" r="20" \/>/);
+  assert.match(source, /network-interchange-inner-\$\{kind\}`\}[\s\S]*r="20"/);
   assert.match(source, /network-interchange-inner-\$\{kind\}`\}/);
-  assert.match(source, /network-single-station-outer-\$\{kind\}`\} r="15"/);
+  assert.match(source, /network-single-station-outer-\$\{kind\}`\} r="9"/);
+  assert.match(source, /network-single-station-inner-\$\{kind\}`\}[\s\S]*r="9"/);
   assert.match(source, /network-single-station-inner-\$\{kind\}`\}/);
   assert.match(source, /className=\{`network-station-complete-icon/);
+  assert.match(styles, /\.network-station-complete-icon\s*\{[^}]*stroke-width:\s*6/s);
+  assert.match(styles, /\.network-station-complete-icon\s*\{[^}]*vector-effect:\s*non-scaling-stroke/s);
   assert.match(source, /d="m-5 1 3 3 7-7"/);
   assert.doesNotMatch(source, /LingMarkStrokes|network-brand-station|<rect/);
 });

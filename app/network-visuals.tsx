@@ -25,10 +25,10 @@ export function NetworkStationSymbol({
   if (interchange) {
     return (
       <>
-        <circle className="network-interchange-outer" r="28" />
+        <circle className="network-interchange-outer" r="20" />
         <circle
           className={`network-interchange-inner network-interchange-inner-${kind}`}
-          r="16"
+          r="20"
         />
         {completed ? <StationCompleteIcon interchange /> : null}
       </>
@@ -37,10 +37,10 @@ export function NetworkStationSymbol({
 
   return (
     <>
-      <circle className={`network-single-station-outer network-single-station-outer-${kind}`} r="15" />
+      <circle className={`network-single-station-outer network-single-station-outer-${kind}`} r="9" />
       <circle
         className={`network-single-station-inner network-single-station-inner-${kind}`}
-        r="7"
+        r="9"
       />
       {completed ? <StationCompleteIcon /> : null}
     </>

@@ -453,18 +453,32 @@ function RoutePath({
   );
 }
 
-function KeyboardTravelBeam({ d, id }: { d: string; id: number }) {
+function KeyboardTravelCapsule({ d, id }: { d: string; id: number }) {
+  const motionRef = useRef<SVGAnimateMotionElement>(null);
+
+  useEffect(() => {
+    motionRef.current?.beginElement();
+  }, [d, id]);
+
   return (
     <g aria-hidden="true" className="network-keyboard-travel" key={id}>
-      <path
+      <line
         className="network-keyboard-travel-beam network-keyboard-travel-beam-contrast"
-        d={d}
-        pathLength="100"
+        x1="-8"
+        x2="8"
       />
-      <path
+      <line
         className="network-keyboard-travel-beam network-keyboard-travel-beam-core"
-        d={d}
-        pathLength="100"
+        x1="-8"
+        x2="8"
+      />
+      <animateMotion
+        begin="indefinite"
+        dur={`${NETWORK_TRAVEL_DURATION_MS}ms`}
+        fill="freeze"
+        path={d}
+        ref={motionRef}
+        rotate="auto"
       />
     </g>
   );
@@ -745,7 +759,7 @@ function NetworkView({
       />
 
       {keyboardTravel && keyboardTravelPath ? (
-        <KeyboardTravelBeam
+        <KeyboardTravelCapsule
           d={keyboardTravelPath}
           id={keyboardTravel.id}
           key={keyboardTravel.id}

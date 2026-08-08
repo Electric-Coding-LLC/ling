@@ -33,6 +33,11 @@ test("Grammar is an eight-station sentence-system track", () => {
   assert.equal(GRAMMAR_STATIONS.length, 8);
   for (const station of GRAMMAR_STATIONS) {
     assert.ok(station.items.length >= 3);
+    const audioItems = station.items.filter((item) => item.audio);
+    assert.ok(
+      audioItems.length === 0 || audioItems.length === station.items.length,
+      `${station.name} audio must cover the whole station or none of it`,
+    );
     for (const item of station.items) {
       assert.ok(item.japanese.endsWith("。"));
       assert.ok(item.meaning.endsWith(".") || item.meaning.endsWith("?"));
@@ -41,7 +46,29 @@ test("Grammar is an eight-station sentence-system track", () => {
     }
   }
 
-  assert.match(getGrammarStation("statements").description.join(" "), /marked by は/);
+  const statements = getGrammarStation("statements");
+  assert.match(statements.description.join(" "), /は marks that topic/);
+  assert.equal(statements.lesson?.spoken, "わ (wa)");
+  assert.match(statements.lesson?.explanation ?? "", /pronounced wa.*still written は/);
+  assert.deepEqual(
+    statements.lesson?.parts.map(({ japanese, label }) => [japanese, label]),
+    [
+      ["私", "topic · me"],
+      ["は", "topic marker · pronounced wa"],
+      ["クリス", "information · Chris"],
+      ["です", "polite ending"],
+    ],
+  );
+  assert.deepEqual(
+    statements.items.map(({ audio }) => audio),
+    [
+      "/audio/ja-grammar-watashi-wa-kurisu-desu.wav",
+      "/audio/ja-grammar-kore-wa-mizu-desu.wav",
+      "/audio/ja-grammar-watashi-mo-sensei-desu.wav",
+    ],
+  );
+  assert.ok(statements.items.every(({ pattern }) => !/\b[AB]\b/.test(pattern)));
+  assert.ok(statements.items.every(({ pattern }) => /Topic.*Information/.test(pattern)));
   assert.match(getGrammarStation("questions").description.join(" "), /ends with か/);
   assert.match(getGrammarStation("possession").description.join(" "), /の connects two nouns/);
   assert.match(getGrammarStation("existence").description.join(" "), /あります.*います/);
@@ -75,6 +102,7 @@ test("Grammar stations reuse the established review and persistence contracts", 
   const handlers = await readFile(new URL("app/api/stations/grammar-route-handlers.ts", root), "utf8");
   const repository = await readFile(new URL("src/modules/learning/repository.ts", root), "utf8");
   const schema = await readFile(new URL("db/schema.ts", root), "utf8");
+  const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
 
   for (const component of [
     "StationOptions",
@@ -87,10 +115,19 @@ test("Grammar stations reuse the established review and persistence contracts", 
   }
   assert.match(guide, /English → Japanese/);
   assert.match(guide, /Japanese → English/);
-  assert.match(guide, /function revealCard\(\) \{\s*setAnswerRevealed\(true\);\s*\}/);
-  assert.match(guide, /onActivate=\{revealCard\}/);
-  assert.match(guide, /<FlashcardCountdown onComplete=\{revealCard\} \/>/);
-  assert.doesNotMatch(guide, /getJapaneseWordRomaji|useFlashcardAudio|<audio/);
+  assert.match(guide, /useFlashcardAudio\(\)/);
+  assert.match(guide, /function activateCard\(\) \{[\s\S]*setAnswerRevealed\(true\);[\s\S]*playItem\(activeCard\);/);
+  assert.match(guide, /onActivate=\{activateCard\}/);
+  assert.match(guide, /<FlashcardCountdown onComplete=\{activateCard\} \/>/);
+  assert.match(guide, /<WordAudioIndicator \/>/);
+  assert.match(guide, /Tap a sentence to hear it\./);
+  assert.match(guide, /"Reveal answer and play audio"/);
+  assert.doesNotMatch(guide, /Reveal and play \$\{activeCard\.japanese\}/);
+  assert.match(guide, /<audio[\s\S]*onEnded=\{handleAudioEnded\}[\s\S]*onError=\{handleAudioError\}/);
+  assert.doesNotMatch(guide, /getJapaneseWordRomaji/);
+  assert.match(styles, /\.grammar-sentence-parts\s*\{[^}]*grid-template-columns:\s*repeat\(4,/s);
+  assert.match(styles, /@media \(max-width: 600px\)[\s\S]*\.grammar-sentence-parts\s*\{[^}]*repeat\(2,/s);
+  assert.match(styles, /\.grammar-reference-item\[data-playing="true"\]\s*\{[^}]*var\(--audio\)/s);
   assert.match(handlers, /getGrammarStation\(stationId\)\.items\.some/);
   assert.match(handlers, /setGrammarItemsKnown\(user\.id, itemIds, body\.known\)/);
   assert.match(handlers, /private, no-store/);

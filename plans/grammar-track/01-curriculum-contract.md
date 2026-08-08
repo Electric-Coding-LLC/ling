@@ -20,7 +20,7 @@ The serial shape communicates conceptual dependency: each station reuses sentenc
 
 | Station | Purpose | Core forms |
 | --- | --- | --- |
-| Statements | Build basic topic-comment and noun sentences. | `A は B です`, `も` |
+| Statements | Build basic topic-comment and noun sentences. | `Topic は Information です`, `も` |
 | Questions | Turn known sentence shapes into information and yes/no questions. | `か`, `何`, `誰`, `どこ` |
 | Possession | Connect nouns through possession, affiliation, and type. | `A の B` |
 | Existence | Say that objects or people exist in a place. | `ある`, `いる`, `に`, `が` |
@@ -35,16 +35,19 @@ Each station owns three or four complete sentence cards. Sentences primarily reu
 
 - `meaning-to-japanese`: prompt with the English meaning; reveal the complete Japanese sentence and its pattern note.
 - `japanese-to-meaning`: prompt with the complete Japanese sentence; reveal the English meaning and its pattern note.
+- When a station has verified sentence audio, revealing either direction also plays the sentence and another card activation replays it.
 - Progress is keyed by user, Grammar sentence ID, and review direction in a dedicated table.
 - Completing a station requires every scoped sentence in both directions.
 - Completion means the learner marked these sentence-pattern associations as known. It does not mean the grammatical system is permanently mastered.
 
 ### Reference and review behavior
 
-- The station reference shows the Japanese sentence, English meaning, and one restrained explanation of the target form.
+- The station reference shows the Japanese sentence, English meaning, a sentence shape with concrete role names, and one restrained explanation of the target form.
+- Statements teaches the first sentence before abstracting it: a four-part breakdown labels the topic, topic marker, information, and polite ending.
+- Statements explicitly distinguishes written `は` from its spoken `wa` pronunciation when it acts as the topic particle. The one-word `wa` cue explains this spelling exception; it is not a Rōmaji transcription of the sentence.
 - Grammar review reuses the shared Ling launcher, modal, four-second reveal, whole-card activation, swipe/buttons, typography roles, error handling, and options menu.
-- Grammar cards do not fabricate audio. Audio can be added later only with complete, verified sentence assets and the shared playback treatment.
-- No Rōmaji is shown; the learner has already encountered Rōmaji as its own Foundations station.
+- Grammar audio is station-complete: a station receives audio only when every sentence in that station has a unique, verified bundled asset and the shared playback treatment. Statements meets that contract; later stations remain silent until their full sentence sets do.
+- No sentence Rōmaji is shown; the learner has already encountered Rōmaji as its own Foundations station.
 
 ## Constraints
 
@@ -58,6 +61,7 @@ Each station owns three or four complete sentence cards. Sentences primarily reu
 
 - The eight stations have mutually distinct jobs and form a useful conceptual sequence.
 - Every sentence is natural Japanese, illustrates the declared form, and has a precise English meaning.
+- Statements explains `は` before using it, maps its first sentence to concrete roles, and provides mechanically verified bundled audio for all three sentences.
 - The two review directions and separate completion semantics are explicit.
 - The map topology and optional footer sequence are explicit.
 - The line's current boundary and deferred material are explicit.

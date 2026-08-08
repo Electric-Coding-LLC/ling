@@ -1,7 +1,7 @@
 export const STATION_IDS = [
   "vowels",
   "hiragana",
-  "kanji",
+  "characters",
   "compounds",
   "endings",
   "katakana",

@@ -1,7 +1,7 @@
 import { FoundationLineTour } from "./foundation-line-tour";
 import { StationTopbar } from "./station-topbar";
 
-type FoundationLine = "grammar" | "sound" | "vocabulary";
+type FoundationLine = "grammar" | "kanji" | "sound" | "vocabulary";
 
 type LineIntroduction = {
   readonly overview: readonly string[];
@@ -15,6 +15,13 @@ const LINE_INTRODUCTIONS: Readonly<Record<FoundationLine, LineIntroduction>> = {
       "These first structures are enough to identify things, ask questions, describe relationships, say that something exists, and talk about actions and qualities.",
     ],
     title: "Grammar",
+  },
+  kanji: {
+    overview: [
+      "Kanji are meaning-bearing characters used throughout written Japanese. Learn them as parts of complete words, together with each word's Kana reading and sound.",
+      "A Kanji may form a word by itself, join other Kanji in a compound, or combine with Kana that completes the word and can carry grammatical change.",
+    ],
+    title: "Kanji",
   },
   sound: {
     overview: [

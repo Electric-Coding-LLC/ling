@@ -7,13 +7,13 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return handleKanjiKnowledgeGet("kanji");
+  return handleKanjiKnowledgeGet("characters");
 }
 
 export async function PUT(request: Request) {
-  return handleKanjiKnowledgePut(request, "kanji");
+  return handleKanjiKnowledgePut(request, "characters");
 }
 
 export async function PATCH(request: Request) {
-  return handleKanjiKnowledgePatch(request, "kanji");
+  return handleKanjiKnowledgePatch(request, "characters");
 }

@@ -68,6 +68,20 @@ test("first visit, dismissal, and permanent map help stay outside station progre
   assert.match(link, /dismissWelcome\(storage\)/);
   assert.match(link, /href="\/"/);
   assert.match(welcomePage, /<WelcomeMapLink/);
+  assert.match(guide, /Welcome to Ling/);
+  assert.match(guide, /Ling is a Japanese course laid out like a transit map/);
+  assert.match(guide, /follow a line from station to station/);
+  assert.match(guide, /Foundations is the natural place to begin/);
+  assert.match(guide, /Inside each station/);
+  assert.match(
+    guide,
+    /<WelcomeMapLink className="welcome-map-entry">[\s\S]*Explore the map[\s\S]*<h2 id="welcome-cues-title">How Ling works<\/h2>/,
+  );
+  assert.doesNotMatch(guide, /Think of Ling|Nothing is locked|A few things to know/);
+  assert.match(
+    welcomeStyles,
+    /\.welcome-map-entry \{[\s\S]*width: min\(100%, 38rem\);[\s\S]*border-block: 1px solid var\(--line\);/,
+  );
   assert.match(guide, /import \{ MapIcon \} from "\.\.\/map-icon"/);
   assert.match(guide, /className="welcome-cue-map">[\s\S]*?<MapIcon \/>/);
   assert.doesNotMatch(guide, /← Map/);

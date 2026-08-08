@@ -9,7 +9,7 @@ export const KANJI_REVIEW_DIRECTIONS = [
 ] as const;
 
 export const KANJI_STATION_IDS = [
-  "kanji",
+  "characters",
   "compounds",
   "endings",
 ] as const;
@@ -31,8 +31,59 @@ export type KanjiStation = {
   readonly name: string;
 };
 
+export type KanjiMemoryNote = {
+  readonly cue: string;
+  readonly relatedItemId?: string;
+};
+
 type KanjiStationDefinition = Omit<KanjiStation, "items"> & {
   readonly itemIds: readonly string[];
+};
+
+const CHARACTER_ITEM_IDS = [
+  "watashi",
+  "hito",
+  "mizu",
+  "eki",
+  "kuruma",
+  "ima",
+  "asa",
+  "hiru",
+  "yoru",
+] as const;
+
+export const CHARACTER_MEMORY_NOTES: Readonly<
+  Record<(typeof CHARACTER_ITEM_IDS)[number], KanjiMemoryNote>
+> = {
+  watashi: {
+    cue: "One traditional explanation joins 禾, grain, with 厶, private: grain kept as one's own became a cue for ‘I’ or ‘private.’",
+  },
+  hito: {
+    cue: "The two strokes preserve the side view of a standing person.",
+  },
+  mizu: {
+    cue: "The center stroke and spreading side strokes come from the shape of flowing water.",
+  },
+  eki: {
+    cue: "The left side is 馬, horse. Earlier stations were relay stops where fresh horses were kept.",
+  },
+  kuruma: {
+    cue: "The character began as the shape of a cart, with its axle and wheels.",
+    relatedItemId: "densha",
+  },
+  ima: {
+    cue: "今 appears again in 今日, ‘today.’ Keep the shared time meaning, but learn the whole word's reading: いま becomes part of きょう.",
+    relatedItemId: "kyou",
+  },
+  asa: {
+    cue: "Its older structure represents the rising sun: the beginning of the day.",
+  },
+  hiru: {
+    cue: "日, sun, remains visible inside the character; its older structure marks the part of the day when the sun is out.",
+  },
+  yoru: {
+    cue: "An older form joined a person with evening: night as the time a person rests.",
+  },
 };
 
 const KANJI_STATION_DEFINITIONS: readonly KanjiStationDefinition[] = [
@@ -41,9 +92,9 @@ const KANJI_STATION_DEFINITIONS: readonly KanjiStationDefinition[] = [
       "Kanji carry meaning in written Japanese, but you are learning the word rather than a character by itself.",
       "Learn each written word with its Kana reading. The same character can be read differently in another word.",
     ],
-    id: "kanji",
-    itemIds: ["watashi", "hito", "mizu", "eki", "kuruma", "ima", "asa", "hiru", "yoru"],
-    name: "Kanji",
+    id: "characters",
+    itemIds: CHARACTER_ITEM_IDS,
+    name: "Characters",
   },
   {
     description: [
@@ -85,6 +136,12 @@ export function getKanjiStation(id: KanjiStationId): KanjiStation {
 export function getKanjiItemIds(stationId?: KanjiStationId): string[] {
   const stations = stationId ? [getKanjiStation(stationId)] : KANJI_STATIONS;
   return stations.flatMap((station) => station.items.map((item) => item.id));
+}
+
+export function getKanjiMemoryNote(itemId: string): KanjiMemoryNote | null {
+  return Object.hasOwn(CHARACTER_MEMORY_NOTES, itemId)
+    ? CHARACTER_MEMORY_NOTES[itemId as keyof typeof CHARACTER_MEMORY_NOTES]
+    : null;
 }
 
 export function isKanjiStationId(value: unknown): value is KanjiStationId {

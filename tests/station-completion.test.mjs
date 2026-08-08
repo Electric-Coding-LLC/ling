@@ -9,7 +9,7 @@ test("all learning stations are independently addressable", () => {
   assert.deepEqual(STATION_IDS, [
     "vowels",
     "hiragana",
-    "kanji",
+    "characters",
     "compounds",
     "endings",
     "katakana",

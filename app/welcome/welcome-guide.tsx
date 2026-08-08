@@ -1,27 +1,40 @@
 import { MapIcon } from "../map-icon";
 import { NetworkStationSymbol } from "../network-visuals";
+import { WelcomeMapLink } from "./welcome-map-link";
 
 export function WelcomeGuide() {
   return (
     <section aria-labelledby="welcome-title" className="welcome-guide">
       <header className="welcome-heading">
         <h1 id="welcome-title" lang="ja">ようこそ</h1>
-        <p className="welcome-heading-translation">Welcome</p>
+        <p className="welcome-heading-translation">Welcome to Ling</p>
       </header>
 
       <div className="welcome-intro">
         <p>
-          Think of Ling as a map of Japanese. The stations cover things like
-          sounds, Kana, Kanji, vocabulary, and everyday situations, and the lines
-          show how those ideas connect.
+          Ling is a Japanese course laid out like a transit map. Each line covers
+          a connected area of the language—pronunciation, Kana, Kanji, vocabulary,
+          grammar, or everyday Japanese—and each station teaches one focused topic.
         </p>
         <p>
-          You don&apos;t have to follow a set route. Start wherever you&apos;re curious,
-          spend as much time there as you need, and move on when you&apos;re ready.
+          Like a transit system, you can follow a line from station to station,
+          transfer where ideas connect, or choose any station that interests you.
+          If you&apos;re new to Japanese, Foundations is the natural place to begin.
+        </p>
+        <p>
+          Inside each station, you&apos;ll learn the idea, hear or see it in use, and
+          use short checks to decide what needs another pass.
         </p>
       </div>
 
-      <h2 id="welcome-cues-title">A few things to know</h2>
+      <WelcomeMapLink className="welcome-map-entry">
+        <span>Explore the map</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M4 12h16m-6-6 6 6-6 6" />
+        </svg>
+      </WelcomeMapLink>
+
+      <h2 id="welcome-cues-title">How Ling works</h2>
       <ul aria-labelledby="welcome-cues-title" className="welcome-cues">
         <li>
           <span aria-hidden="true" className="welcome-cue-visual">
@@ -43,8 +56,8 @@ export function WelcomeGuide() {
           </span>
           <span>
             <strong>Stations</strong>
-            Open any station that interests you. Nothing is locked, and
-            there&apos;s no required order.
+            Each station focuses on one topic. Open one to learn, practice, and
+            check what you remember.
           </span>
         </li>
         <li>

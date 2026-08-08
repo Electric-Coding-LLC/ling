@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  getKanjiMemoryNote,
   isKanjiKnowledge,
   KANJI_REVIEW_DIRECTIONS,
   type KanjiKnowledge,
@@ -11,13 +12,15 @@ import {
 import {
   getPitchLevels,
 } from "@/src/modules/learning/pitch-accent";
-import type { VocabularyItem } from "@/src/modules/learning/vocabulary";
+import {
+  getVocabularyItem,
+  type VocabularyItem,
+} from "@/src/modules/learning/vocabulary";
 import {
   getJapaneseMorae,
   getJapaneseWordRomaji,
 } from "@/src/modules/romaji";
 import { FlashcardCountdown, FlashcardReview } from "../flashcard-review";
-import { FoundationLineTour } from "../foundation-line-tour";
 import { PitchContour, pitchLabel } from "../pitch-contour";
 import { StationOptions } from "../station-options";
 import { useFlashcardAudio } from "../use-flashcard-audio";
@@ -190,11 +193,6 @@ export function KanjiGuide({ station }: { readonly station: KanjiStation }) {
       <header className="station-heading">
         <div className="station-heading-row">
           <div aria-label="Lines" className="station-memberships">
-            {station.id === "kanji" ? (
-              <span className="station-membership station-membership-foundation" data-line="foundation">
-                Foundations
-              </span>
-            ) : null}
             <span className="station-membership station-membership-kanji" data-line="kanji">
               Kanji
             </span>
@@ -240,16 +238,15 @@ export function KanjiGuide({ station }: { readonly station: KanjiStation }) {
           <p>Listen to each word as you study its written form and reading.</p>
         </div>
 
-        {station.id === "kanji" ? <FoundationLineTour tourId="kanji" /> : null}
-
         <div aria-label={`${station.name} reference`} className="vocabulary-reference-list">
           {station.items.map((item) => {
             const playing = audioPlaying && activeAudioIndex === itemIndex(item);
             const morae = getJapaneseMorae(item.reading);
             const pitch = getPitchLevels(morae.length, item.pitchAccent);
+            const memoryAnnouncement = formatMemoryAnnouncement(item);
             return (
               <button
-                aria-label={`Play ${item.word}, ${item.reading}, ${item.meaning}, ${morae.length} ${morae.length === 1 ? "beat" : "beats"}`}
+                aria-label={`Play ${item.word}, ${item.reading}, ${item.meaning}, ${morae.length} ${morae.length === 1 ? "beat" : "beats"}${memoryAnnouncement ? `. ${memoryAnnouncement}` : ""}`}
                 className="vocabulary-reference-item"
                 data-known={KANJI_REVIEW_DIRECTIONS.every((direction) => knownItems[direction].has(item.id)) ? "true" : undefined}
                 data-playing={playing ? "true" : undefined}
@@ -266,6 +263,7 @@ export function KanjiGuide({ station }: { readonly station: KanjiStation }) {
                   showPronunciation
                   word={item.reading}
                 />
+                <KanjiMemoryNote item={item} />
                 <WordAudioIndicator />
               </button>
             );
@@ -314,6 +312,7 @@ export function KanjiGuide({ station }: { readonly station: KanjiStation }) {
                             <span className="vocabulary-review-meaning">{activeCard.meaning}</span>
                           </>
                         )}
+                        <KanjiMemoryNote item={activeCard} />
                       </span>
                     ) : (
                       <FlashcardCountdown onComplete={activateCard} />
@@ -359,7 +358,40 @@ function kanjiAnnouncement(item: VocabularyItem, writingFirst: boolean) {
   const answer = writingFirst
     ? `${item.word}: reading ${item.reading}, Rōmaji ${getJapaneseWordRomaji(item.reading)}, ${item.meaning}`
     : `${item.reading}: written ${item.word}, ${item.meaning}`;
-  return `${answer}. ${morae.length} ${morae.length === 1 ? "beat" : "beats"}. ${pitchLabel(pitch)}.`;
+  const memoryAnnouncement = formatMemoryAnnouncement(item);
+  return `${answer}. ${morae.length} ${morae.length === 1 ? "beat" : "beats"}. ${pitchLabel(pitch)}.${memoryAnnouncement ? ` ${memoryAnnouncement}` : ""}`;
+}
+
+function KanjiMemoryNote({ item }: { readonly item: VocabularyItem }) {
+  const note = getKanjiMemoryNote(item.id);
+  if (!note) return null;
+  const relatedItem = note.relatedItemId
+    ? getVocabularyItem(note.relatedItemId)
+    : null;
+
+  return (
+    <span className="kanji-memory-note">
+      <span className="kanji-memory-label">Memory cue</span>
+      <span className="kanji-memory-cue">{note.cue}</span>
+      {relatedItem ? (
+        <span className="kanji-memory-related">
+          <span className="kanji-memory-related-label">Seen again</span>{" "}
+          <span lang="ja">{relatedItem.word}</span> · <span lang="ja">{relatedItem.reading}</span> · {relatedItem.meaning}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+function formatMemoryAnnouncement(item: VocabularyItem) {
+  const note = getKanjiMemoryNote(item.id);
+  if (!note) return "";
+  const relatedItem = note.relatedItemId
+    ? getVocabularyItem(note.relatedItemId)
+    : null;
+  return relatedItem
+    ? `Memory cue: ${note.cue} Seen again: ${relatedItem.word}, ${relatedItem.reading}, ${relatedItem.meaning}.`
+    : `Memory cue: ${note.cue}`;
 }
 
 function shuffle<T>(entries: readonly T[]): T[] {

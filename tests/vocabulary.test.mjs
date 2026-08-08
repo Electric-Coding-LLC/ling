@@ -174,7 +174,8 @@ test("the optional station footer follows the approved Kanji, vocabulary, and Gr
     ["katakana", "sound-marks"],
     ["sound-marks", "combined-sounds"],
     ["combined-sounds", "kanji"],
-    ["kanji", "compounds"],
+    ["kanji", "characters"],
+    ["characters", "compounds"],
     ["compounds", "endings"],
     ["endings", "vocabulary"],
   ]) {

@@ -65,6 +65,7 @@ const ROUTABLE_STATION_HREFS: Record<LinkedStationFocus, string> = {
   mora: "/stations/mora-timing",
   pitch: "/stations/pitch-accent",
   hiragana: "/stations/hiragana",
+  characters: "/stations/characters",
   compounds: "/stations/compounds",
   endings: "/stations/endings",
   katakana: "/stations/katakana",
@@ -103,6 +104,7 @@ const STATION_LABELS: Record<StationFocus, string> = {
   kana: "Kana",
   hiragana: "Hiragana",
   kanji: "Kanji",
+  characters: "Characters",
   compounds: "Compounds",
   endings: "Endings",
   katakana: "Katakana",
@@ -145,10 +147,11 @@ const STATION_NEIGHBORS: Record<
   pitch: { ArrowLeft: "mora" },
   kana: { ArrowDown: "kanji", ArrowRight: "hiragana", ArrowUp: "sound" },
   hiragana: { ArrowDown: "katakana", ArrowLeft: "kana", ArrowRight: "marks" },
-  kanji: { ArrowDown: "vocabulary", ArrowRight: "compounds", ArrowUp: "kana" },
-  compounds: { ArrowLeft: "kanji", ArrowRight: "endings", ArrowUp: "marks" },
+  kanji: { ArrowDown: "vocabulary", ArrowRight: "characters", ArrowUp: "kana" },
+  characters: { ArrowLeft: "kanji", ArrowRight: "compounds", ArrowUp: "katakana" },
+  compounds: { ArrowLeft: "characters", ArrowRight: "endings", ArrowUp: "marks" },
   endings: { ArrowLeft: "compounds", ArrowUp: "marks" },
-  katakana: { ArrowDown: "compounds", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "hiragana" },
+  katakana: { ArrowDown: "characters", ArrowLeft: "kana", ArrowRight: "marks", ArrowUp: "hiragana" },
   marks: { ArrowDown: "compounds", ArrowLeft: "hiragana", ArrowRight: "combined", ArrowUp: "hiragana" },
   combined: { ArrowDown: "endings", ArrowLeft: "marks" },
   vocabulary: { ArrowDown: "grammar", ArrowRight: "pointing", ArrowUp: "kanji" },
@@ -190,7 +193,8 @@ const NETWORK_ROUTE_EDGES: readonly (readonly [StationFocus, StationFocus])[] = 
   ["hiragana", "marks"],
   ["katakana", "marks"],
   ["marks", "combined"],
-  ["kanji", "compounds"],
+  ["kanji", "characters"],
+  ["characters", "compounds"],
   ["compounds", "endings"],
   ["vocabulary", "pointing"],
   ["pointing", "people"],
@@ -615,8 +619,9 @@ function NetworkView({
     kana: { x: spineX, y: KANA_Y },
     hiragana: { x: depthOneX, y: writingUpperY },
     kanji: { x: spineX, y: KANJI_Y },
-    compounds: { x: depthOneX, y: KANJI_Y },
-    endings: { x: depthTwoX, y: KANJI_Y },
+    characters: { x: depthOneX, y: KANJI_Y },
+    compounds: { x: depthTwoX, y: KANJI_Y },
+    endings: { x: depthThreeX, y: KANJI_Y },
     katakana: { x: depthOneX, y: writingLowerY },
     marks: { x: depthTwoX, y: KANA_Y },
     combined: { x: depthThreeX, y: KANA_Y },
@@ -711,7 +716,7 @@ function NetworkView({
         onTooltipPointerMove={onTooltipPointerMove}
       />
       <RoutePath
-        d={`M${spineX} ${KANJI_Y}H${depthTwoX}`}
+        d={`M${spineX} ${KANJI_Y}H${depthThreeX}`}
         label="Kanji"
         line="kanji"
         onLinePointerLeave={onLinePointerLeave}
@@ -776,8 +781,9 @@ function NetworkView({
       <LinkedStation {...linkedStatus("pitch")} backlightId={backlightId} focus="pitch" kind="sound" labelPlacement="above" onActivate={() => onStationActivate("pitch")} onFocus={() => onStationFocus("pitch")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={SOUND_Y} />
 
       <LinkedStation {...linkedStatus("hiragana")} backlightId={backlightId} focus="hiragana" kind="writing" labelPlacement="above" onActivate={() => onStationActivate("hiragana")} onFocus={() => onStationFocus("hiragana")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={writingUpperY} />
-      <LinkedStation {...linkedStatus("compounds")} backlightId={backlightId} focus="compounds" kind="kanji" labelPlacement="above" onActivate={() => onStationActivate("compounds")} onFocus={() => onStationFocus("compounds")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={KANJI_Y} />
-      <LinkedStation {...linkedStatus("endings")} backlightId={backlightId} focus="endings" kind="kanji" labelPlacement="above" onActivate={() => onStationActivate("endings")} onFocus={() => onStationFocus("endings")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={KANJI_Y} />
+      <LinkedStation {...linkedStatus("characters")} backlightId={backlightId} focus="characters" kind="kanji" labelPlacement="above" onActivate={() => onStationActivate("characters")} onFocus={() => onStationFocus("characters")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={KANJI_Y} />
+      <LinkedStation {...linkedStatus("compounds")} backlightId={backlightId} focus="compounds" kind="kanji" labelPlacement="above" onActivate={() => onStationActivate("compounds")} onFocus={() => onStationFocus("compounds")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={KANJI_Y} />
+      <LinkedStation {...linkedStatus("endings")} backlightId={backlightId} focus="endings" kind="kanji" labelPlacement="above" onActivate={() => onStationActivate("endings")} onFocus={() => onStationFocus("endings")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={KANJI_Y} />
       <LinkedStation {...linkedStatus("katakana")} backlightId={backlightId} focus="katakana" kind="writing" labelPlacement="below" onActivate={() => onStationActivate("katakana")} onFocus={() => onStationFocus("katakana")} onPointerLeave={onLinePointerLeave} x={depthOneX} y={writingLowerY} />
       <LinkedStation {...linkedStatus("marks")} backlightId={backlightId} focus="marks" kind="writing" labelLines={["Dakuten &", "Handakuten"]} labelPlacement="above" onActivate={() => onStationActivate("marks")} onFocus={() => onStationFocus("marks")} onPointerLeave={onLinePointerLeave} x={depthTwoX} y={KANA_Y} />
       <LinkedStation {...linkedStatus("combined")} backlightId={backlightId} focus="combined" kind="writing" labelPlacement="below" onActivate={() => onStationActivate("combined")} onFocus={() => onStationFocus("combined")} onPointerLeave={onLinePointerLeave} x={depthThreeX} y={KANA_Y} />

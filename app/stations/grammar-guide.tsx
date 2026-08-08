@@ -11,7 +11,12 @@ import {
 } from "@/src/modules/learning/grammar";
 import { FlashcardCountdown, FlashcardReview } from "./flashcard-review";
 import { StationOptions } from "./station-options";
-import { WordReviewDialog, WordReviewLauncher } from "./word-review";
+import { useFlashcardAudio } from "./use-flashcard-audio";
+import {
+  WordAudioIndicator,
+  WordReviewDialog,
+  WordReviewLauncher,
+} from "./word-review";
 
 type GrammarReview = {
   readonly cards: readonly GrammarItem[];
@@ -19,6 +24,16 @@ type GrammarReview = {
 };
 
 export function GrammarGuide({ station }: { readonly station: GrammarStation }) {
+  const {
+    activeAudioIndex,
+    audioError,
+    audioPlaying,
+    audioRef,
+    handleAudioEnded,
+    handleAudioError,
+    playAudio,
+    stopAudio,
+  } = useFlashcardAudio();
   const [activeReview, setActiveReview] = useState<GrammarReview | null>(null);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [knowledgeError, setKnowledgeError] = useState(false);
@@ -55,11 +70,23 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
     return () => controller.abort();
   }, [station.id]);
 
-  function revealCard() {
+  function itemIndex(item: GrammarItem) {
+    return station.items.findIndex((candidate) => candidate.id === item.id);
+  }
+
+  function playItem(item: GrammarItem) {
+    if (!item.audio) return;
+    playAudio({ index: itemIndex(item), src: item.audio });
+  }
+
+  function activateCard() {
+    if (!activeCard) return;
     setAnswerRevealed(true);
+    playItem(activeCard);
   }
 
   function openReview(direction: GrammarReviewDirection) {
+    stopAudio();
     setAnswerRevealed(false);
     setKnowledgeError(false);
     setReviewIndex(0);
@@ -67,6 +94,7 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
   }
 
   function closeReview() {
+    stopAudio();
     setActiveReview(null);
     setAnswerRevealed(false);
     setReviewIndex(0);
@@ -111,6 +139,7 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
       return;
     }
 
+    stopAudio();
     setAnswerRevealed(false);
     setReviewIndex(nextIndex);
   }
@@ -188,27 +217,90 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
       </header>
 
       <section className="grammar-guide">
+        {station.items.some((item) => item.audio) ? (
+          <audio
+            onEnded={handleAudioEnded}
+            onError={handleAudioError}
+            preload="none"
+            ref={audioRef}
+          />
+        ) : null}
+
         <div className="station-intro grammar-intro">
           {station.description.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          {station.items.every((item) => item.audio) ? <p>Tap a sentence to hear it.</p> : null}
         </div>
+
+        {station.lesson ? (
+          <section aria-labelledby={`${station.id}-lesson-title`} className="grammar-lesson">
+            <h2 id={`${station.id}-lesson-title`}>{station.lesson.heading}</h2>
+            <p className="grammar-pronunciation-rule">
+              <span>
+                <span className="grammar-pronunciation-label">Written</span>
+                <strong lang="ja">{station.lesson.written}</strong>
+              </span>
+              <span aria-hidden="true" className="grammar-pronunciation-arrow">→</span>
+              <span>
+                <span className="grammar-pronunciation-label">Spoken</span>
+                <strong>{station.lesson.spoken}</strong>
+              </span>
+            </p>
+            <p className="grammar-lesson-explanation">{station.lesson.explanation}</p>
+            <ol aria-label="Sentence parts" className="grammar-sentence-parts">
+              {station.lesson.parts.map((part) => (
+                <li key={`${part.japanese}-${part.label}`}>
+                  <span className="grammar-sentence-part-japanese" lang="ja">{part.japanese}</span>
+                  <span className="grammar-sentence-part-label">{part.label}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
 
         <div aria-label={`${station.name} sentence patterns`} className="grammar-reference-list">
-          {station.items.map((item) => (
-            <article
-              className="grammar-reference-item"
-              data-known={GRAMMAR_REVIEW_DIRECTIONS.every((direction) =>
-                knownItems[direction].has(item.id),
-              ) ? "true" : undefined}
-              key={item.id}
-            >
-              <p className="grammar-reference-japanese" lang="ja">{item.japanese}</p>
-              <p className="grammar-reference-meaning">{item.meaning}</p>
-              <p className="grammar-reference-pattern" lang="ja">{item.pattern}</p>
-              <p className="grammar-reference-note">{item.note}</p>
-            </article>
-          ))}
+          {station.items.map((item) => {
+            const playing = audioPlaying && activeAudioIndex === itemIndex(item);
+            return (
+              <article
+                className="grammar-reference-item"
+                data-known={GRAMMAR_REVIEW_DIRECTIONS.every((direction) =>
+                  knownItems[direction].has(item.id),
+                ) ? "true" : undefined}
+                data-playing={playing ? "true" : undefined}
+                key={item.id}
+              >
+                {item.audio ? (
+                  <button
+                    aria-label={`Play ${item.japanese} ${item.meaning}`}
+                    className="grammar-reference-audio"
+                    onClick={() => playItem(item)}
+                    type="button"
+                  >
+                    <span className="grammar-reference-japanese" lang="ja">{item.japanese}</span>
+                    <span className="grammar-reference-listen">
+                      <WordAudioIndicator />
+                      <span>{playing ? "Playing" : "Listen"}</span>
+                    </span>
+                  </button>
+                ) : (
+                  <p className="grammar-reference-japanese" lang="ja">{item.japanese}</p>
+                )}
+                <p className="grammar-reference-meaning">{item.meaning}</p>
+                <p className="grammar-reference-pattern">
+                  <span>Sentence shape</span>
+                  {item.pattern}
+                </p>
+                <p className="grammar-reference-note">{item.note}</p>
+              </article>
+            );
+          })}
         </div>
 
+        {audioError ? (
+          <p className="station-audio-error" role="alert">
+            Audio could not play. Try again.
+          </p>
+        ) : null}
         {knowledgeError ? (
           <p className="station-knowledge-error" role="alert">
             Your {station.name} progress could not sync. Try again.
@@ -223,16 +315,20 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
             stationName={station.name}
           >
             <FlashcardReview
-              activationLabel={answerRevealed
-                ? "Answer revealed"
-                : `Reveal answer for ${meaningFirst ? activeCard.meaning : activeCard.japanese}`}
+              activationLabel={activeCard.audio
+                ? answerRevealed
+                  ? `Replay ${activeCard.japanese}`
+                  : "Reveal answer and play audio"
+                : answerRevealed
+                  ? "Answer revealed"
+                  : `Reveal answer for ${meaningFirst ? activeCard.meaning : activeCard.japanese}`}
               announcement={answerRevealed
                 ? `${activeCard.japanese} ${activeCard.meaning} ${activeCard.note}`
                 : ""}
               key={`${activeReview.direction}-${reviewIndex}-${activeCard.id}`}
-              onActivate={revealCard}
+              onActivate={activateCard}
               onAnswer={answerCard}
-              playing={false}
+              playing={audioPlaying && activeAudioIndex === itemIndex(activeCard)}
             >
               <span className="vocabulary-review-content grammar-review-content">
                 {meaningFirst ? (
@@ -250,11 +346,14 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
                       ) : (
                         <span className="vocabulary-review-meaning">{activeCard.meaning}</span>
                       )}
-                      <span className="grammar-review-pattern" lang="ja">{activeCard.pattern}</span>
+                      <span className="grammar-review-pattern">
+                        <span>Sentence shape</span>
+                        {activeCard.pattern}
+                      </span>
                       <span className="grammar-review-note">{activeCard.note}</span>
                     </span>
                   ) : (
-                    <FlashcardCountdown onComplete={revealCard} />
+                    <FlashcardCountdown onComplete={activateCard} />
                   )}
                 </span>
               </span>

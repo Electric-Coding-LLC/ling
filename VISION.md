@@ -89,7 +89,7 @@ Mastery is evidence across modalities, contexts, and time. A successful visit do
 ## Current Seed Network
 
 The current mapped network is the Foundations spine with six populated
-territories and thirty-seven stations:
+territories and thirty-eight stations:
 
 ```text
 Japanese
@@ -107,7 +107,7 @@ Japanese
  Kana ────────────────────┬─ Hiragana ─────────────┐
    │                      └─ Katakana ─────────────┴─ Dakuten & Handakuten ── Yōon
    │
- Kanji ─────── Compounds ─────── Endings
+ Kanji ─────── Characters ─────── Compounds ─────── Endings
    │
  Vocabulary ── Pointing ── People ── Needs ── Movement ── Time ── Actions ── Descriptions
    │
@@ -126,8 +126,8 @@ one does not need to be completed before another.
 
 Sound moves from `Vowels` to `Mora` and `Pitch`. Kana branches into `Hiragana`
 and `Katakana`, which converge into `Dakuten & Handakuten` and `Yōon`. Kanji
-has its own Foundation line and continues through word-level `Compounds` and
-`Endings`; those stations are
+has its own Foundation line and continues through word-level `Characters`,
+`Compounds`, and `Endings`; those stations are
 the current content boundary, not the end of Kanji study. Vocabulary moves through `Pointing`,
 `People`, `Needs`, `Movement`, `Time`, `Actions`, and `Descriptions`. That
 order builds communicative range without restricting direct access to any
@@ -197,11 +197,13 @@ playable example, and a translation.
 
 `Katakana` introduces why Japanese uses a second Kana system, then presents the same 46 basic sounds with the same chart and flashcard interaction as Hiragana. Its examples emphasize the borrowed words and foreign names for which Katakana is commonly used.
 
-`Kanji` introduces meaning-bearing characters through familiar, useful words
-rather than an isolated character chart. It also teaches how `Compounds` join
-multiple Kanji into one word and how `Endings` pair a Kanji core with Kana.
-Each example keeps the written form, Kana reading, meaning, and sound together
-and notes that a character may have other readings in other words.
+`Kanji` introduces meaning-bearing characters and the three written-word
+patterns developed by its branch. `Characters` teaches familiar, useful words
+written with one Kanji and adds a short, source-checked memory cue to make each
+written form easier to recall; `Compounds` joins multiple Kanji into one word; and
+`Endings` pairs a Kanji core with Kana. Every learning station keeps the written
+form, Kana reading, meaning, and sound together and notes that a character may
+have other readings in other words.
 
 `Dakuten & Handakuten` teaches the two marks that change familiar Kana sounds. Enlarged mark forms lead into one complete five-column chart of marked Hiragana and Katakana. Every distinct chart entry opens a flashcard with pronunciation, a playable example, a translation, and private self-reported progress.
 
@@ -219,9 +221,13 @@ so existing links and stored learner state remain useful.
 The Grammar category station teaches what each current sentence tool contributes:
 the topic-comment shape, questions, noun relationships, existence, polite
 action sentences, nonpast and past, negation, and the two main adjective
-patterns. Every station uses complete Japanese sentences, concise pattern
-notes, and the same two-way hidden-answer review flow used by other recall-based
-stations. Grammar progress is private and separate from Vocabulary progress.
+patterns. Statements teaches its first sentence concretely before naming the
+reusable shape, explicitly explains that topic-particle `は` is pronounced
+`wa`, and supplies bundled audio for every sentence in the station. Every
+station uses complete Japanese sentences, concise pattern notes, and the same
+two-way hidden-answer review flow used by other recall-based stations. Grammar
+progress is private and separate from Vocabulary progress. Audio is added to
+later Grammar stations only when a complete verified sentence set is ready.
 `Adjectives` is only the current content boundary; later sentence systems
 extend the line when they are ready to be taught.
 

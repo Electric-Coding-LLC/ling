@@ -107,6 +107,7 @@ test("server-renders the Ling network home", async () => {
     "vowels",
     "hiragana",
     "kanji",
+    "characters",
     "compounds",
     "endings",
     "katakana",
@@ -216,6 +217,21 @@ test("Japanese, Japan, Kana, and Kanji render their teacher-led branch tours", a
   }
 });
 
+test("Characters renders recall cues while later Kanji stations do not invent them", async () => {
+  const charactersResponse = await request("/stations/characters");
+  assert.equal(charactersResponse.status, 200);
+  const charactersHtml = await charactersResponse.text();
+  assert.equal((charactersHtml.match(/>Memory cue<\/span>/g) ?? []).length, 9);
+  assert.equal((charactersHtml.match(/>Seen again<\/span>/g) ?? []).length, 2);
+  assert.match(charactersHtml, renderedTextRegExp("The two strokes preserve the side view of a standing person."));
+  assert.match(charactersHtml, /<span lang="ja">電車<\/span>.*<span lang="ja">でんしゃ<\/span>.*train/s);
+  assert.match(charactersHtml, /<span lang="ja">今日<\/span>.*<span lang="ja">きょう<\/span>.*today/s);
+
+  const compoundsResponse = await request("/stations/compounds");
+  assert.equal(compoundsResponse.status, 200);
+  assert.doesNotMatch(await compoundsResponse.text(), />Memory cue<\/span>|>Seen again<\/span>/);
+});
+
 test("station documents do not render the map boot overlay", async () => {
   const response = await request("/stations/japan");
   assert.equal(response.status, 200);
@@ -232,12 +248,20 @@ test("Grammar stations render complete sentence patterns with established review
 
   assert.match(html, /<h1>Statements<\/h1>/);
   assert.match(html, /data-line="grammar">Grammar<\/span>/);
+  assert.match(html, /How the first sentence works/);
+  assert.match(html, />Written<\/span>[\s\S]*>は<\/strong>[\s\S]*>Spoken<\/span>[\s\S]*>わ \(wa\)<\/strong>/);
+  assert.match(html, /When は marks the topic, it is pronounced wa/);
+  assert.match(html, /topic marker · pronounced wa/);
+  assert.match(html, /Tap a sentence to hear it\./);
   assert.match(html, /私はクリスです。/);
-  assert.match(html, /A は B です/);
+  assert.match(html, /Topic は Information です/);
+  assert.doesNotMatch(html, /A は B です/);
   assert.match(html, /I am Chris\./);
+  assert.match(html, /aria-label="Play 私はクリスです。 I am Chris\."/);
+  assert.match(html, /<audio[^>]*preload="none"/);
   assert.match(html, /aria-label="Review Statements\. 6 recalls remaining\. Choose review direction\."/);
   assert.match(html, /href="\/stations\/questions"[^>]*aria-label="Next station: Questions"/);
-  assert.doesNotMatch(html, /Rōmaji|<audio/i);
+  assert.doesNotMatch(html, /Rōmaji/i);
 });
 
 test("the removed Visit station route is not addressable", async () => {
@@ -252,14 +276,18 @@ test("server-renders the reusable Welcome to Ling guide outside the station netw
 
   const html = await response.text();
   assert.match(html, /<h1 id="welcome-title" lang="ja">ようこそ<\/h1>/i);
-  assert.match(html, /class="welcome-heading-translation">Welcome<\/p>/i);
+  assert.match(html, /class="welcome-heading-translation">Welcome to Ling<\/p>/i);
   assert.doesNotMatch(html, /Start here/i);
-  assert.match(html, /Think of Ling as a map of Japanese\./i);
-  assert.match(html, /the lines show how those ideas connect\./i);
-  assert.match(html, /You don(?:&#x27;|')t have to follow a set route\./i);
-  assert.match(html, /move on when you(?:&#x27;|')re ready\./i);
-  assert.match(html, /<h2 id="welcome-cues-title">A few things to know<\/h2>/i);
-  assert.match(html, /Nothing is locked, and there(?:&#x27;|')s no required order\./i);
+  assert.match(html, /Ling is a Japanese course laid out like a transit map\./i);
+  assert.match(html, /follow a line from station to station/i);
+  assert.match(html, /Foundations is the natural place to begin\./i);
+  assert.match(html, /Inside each station, you(?:&#x27;|')ll learn the idea/i);
+  assert.match(
+    html,
+    /<a(?=[^>]*class="welcome-map-entry")(?=[^>]*href="\/")[^>]*>[\s\S]*?Explore the map[\s\S]*?<\/a>/i,
+  );
+  assert.match(html, /<h2 id="welcome-cues-title">How Ling works<\/h2>/i);
+  assert.match(html, /Each station focuses on one topic\./i);
   assert.match(html, /It(?:&#x27;|')s a reminder, not a score\./i);
   assert.match(html, /Use Not Yet whenever you want another pass\./i);
   assert.doesNotMatch(html, /calm, practical place|Inspired by a transit system|stay lightweight/i);
@@ -566,7 +594,7 @@ test("every learning station route is directly accessible", async () => {
     "katakana",
     "sound-marks",
     "combined-sounds",
-    "kanji",
+    "characters",
     "pointing",
     "people",
     "needs",

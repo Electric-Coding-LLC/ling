@@ -49,6 +49,44 @@
   line-height: 1.55;
 }
 
+.welcome-map-entry {
+  display: flex;
+  width: min(100%, 38rem);
+  min-height: 4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  padding-block: 0.9rem;
+  border-block: 1px solid var(--line);
+  color: var(--foreground);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.welcome-map-entry svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: none;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+  transition: transform 120ms ease;
+}
+
+.welcome-map-entry:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .welcome-map-entry:hover svg {
+    transform: translateX(0.2rem);
+  }
+}
+
 .welcome-guide > h2 {
   margin: 2.25rem 0 1rem;
   font-size: 1rem;

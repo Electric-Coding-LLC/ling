@@ -158,6 +158,12 @@ export const FOUNDATION_TOURS: Readonly<Record<FoundationTourId, FoundationTour>
     heading: "How Kanji form words",
     stations: [
       {
+        description: "Some Kanji can write a complete word by themselves. Learn the written word with its reading and meaning, as in 水 for みず, rather than memorizing a character in isolation.",
+        href: "/stations/characters",
+        id: "characters",
+        name: "Characters",
+      },
+      {
         description: "Compounds join two or more Kanji into one word. Learn the combination and its reading together, as in 電車 rather than as two isolated characters.",
         href: "/stations/compounds",
         id: "compounds",

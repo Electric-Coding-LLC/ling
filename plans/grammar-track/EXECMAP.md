@@ -23,6 +23,7 @@ Add an initial Grammar Foundation line that teaches eight useful sentence system
 - [x] Add the Grammar Foundation row, station routes, keyboard topology, footer sequence, introductions, and vision documentation.
 - [x] Add focused curriculum, persistence, topology, rendering, accessibility, and migration regression coverage.
 - [x] Run the full repository gate, inspect the final diff, and verify the map and representative Grammar routes at mobile and desktop sizes.
+- [x] Repair Statements with a concrete role breakdown, the written `は` / spoken `wa` rule, and complete bundled sentence audio in reference and review.
 
 Step document: [Grammar Track Curriculum Contract](./01-curriculum-contract.md)
 

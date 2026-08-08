@@ -2,19 +2,22 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  CHARACTER_MEMORY_NOTES,
   getKanjiItemIds,
+  getKanjiMemoryNote,
   getKanjiStation,
   isKanjiKnowledge,
   KANJI_REVIEW_DIRECTIONS,
   KANJI_STATION_IDS,
   KANJI_STATIONS,
 } from "../src/modules/learning/kanji.ts";
+import { COMPLETABLE_NETWORK_PLACE_IDS } from "../src/modules/learning/network.ts";
 import { getVocabularyItem } from "../src/modules/learning/vocabulary.ts";
 
 const root = new URL("../", import.meta.url);
 
 test("Kanji is a three-station written-word track backed by canonical Vocabulary items", () => {
-  assert.deepEqual(KANJI_STATION_IDS, ["kanji", "compounds", "endings"]);
+  assert.deepEqual(KANJI_STATION_IDS, ["characters", "compounds", "endings"]);
   assert.deepEqual(KANJI_REVIEW_DIRECTIONS, ["writing-to-reading", "reading-to-writing"]);
   assert.deepEqual(
     Object.fromEntries(KANJI_STATIONS.map((station) => [
@@ -22,7 +25,7 @@ test("Kanji is a three-station written-word track backed by canonical Vocabulary
       station.items.map((item) => item.id),
     ])),
     {
-      kanji: ["watashi", "hito", "mizu", "eki", "kuruma", "ima", "asa", "hiru", "yoru"],
+      characters: ["watashi", "hito", "mizu", "eki", "kuruma", "ima", "asa", "hiru", "yoru"],
       compounds: ["namae", "tomodachi", "kazoku", "sensei", "densha", "chikatetsu", "kyou", "ashita", "kinou", "jikan"],
       endings: [
         "tabemono", "iku", "taberu", "nomu", "miru", "kiku", "hanasu", "kau", "matsu",
@@ -42,13 +45,56 @@ test("Kanji is a three-station written-word track backed by canonical Vocabulary
 
 test("each Kanji station explains its actual written-word pattern", () => {
   assert.match(
-    getKanjiStation("kanji").description.join(" "),
+    getKanjiStation("characters").description.join(" "),
     /learning the word rather than a character by itself/,
   );
   assert.match(getKanjiStation("compounds").description.join(" "), /combine to write one word/);
   assert.match(getKanjiStation("endings").description.join(" "), /Kanji core with a Kana ending/);
   for (const station of KANJI_STATIONS) {
     assert.doesNotMatch(station.description.join(" "), /on.?yomi|kun.?yomi|radical|finish Kanji/i);
+  }
+});
+
+test("Characters has one curated memory cue per word without changing canonical content", () => {
+  const characters = getKanjiStation("characters");
+  assert.deepEqual(Object.keys(CHARACTER_MEMORY_NOTES), characters.items.map((item) => item.id));
+
+  for (const item of characters.items) {
+    const note = getKanjiMemoryNote(item.id);
+    assert.ok(note);
+    assert.ok(note.cue.length > 30);
+    assert.doesNotMatch(note.cue, /on.?yomi|kun.?yomi|radical/i);
+    if (note.relatedItemId) {
+      const relatedItem = getVocabularyItem(note.relatedItemId);
+      assert.ok(relatedItem.word.includes(item.word));
+      assert.notEqual(relatedItem, item);
+    }
+  }
+
+  assert.equal(getKanjiMemoryNote("namae"), null);
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(CHARACTER_MEMORY_NOTES)
+      .filter(([, note]) => note.relatedItemId)
+      .map(([itemId, note]) => [itemId, note.relatedItemId])),
+    { kuruma: "densha", ima: "kyou" },
+  );
+});
+
+test("Kanji is an orientation-only category and Characters owns the first review", async () => {
+  const categoryPage = await readFile(new URL("app/stations/kanji/page.tsx", root), "utf8");
+  const charactersPage = await readFile(new URL("app/stations/characters/page.tsx", root), "utf8");
+
+  assert.match(categoryPage, /<FoundationLineIntroduction line="kanji" \/>/);
+  assert.doesNotMatch(categoryPage, /KanjiStationPage|KanjiGuide|knowledge/);
+  assert.match(charactersPage, /<KanjiStationPage stationId="characters" \/>/);
+  assert.equal(COMPLETABLE_NETWORK_PLACE_IDS.includes("kanji"), false);
+  assert.equal(COMPLETABLE_NETWORK_PLACE_IDS.includes("characters"), true);
+
+  for (const endpoint of ["introduction", "knowledge"]) {
+    await assert.rejects(
+      readFile(new URL(`app/api/stations/kanji/${endpoint}/route.ts`, root), "utf8"),
+      { code: "ENOENT" },
+    );
   }
 });
 
@@ -67,6 +113,10 @@ test("Kanji stations share one scoped review surface with separate persistence",
   assert.match(guide, /onActivate=\{activateCard\}/);
   assert.match(guide, /<FlashcardCountdown onComplete=\{activateCard\} \/>/);
   assert.match(guide, /className="vocabulary-review-word vocabulary-review-prompt-word" lang="ja"/);
+  assert.match(guide, /<KanjiMemoryNote item=\{item\} \/>/);
+  assert.match(guide, /answerRevealed \? \([\s\S]*<KanjiMemoryNote item=\{activeCard\} \/>/);
+  assert.match(guide, /<span className="kanji-memory-label">Memory cue<\/span>/);
+  assert.match(guide, /<span className="kanji-memory-related-label">Seen again<\/span>/);
   assert.match(guide, /onAnswer=\{answerCard\}/);
   for (const sharedComponent of ["WordAudioIndicator", "WordReviewDialog", "WordReviewLauncher"]) {
     assert.match(guide, new RegExp(`<${sharedComponent}`));
@@ -84,7 +134,7 @@ test("Kanji stations share one scoped review surface with separate persistence",
   assert.doesNotMatch(repository, /setVocabularyItemKnown\([\s\S]{0,200}Kanji/);
 });
 
-test("Kanji, Compounds, and Endings are thin direct station pages and APIs", async () => {
+test("Characters, Compounds, and Endings are thin direct station pages and APIs", async () => {
   for (const stationId of KANJI_STATION_IDS) {
     const page = await readFile(new URL(`app/stations/${stationId}/page.tsx`, root), "utf8");
     const knowledge = await readFile(new URL(`app/api/stations/${stationId}/knowledge/route.ts`, root), "utf8");

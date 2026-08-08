@@ -25,6 +25,7 @@ export type GrammarKnowledge = {
 };
 
 export type GrammarItem = {
+  readonly audio?: string;
   readonly id: string;
   readonly japanese: string;
   readonly meaning: string;
@@ -32,43 +33,72 @@ export type GrammarItem = {
   readonly pattern: string;
 };
 
+export type GrammarLessonPart = {
+  readonly japanese: string;
+  readonly label: string;
+};
+
+export type GrammarLesson = {
+  readonly explanation: string;
+  readonly heading: string;
+  readonly parts: readonly GrammarLessonPart[];
+  readonly spoken: string;
+  readonly written: string;
+};
+
 export type GrammarStation = {
   readonly description: readonly string[];
   readonly id: GrammarStationId;
   readonly items: readonly GrammarItem[];
+  readonly lesson?: GrammarLesson;
   readonly name: string;
 };
 
 export const GRAMMAR_STATIONS: readonly GrammarStation[] = [
   {
     description: [
-      "Japanese statements often begin with what the sentence is about, marked by は, and finish with the information about it.",
-      "For noun sentences, です supplies a polite ending. も can replace は when the new topic is also true of the same description.",
+      "A basic Japanese statement can start with the topic—what you are talking about. は marks that topic, and です closes a polite noun sentence.",
+      "Once that shape is clear, も can replace は when the same information is also true of the new topic.",
     ],
     id: "statements",
     items: [
       {
+        audio: "/audio/ja-grammar-watashi-wa-kurisu-desu.wav",
         id: "watashi-wa-kurisu-desu",
         japanese: "私はクリスです。",
         meaning: "I am Chris.",
-        note: "は marks 私 as the topic; です completes the polite noun sentence.",
-        pattern: "A は B です",
+        note: "私 is the topic. は marks it, and です closes the sentence politely.",
+        pattern: "Topic は Information です",
       },
       {
+        audio: "/audio/ja-grammar-kore-wa-mizu-desu.wav",
         id: "kore-wa-mizu-desu",
         japanese: "これは水です。",
         meaning: "This is water.",
-        note: "The same sentence frame identifies a thing.",
-        pattern: "A は B です",
+        note: "これ is the topic. The information after は identifies it as water.",
+        pattern: "Topic は Information です",
       },
       {
+        audio: "/audio/ja-grammar-watashi-mo-sensei-desu.wav",
         id: "watashi-mo-sensei-desu",
         japanese: "私も先生です。",
         meaning: "I am also a teacher.",
-        note: "も replaces は to add the meaning “also.”",
-        pattern: "A も B です",
+        note: "も replaces は when the same information is also true of this topic.",
+        pattern: "Topic も Information です",
       },
     ],
+    lesson: {
+      explanation: "When は marks the topic, it is pronounced wa even though it is still written は. Do not write わ for the topic particle.",
+      heading: "How the first sentence works",
+      parts: [
+        { japanese: "私", label: "topic · me" },
+        { japanese: "は", label: "topic marker · pronounced wa" },
+        { japanese: "クリス", label: "information · Chris" },
+        { japanese: "です", label: "polite ending" },
+      ],
+      spoken: "わ (wa)",
+      written: "は",
+    },
     name: "Statements",
   },
   {

@@ -1,7 +1,7 @@
-import { KanjiStationPage } from "../kanji-station-page";
+import { FoundationLineIntroduction } from "../foundation-line-introduction";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 
 export default function KanjiPage() {
-  return <KanjiStationPage stationId="kanji" />;
+  return <FoundationLineIntroduction line="kanji" />;
 }

@@ -30,7 +30,7 @@ test("every Foundation gateway teaches every current station on its branch", () 
   );
   assert.deepEqual(
     FOUNDATION_TOURS.kanji.stations.map(({ id }) => id),
-    KANJI_STATION_IDS.slice(1),
+    KANJI_STATION_IDS,
   );
   assert.deepEqual(
     FOUNDATION_TOURS.vocabulary.stations.map(({ id }) => id),
@@ -80,7 +80,7 @@ test("the shared branch tour is a restrained linked teaching list", async () => 
   const japan = await readFile(new URL("app/stations/japan/page.tsx", root), "utf8");
   const japanese = await readFile(new URL("app/stations/japanese/page.tsx", root), "utf8");
   const kana = await readFile(new URL("app/stations/kana/page.tsx", root), "utf8");
-  const kanji = await readFile(new URL("app/stations/kanji/kanji-guide.tsx", root), "utf8");
+  const kanji = await readFile(new URL("app/stations/kanji/page.tsx", root), "utf8");
   const styles = await readFile(new URL("app/styles/stations.css", root), "utf8");
 
   assert.match(component, /getFoundationTour\(tourId\)/);
@@ -94,5 +94,5 @@ test("the shared branch tour is a restrained linked teaching list", async () => 
   assert.match(japanese, /<FoundationLineTour tourId="foundations" \/>/);
   assert.match(japan, /<FoundationLineTour tourId="japan" \/>/);
   assert.match(kana, /<FoundationLineTour tourId="kana" \/>/);
-  assert.match(kanji, /station\.id === "kanji" \? <FoundationLineTour tourId="kanji" \/> : null/);
+  assert.match(kanji, /<FoundationLineIntroduction line="kanji" \/>/);
 });

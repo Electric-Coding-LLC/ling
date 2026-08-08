@@ -100,7 +100,7 @@
 
 .network-line {
   fill: none;
-  stroke-width: 4;
+  stroke-width: 6;
   stroke-linecap: round;
   stroke-linejoin: round;
   pointer-events: none;
@@ -154,7 +154,7 @@
 
 .network-line-foundation {
   stroke: var(--foreground);
-  stroke-width: 4;
+  stroke-width: 6;
 }
 
 .network-keyboard-travel {
@@ -164,30 +164,21 @@
 .network-keyboard-travel-beam {
   fill: none;
   stroke: var(--foreground);
-  stroke-dasharray: 16 200;
-  stroke-dashoffset: 16;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
-  animation: network-keyboard-travel 320ms linear both;
 }
 
 .network-keyboard-travel-beam-contrast {
   filter: drop-shadow(0 0 4px rgb(242 241 235 / 0.9));
   opacity: 1;
   stroke: var(--foreground);
-  stroke-width: 9;
+  stroke-width: 12;
 }
 
 .network-keyboard-travel-beam-core {
   opacity: 1;
   stroke: var(--surface);
   stroke-width: 4;
-}
-
-@keyframes network-keyboard-travel {
-  to {
-    stroke-dashoffset: -100;
-  }
 }
 
 .network-interchange-outer,
@@ -199,21 +190,24 @@
 }
 
 .network-interchange-outer {
+  fill: var(--surface);
   stroke: var(--foreground);
-  stroke-width: 3;
+  stroke-width: 22;
 }
 
 .network-interchange-inner {
   --network-station-inner-color: var(--foreground);
 
   fill: var(--network-station-inner-color);
-  stroke: var(--network-station-inner-color);
-  stroke-width: 5;
-  transition: fill 160ms ease, stroke 160ms ease;
+  stroke: var(--surface);
+  stroke-width: 11;
+  paint-order: stroke fill;
+  transition: fill 160ms ease;
 }
 
 .network-single-station-outer {
-  stroke-width: 3;
+  fill: var(--surface);
+  stroke-width: 22;
 }
 
 .network-single-station-outer-sound {
@@ -252,9 +246,10 @@
   --network-station-inner-color: var(--foreground);
 
   fill: var(--network-station-inner-color);
-  stroke: var(--network-station-inner-color);
-  stroke-width: 4;
-  transition: fill 160ms ease, stroke 160ms ease;
+  stroke: var(--surface);
+  stroke-width: 11;
+  paint-order: stroke fill;
+  transition: fill 160ms ease;
 }
 
 .network-single-station-inner-sound {
@@ -291,7 +286,7 @@
   stroke: var(--surface);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.4;
+  stroke-width: 6;
   vector-effect: non-scaling-stroke;
 }
 
@@ -318,7 +313,6 @@
   .network-single-station-inner
 ) {
   fill: color-mix(in srgb, var(--network-station-inner-color) 45%, var(--surface));
-  stroke: color-mix(in srgb, var(--network-station-inner-color) 45%, var(--surface));
 }
 
 .network-station-link[data-visited="false"]:is(:hover, :focus-visible) :is(
@@ -326,7 +320,6 @@
   .network-single-station-inner
 ) {
   fill: var(--network-station-inner-color);
-  stroke: var(--network-station-inner-color);
 }
 
 .network-station-link:focus-visible {
@@ -343,15 +336,28 @@
 
 .network-station-link[data-active="true"] :is(
   .network-interchange-inner,
-  .network-single-station-inner,
-  .network-station-complete-icon
+  .network-single-station-inner
 ) {
   animation: network-station-inner-pulse 2s ease-in-out infinite;
 }
 
 @keyframes network-station-inner-pulse {
   0%, 100% {
-    opacity: 0.28;
+    fill: color-mix(in srgb, var(--network-station-inner-color) 45%, var(--surface));
+  }
+
+  50% {
+    fill: var(--network-station-inner-color);
+  }
+}
+
+.network-station-link[data-active="true"] .network-station-complete-icon {
+  animation: network-station-complete-icon-pulse 2s ease-in-out infinite;
+}
+
+@keyframes network-station-complete-icon-pulse {
+  0%, 100% {
+    opacity: 0.45;
   }
 
   50% {
@@ -449,16 +455,14 @@
     font-size: 22px;
   }
 
-  .network-map-mobile .network-single-station-outer {
-    r: 24px;
-  }
-
+  .network-map-mobile .network-single-station-outer,
   .network-map-mobile .network-single-station-inner {
-    r: 11.5px;
+    r: 16px;
   }
 
+  .network-map-mobile .network-interchange-outer,
   .network-map-mobile .network-interchange-inner {
-    r: 15px;
+    r: 20px;
   }
 
   .network-map-mobile .network-station-complete-icon:not(.network-station-complete-icon-interchange) {

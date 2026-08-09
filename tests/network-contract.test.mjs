@@ -139,9 +139,9 @@ test("the network uses a vertical Foundations spine with horizontal depth", asyn
     /style=\{\{[\s\S]*width: `\$\{\([\s\S]*width \/ \(mobile \? MOBILE_VIEW_WIDTH : DESKTOP_VIEW_WIDTH\)[\s\S]*\) \* 100\}%`/,
   );
   assert.match(source, /className=\{`network-line network-line-\$\{line\}`\}/);
-  assert.match(styles, /\.network-line\s*\{[^}]*stroke-width:\s*6[^}]*stroke-linecap:\s*round[^}]*stroke-linejoin:\s*round/s);
+  assert.match(styles, /\.network-line\s*\{[^}]*stroke-width:\s*4[^}]*stroke-linecap:\s*round[^}]*stroke-linejoin:\s*round/s);
   assert.match(styles, /\.network-line\s*\{[^}]*vector-effect:\s*non-scaling-stroke/s);
-  assert.match(styles, /\.network-line-foundation\s*\{[^}]*stroke:\s*var\(--foreground\)[^}]*stroke-width:\s*6/s);
+  assert.match(styles, /\.network-line-foundation\s*\{[^}]*stroke:\s*var\(--foreground\)[^}]*stroke-width:\s*4/s);
   assert.match(styles, /\.network-station-label\s*\{[^}]*font-size:\s*20px/s);
   assert.match(
     styles,
@@ -461,7 +461,7 @@ test("station and Welcome pages share one plain, focused return to the map", asy
   assert.match(source, /network-single-station-inner-\$\{kind\}`\}[\s\S]*r="9"/);
   assert.match(source, /network-single-station-inner-\$\{kind\}`\}/);
   assert.match(source, /className=\{`network-station-complete-icon/);
-  assert.match(styles, /\.network-station-complete-icon\s*\{[^}]*stroke-width:\s*6/s);
+  assert.match(styles, /\.network-station-complete-icon\s*\{[^}]*stroke-width:\s*2\.4/s);
   assert.match(styles, /\.network-station-complete-icon\s*\{[^}]*vector-effect:\s*non-scaling-stroke/s);
   assert.match(source, /d="m-5 1 3 3 7-7"/);
   assert.doesNotMatch(source, /LingMarkStrokes|network-brand-station|<rect/);

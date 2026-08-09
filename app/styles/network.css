@@ -100,7 +100,7 @@
 
 .network-line {
   fill: none;
-  stroke-width: 6;
+  stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
   pointer-events: none;
@@ -154,7 +154,7 @@
 
 .network-line-foundation {
   stroke: var(--foreground);
-  stroke-width: 6;
+  stroke-width: 4;
 }
 
 .network-keyboard-travel {
@@ -286,7 +286,7 @@
   stroke: var(--surface);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 6;
+  stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
 }
 

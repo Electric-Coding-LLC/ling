@@ -1,6 +1,6 @@
 # Vision
 
-Ling is a personal language-learning application built around one learner. Its purpose is to help that learner explore and deepen mastery of a language through an open-ended mastery network. It starts with Japanese and may support other languages as real learning needs emerge. It is not a SaaS product and should not accumulate features for hypothetical users.
+Ling is a personal language-learning application built around one adult learner. Its purpose is to help that learner explore and deepen mastery of a language through an open-ended mastery network. It starts with Japanese and may support other languages as real learning needs emerge. It is not a SaaS product and should not accumulate features for hypothetical users.
 
 ## Mastery Network
 
@@ -62,6 +62,9 @@ Suggestions may quietly use prior evidence to direct attention, but they are an 
 ## Learning Contract
 
 - Build from real study needs, one useful increment at a time.
+- Teach an adult learner. Prioritize agency, work, travel, relationships, schedules, services, health, money, preferences, and social context over generic child-oriented beginner topics.
+- Let adult purposes choose the material: teach words and structures because they help the learner understand, decide, ask, explain, arrange, or respond in a credible situation.
+- Treat adults as capable of precise explanation. Define linguistic terms when they are useful, and never require unexplained terminology to understand a lesson.
 - Pursue mastery through teaching, active recall, correction, and retesting.
 - Present Japanese through Japanese writing and sound. Teach rōmaji once as a readable notation on the Foundations spine, then use compact rōmaji beneath later Japan-line phrases; do not use IPA or English respellings.
 - Treat replayable pronunciation and concise linguistic insight as core learning material.
@@ -211,7 +214,9 @@ have other readings in other words.
 
 The Vocabulary category station teaches the practical role of every current
 group: `Pointing`, `People`, `Needs`, `Movement`, `Time`, `Actions`, and
-`Descriptions`. Each independently accessible station is a listening-first
+`Descriptions`. The groups are framed around adult agency: identifying people
+and places, meeting immediate needs, moving independently, making plans,
+describing actions, and comparing options. Each independently accessible station is a listening-first
 reference with the Japanese written form, Kana reading where Kanji appears,
 canonical rōmaji, meaning, bundled audio, and flashcard review in either the
 English-to-Japanese or Japanese-to-English direction. Progress remains scoped
@@ -219,12 +224,14 @@ to the active station. The retired `/stations/words` route leads to `Pointing`
 so existing links and stored learner state remain useful.
 
 The Grammar category station teaches what each current sentence tool contributes:
-the topic-comment shape, questions, noun relationships, existence, polite
+what a sentence is about, questions, noun relationships, existence, polite
 action sentences, nonpast and past, negation, and the two main adjective
-patterns. Statements teaches its first sentence concretely before naming the
-reusable shape, explicitly explains that topic-particle `は` is pronounced
-`wa`, and supplies bundled audio for every sentence in the station. Every
-station uses complete Japanese sentences, concise pattern notes, and the same
+patterns. Its examples come from credible adult identity, work, travel,
+scheduling, service, preference, and social situations. Statements teaches its
+first sentence concretely, explains `は` as “what we are talking about,” notes
+that it is pronounced `wa`, and supplies bundled audio for every sentence in
+the station. Each station offers concise tap-to-expand definitions for the
+linguistic terms it uses. Every station uses complete Japanese sentences, concise pattern notes, and the same
 two-way hidden-answer review flow used by other recall-based stations. Grammar
 progress is private and separate from Vocabulary progress. Audio is added to
 later Grammar stations only when a complete verified sentence set is ready.

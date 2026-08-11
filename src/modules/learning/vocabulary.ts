@@ -44,7 +44,7 @@ export type VocabularyStation = {
 
 export const VOCABULARY_STATIONS: readonly VocabularyStation[] = [
   {
-    description: "Locate things, ask what something is, and point out where it is.",
+    description: "Identify an item, confirm a place, and ask where something is.",
     id: "pointing",
     items: [
       { audio: "/audio/ja-vocab-kore.wav", id: "kore", meaning: "this", pitchAccent: 0, reading: "これ", word: "これ" },
@@ -59,7 +59,7 @@ export const VOCABULARY_STATIONS: readonly VocabularyStation[] = [
     name: "Pointing",
   },
   {
-    description: "Refer to yourself and the people you are most likely to talk about.",
+    description: "Introduce yourself and talk about relationships, roles, and people in your life.",
     id: "people",
     items: [
       { audio: "/audio/ja-vocab-watashi.wav", id: "watashi", meaning: "I / me", pitchAccent: 0, reading: "わたし", word: "私" },
@@ -73,7 +73,7 @@ export const VOCABULARY_STATIONS: readonly VocabularyStation[] = [
     name: "People",
   },
   {
-    description: "Name immediate needs and everyday things you may ask for.",
+    description: "Ask for food or drink, find a restroom, and name an immediate need.",
     id: "needs",
     items: [
       { audio: "/audio/ja-vocab-mizu.wav", id: "mizu", meaning: "water", pitchAccent: 0, reading: "みず", word: "水" },
@@ -87,7 +87,7 @@ export const VOCABULARY_STATIONS: readonly VocabularyStation[] = [
     name: "Needs",
   },
   {
-    description: "Talk about going somewhere and the transport that gets you there.",
+    description: "Move independently by naming destinations and the transport that gets you there.",
     id: "movement",
     items: [
       { audio: "/audio/ja-eki.wav", id: "eki", meaning: "station", pitchAccent: 1, reading: "えき", word: "駅" },
@@ -101,7 +101,7 @@ export const VOCABULARY_STATIONS: readonly VocabularyStation[] = [
     name: "Movement",
   },
   {
-    description: "Place events in the present, the day, and the surrounding days.",
+    description: "Discuss plans and schedules across today, tomorrow, yesterday, and the parts of a day.",
     id: "time",
     items: [
       { audio: "/audio/ja-vocab-ima.wav", id: "ima", meaning: "now", pitchAccent: 1, reading: "いま", word: "今" },
@@ -116,7 +116,7 @@ export const VOCABULARY_STATIONS: readonly VocabularyStation[] = [
     name: "Time",
   },
   {
-    description: "Recognize common actions that make simple requests and statements possible.",
+    description: "Describe what you do in everyday situations: eat, drink, listen, speak, buy, go, and wait.",
     id: "actions",
     items: [
       { audio: "/audio/ja-vocab-taberu.wav", id: "taberu", meaning: "to eat", pitchAccent: 2, reading: "たべる", word: "食べる" },
@@ -130,7 +130,7 @@ export const VOCABULARY_STATIONS: readonly VocabularyStation[] = [
     name: "Actions",
   },
   {
-    description: "Describe basic qualities, conditions, and prices.",
+    description: "Compare options by describing quality, size, temperature, and price.",
     id: "descriptions",
     items: [
       { audio: "/audio/ja-vocab-ii.wav", id: "ii", meaning: "good", pitchAccent: 1, reading: "いい", word: "いい" },

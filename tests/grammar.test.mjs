@@ -33,6 +33,20 @@ test("Grammar is an eight-station sentence-system track", () => {
   assert.equal(GRAMMAR_STATIONS.length, 8);
   for (const station of GRAMMAR_STATIONS) {
     assert.ok(station.items.length >= 3);
+    assert.ok(station.terms?.length);
+    const teachingCopy = [
+      ...station.description,
+      station.lesson?.explanation ?? "",
+      ...(station.lesson?.parts.map(({ label }) => label) ?? []),
+    ].join(" ").toLocaleLowerCase();
+    for (const term of station.terms ?? []) {
+      assert.ok(term.term.length > 0);
+      assert.ok(term.definition.endsWith("."));
+      assert.ok(
+        teachingCopy.includes(term.term.toLocaleLowerCase()),
+        `${station.name} introduces ${term.term} in context`,
+      );
+    }
     const audioItems = station.items.filter((item) => item.audio);
     assert.ok(
       audioItems.length === 0 || audioItems.length === station.items.length,
@@ -47,35 +61,40 @@ test("Grammar is an eight-station sentence-system track", () => {
   }
 
   const statements = getGrammarStation("statements");
-  assert.match(statements.description.join(" "), /は marks that topic/);
-  assert.equal(statements.lesson?.spoken, "わ (wa)");
-  assert.match(statements.lesson?.explanation ?? "", /pronounced wa.*still written は/);
+  assert.match(statements.description.join(" "), /私は is like saying “As for me…”/);
+  assert.equal(statements.lesson?.heading, "Now, let’s take it apart");
   assert.deepEqual(
     statements.lesson?.parts.map(({ japanese, label }) => [japanese, label]),
     [
-      ["私", "topic · me"],
-      ["は", "topic marker · pronounced wa"],
-      ["クリス", "information · Chris"],
-      ["です", "polite ending"],
+      ["私", "私 means “I” or “me.” Here, I’m talking about myself."],
+      ["は", "は tells us that 私 is what I’m talking about. Together, 私は is like “As for me…” It is written は but pronounced wa here."],
+      ["クリス", "Now I say something about myself: I’m Chris."],
+      ["です", "This finishes the sentence in the polite form."],
     ],
   );
   assert.deepEqual(
     statements.items.map(({ audio }) => audio),
     [
       "/audio/ja-grammar-watashi-wa-kurisu-desu.wav",
-      "/audio/ja-grammar-kore-wa-mizu-desu.wav",
-      "/audio/ja-grammar-watashi-mo-sensei-desu.wav",
+      "/audio/ja-grammar-kyou-wa-kaigi-desu.wav",
+      "/audio/ja-grammar-watashi-mo-ryokousha-desu.wav",
+      "/audio/ja-grammar-watashi-wa-kaishain-desu.wav",
+      "/audio/ja-grammar-yoyaku-wa-sanji-desu.wav",
+      "/audio/ja-grammar-ashita-wa-yasumi-desu.wav",
+      "/audio/ja-grammar-kurisu-mo-kaishain-desu.wav",
+      "/audio/ja-grammar-ashita-mo-kaigi-desu.wav",
     ],
   );
   assert.ok(statements.items.every(({ pattern }) => !/\b[AB]\b/.test(pattern)));
-  assert.ok(statements.items.every(({ pattern }) => /Topic.*Information/.test(pattern)));
+  assert.ok(statements.items.every(({ pattern }) => /As for/.test(pattern)));
+  assert.deepEqual(statements.terms?.map(({ term }) => term), ["polite form"]);
   assert.match(getGrammarStation("questions").description.join(" "), /ends with か/);
-  assert.match(getGrammarStation("possession").description.join(" "), /の connects two nouns/);
+  assert.match(getGrammarStation("possession").description.join(" "), /の connects one noun to another/);
   assert.match(getGrammarStation("existence").description.join(" "), /あります.*います/);
-  assert.match(getGrammarStation("verbs").description.join(" "), /を marks.*で marks.*に can mark/);
-  assert.match(getGrammarStation("tense").description.join(" "), /nonpast covers both present and future/);
+  assert.match(getGrammarStation("verbs").description.join(" "), /を marks.*で marks.*に marks/);
+  assert.match(getGrammarStation("tense").description.join(" "), /nonpast covers present.*future/);
   assert.match(getGrammarStation("negation").description.join(" "), /ませんでした/);
-  assert.match(getGrammarStation("adjectives").description.join(" "), /い-adjectives.*な-adjectives/);
+  assert.match(getGrammarStation("adjectives").description.join(" "), /い-adjective.*な-adjective/);
 
   assert.equal(
     isGrammarKnowledge({
@@ -120,14 +139,32 @@ test("Grammar stations reuse the established review and persistence contracts", 
   assert.match(guide, /onActivate=\{activateCard\}/);
   assert.match(guide, /<FlashcardCountdown onComplete=\{activateCard\} \/>/);
   assert.match(guide, /<WordAudioIndicator \/>/);
-  assert.match(guide, /Tap a sentence to hear it\./);
+  assert.match(guide, /Let’s hear the whole sentence first/);
+  assert.match(guide, /station\.lesson\.heading/);
+  assert.match(guide, /Now it’s your turn/);
+  assert.match(guide, /function GrammarTermTooltip/);
+  assert.match(guide, /getBoundingClientRect\(\)/);
+  assert.match(guide, /window\.visualViewport/);
+  assert.match(guide, /currentVisualViewport\?\.width/);
+  assert.match(guide, /currentVisualViewport\?\.offsetLeft/);
+  assert.match(guide, /const visible = hovered \|\| open/);
+  assert.match(guide, /onFocus=\{\(\) => setOpen\(true\)\}/);
+  assert.match(guide, /onMouseEnter=\{\(\) => setHovered\(true\)\}/);
+  assert.match(guide, /role="tooltip"/);
+  assert.match(guide, /renderGrammarText\(part\.label\)/);
+  assert.doesNotMatch(guide, /Grammar terms used in this lesson/);
+  assert.match(guide, /openItemReview\(item\)/);
+  assert.match(guide, /<button[\s\S]*className="grammar-reference-item"[\s\S]*onClick=\{\(\) => playItem\(item\)\}/);
+  assert.doesNotMatch(guide, /grammar-reference-audio|grammar-reference-listen/);
   assert.match(guide, /"Reveal answer and play audio"/);
   assert.doesNotMatch(guide, /Reveal and play \$\{activeCard\.japanese\}/);
   assert.match(guide, /<audio[\s\S]*onEnded=\{handleAudioEnded\}[\s\S]*onError=\{handleAudioError\}/);
   assert.doesNotMatch(guide, /getJapaneseWordRomaji/);
-  assert.match(styles, /\.grammar-sentence-parts\s*\{[^}]*grid-template-columns:\s*repeat\(4,/s);
-  assert.match(styles, /@media \(max-width: 600px\)[\s\S]*\.grammar-sentence-parts\s*\{[^}]*repeat\(2,/s);
   assert.match(styles, /\.grammar-reference-item\[data-playing="true"\]\s*\{[^}]*var\(--audio\)/s);
+  assert.match(styles, /\.grammar-term-definition\s*\{[^}]*position:\s*absolute/s);
+  assert.doesNotMatch(styles, /\.grammar-term-definition\s*\{[^}]*position:\s*fixed/s);
+  assert.match(styles, /data-placement="above"/);
+  assert.doesNotMatch(styles, /grammar-term-trigger:focus \+|grammar-term-tooltip:hover/);
   assert.match(handlers, /getGrammarStation\(stationId\)\.items\.some/);
   assert.match(handlers, /setGrammarItemsKnown\(user\.id, itemIds, body\.known\)/);
   assert.match(handlers, /private, no-store/);

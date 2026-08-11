@@ -828,11 +828,7 @@ function NetworkView({
       className={`network-map network-map-${view}`}
       data-network-view={view}
       role="img"
-      style={{
-        width: `${(
-          width / (mobile ? MOBILE_VIEW_WIDTH : DESKTOP_VIEW_WIDTH)
-        ) * 100}%`,
-      }}
+      style={{ width }}
       viewBox={`0 0 ${width} ${NETWORK_VIEW_HEIGHT}`}
     >
       <defs>
@@ -981,6 +977,11 @@ export function NetworkMap({
 
   function selectStation(focus: StationFocus) {
     setSelectedStationFocus(focus);
+
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("focus") === focus) return;
+    url.searchParams.set("focus", focus);
+    window.history.replaceState(window.history.state, "", url);
   }
 
   function showCurrentLocation() {

@@ -20,6 +20,7 @@ export function StationTopbar({
           className="brand-link"
           href={`/?focus=${networkFocus}`}
           loadingMap
+          scroll={false}
           title="Ling map"
         >
           <LingWordmark className="wordmark" />
@@ -30,6 +31,7 @@ export function StationTopbar({
             className="topbar-map-link"
             href={`/?focus=${networkFocus}`}
             loadingMap
+            scroll={false}
             title="Map"
           >
             <MapIcon />

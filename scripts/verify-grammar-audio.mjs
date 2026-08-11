@@ -62,7 +62,7 @@ for (const station of stationsWithAudio) {
 }
 
 const items = stationsWithAudio.flatMap((station) => station.items);
-assert.equal(items.length, 3, "Statements should contain three playable sentences");
+assert.equal(items.length, 8, "Statements should contain eight playable sentences");
 assert.equal(
   new Set(items.map((item) => item.audio)).size,
   items.length,

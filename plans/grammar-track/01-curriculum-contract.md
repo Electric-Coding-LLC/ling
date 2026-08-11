@@ -20,8 +20,8 @@ The serial shape communicates conceptual dependency: each station reuses sentenc
 
 | Station | Purpose | Core forms |
 | --- | --- | --- |
-| Statements | Build basic topic-comment and noun sentences. | `Topic は Information です`, `も` |
-| Questions | Turn known sentence shapes into information and yes/no questions. | `か`, `何`, `誰`, `どこ` |
+| Statements | Say what is true about a person, day, plan, or arrangement. | `は`, `も`, `です` |
+| Questions | Confirm an arrangement or ask for a needed detail. | `か`, `何時`, `誰`, `どこ` |
 | Possession | Connect nouns through possession, affiliation, and type. | `A の B` |
 | Existence | Say that objects or people exist in a place. | `ある`, `いる`, `に`, `が` |
 | Verbs | Build polite action sentences with their core participants and locations. | `ます`, `を`, `で`, destination `に` |
@@ -29,7 +29,7 @@ The serial shape communicates conceptual dependency: each station reuses sentenc
 | Negation | Deny noun identity and negate polite verbs in nonpast and past. | `じゃないです`, `ません`, `ませんでした` |
 | Adjectives | Use い-adjectives and な-adjectives as predicates and before nouns. | `大きいです`, `静かです`, `大きい N`, `静かな N` |
 
-Each station owns three or four complete sentence cards. Sentences primarily reuse words already present in Vocabulary; a new word appears only when the grammatical contrast requires it, such as `静か` for な-adjectives. Explanations stay concise and describe what the visible form does in the example.
+Each station owns at least four complete sentence cards; Statements owns eight so its guided examples are followed by fresh practice. Sentences prioritize credible adult identity, work, travel, scheduling, service, preference, and social situations. Explanations stay concise and describe what the visible form does in the example.
 
 ### Learning directions and completion
 
@@ -43,8 +43,9 @@ Each station owns three or four complete sentence cards. Sentences primarily reu
 ### Reference and review behavior
 
 - The station reference shows the Japanese sentence, English meaning, a sentence shape with concrete role names, and one restrained explanation of the target form.
-- Statements teaches the first sentence before abstracting it: a four-part breakdown labels the topic, topic marker, information, and polite ending.
-- Statements explicitly distinguishes written `は` from its spoken `wa` pronunciation when it acts as the topic particle. The one-word `wa` cue explains this spelling exception; it is not a Rōmaji transcription of the sentence.
+- Statements teaches the first sentence through a four-part breakdown before asking the learner to reuse it. It explains `は` as “what we are talking about” rather than requiring unexplained topic-comment terminology.
+- Statements explicitly distinguishes written `は` from its spoken `wa` pronunciation in this use. The `wa` cue explains the spelling exception; it is not a Rōmaji transcription of the sentence.
+- Each station offers concise tap-to-expand definitions for the linguistic terms used in its teaching copy.
 - Grammar review reuses the shared Ling launcher, modal, four-second reveal, whole-card activation, swipe/buttons, typography roles, error handling, and options menu.
 - Grammar audio is station-complete: a station receives audio only when every sentence in that station has a unique, verified bundled asset and the shared playback treatment. Statements meets that contract; later stations remain silent until their full sentence sets do.
 - No sentence Rōmaji is shown; the learner has already encountered Rōmaji as its own Foundations station.
@@ -61,7 +62,7 @@ Each station owns three or four complete sentence cards. Sentences primarily reu
 
 - The eight stations have mutually distinct jobs and form a useful conceptual sequence.
 - Every sentence is natural Japanese, illustrates the declared form, and has a precise English meaning.
-- Statements explains `は` before using it, maps its first sentence to concrete roles, and provides mechanically verified bundled audio for all three sentences.
+- Statements explains `は` through the first sentence and provides mechanically verified bundled audio for all eight sentences.
 - The two review directions and separate completion semantics are explicit.
 - The map topology and optional footer sequence are explicit.
 - The line's current boundary and deferred material are explicit.

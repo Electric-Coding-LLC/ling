@@ -9,6 +9,7 @@ checkbox state live in the linked `EXECMAP.md`, not here.
 
 ## Completed Plans
 
+- [Adult-First Curriculum](./plans/adult-first-curriculum/EXECMAP.md)
 - [Foundations Teaching Pass](./plans/foundations-teaching-pass/EXECMAP.md)
 - [Grammar Track](./plans/grammar-track/EXECMAP.md)
 - [Kanji Track](./plans/kanji-track/EXECMAP.md)

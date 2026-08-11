@@ -104,7 +104,6 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   pointer-events: none;
-  vector-effect: non-scaling-stroke;
 }
 
 .network-line-hit {
@@ -112,7 +111,6 @@
   stroke: transparent;
   stroke-width: 24;
   pointer-events: stroke;
-  vector-effect: non-scaling-stroke;
 }
 
 .network-tooltip {
@@ -165,7 +163,6 @@
   fill: none;
   stroke: var(--foreground);
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
 }
 
 .network-keyboard-travel-beam-contrast {
@@ -182,73 +179,70 @@
 }
 
 .network-interchange-outer,
+.network-interchange-gap,
 .network-interchange-inner,
 .network-single-station-outer,
+.network-single-station-gap,
 .network-single-station-inner {
-  fill: var(--surface);
-  vector-effect: non-scaling-stroke;
+  stroke: none;
 }
 
 .network-interchange-outer {
+  fill: var(--foreground);
+}
+
+.network-interchange-gap,
+.network-single-station-gap {
   fill: var(--surface);
-  stroke: var(--foreground);
-  stroke-width: 22;
 }
 
 .network-interchange-inner {
   --network-station-inner-color: var(--foreground);
 
   fill: var(--network-station-inner-color);
-  stroke: var(--surface);
-  stroke-width: 11;
-  paint-order: stroke fill;
   transition: fill 160ms ease;
 }
 
 .network-single-station-outer {
-  fill: var(--surface);
-  stroke-width: 22;
+  fill: var(--foreground);
 }
 
 .network-single-station-outer-sound {
-  stroke: var(--sound);
+  fill: var(--sound);
 }
 
 .network-single-station-outer-local {
-  stroke: var(--muted);
+  fill: var(--muted);
 }
 
 .network-single-station-outer-foundation {
-  stroke: var(--foreground);
+  fill: var(--foreground);
 }
 
 .network-single-station-outer-writing {
-  stroke: var(--writing);
+  fill: var(--writing);
 }
 
 .network-single-station-outer-kanji {
-  stroke: var(--kanji);
+  fill: var(--kanji);
 }
 
 .network-single-station-outer-vocabulary {
-  stroke: var(--vocabulary);
+  fill: var(--vocabulary);
 }
 
 .network-single-station-outer-grammar {
-  stroke: var(--grammar);
+  fill: var(--grammar);
 }
 
 .network-single-station-outer-travel {
-  stroke: var(--travel);
+  fill: var(--travel);
 }
 
 .network-single-station-inner {
   --network-station-inner-color: var(--foreground);
 
   fill: var(--network-station-inner-color);
-  stroke: var(--surface);
-  stroke-width: 11;
-  paint-order: stroke fill;
   transition: fill 160ms ease;
 }
 
@@ -455,12 +449,26 @@
     font-size: 22px;
   }
 
-  .network-map-mobile .network-single-station-outer,
+  .network-map-mobile .network-single-station-outer {
+    r: 25.5px;
+  }
+
+  .network-map-mobile .network-single-station-gap {
+    r: 21.5px;
+  }
+
   .network-map-mobile .network-single-station-inner {
     r: 16px;
   }
 
-  .network-map-mobile .network-interchange-outer,
+  .network-map-mobile .network-interchange-outer {
+    r: 29.5px;
+  }
+
+  .network-map-mobile .network-interchange-gap {
+    r: 25.5px;
+  }
+
   .network-map-mobile .network-interchange-inner {
     r: 20px;
   }

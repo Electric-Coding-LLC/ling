@@ -62,7 +62,12 @@ for (const station of stationsWithAudio) {
 }
 
 const items = stationsWithAudio.flatMap((station) => station.items);
-assert.equal(items.length, 8, "Statements should contain eight playable sentences");
+assert.deepEqual(
+  stationsWithAudio.map((station) => station.name),
+  ["Statements", "Questions", "Possession", "Existence", "Verbs", "Tense", "Negation", "Adjectives"],
+  "Every Grammar lesson should provide complete audio",
+);
+assert.equal(items.length, 64, "Each Grammar lesson should contain eight playable sentences");
 assert.equal(
   new Set(items.map((item) => item.audio)).size,
   items.length,

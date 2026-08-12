@@ -275,15 +275,15 @@ test("generated migrations create the account-scoped learning boundaries", async
 
   database.prepare(
     "INSERT INTO grammar_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
-  ).run("learner-1", "watashi-wa-kurisu-desu", "meaning-to-japanese", 22);
+  ).run("learner-1", "watashi-wa-sensei-desu", "meaning-to-japanese", 22);
   assert.throws(() => {
     database.prepare(
       "INSERT INTO grammar_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
-    ).run("learner-1", "watashi-wa-kurisu-desu", "meaning-to-japanese", 23);
+    ).run("learner-1", "watashi-wa-sensei-desu", "meaning-to-japanese", 23);
   }, /UNIQUE constraint failed/);
   database.prepare(
     "INSERT INTO grammar_knowledge (user_id, item_id, review_direction, known_at) VALUES (?, ?, ?, ?)",
-  ).run("learner-1", "watashi-wa-kurisu-desu", "japanese-to-meaning", 24);
+  ).run("learner-1", "watashi-wa-sensei-desu", "japanese-to-meaning", 24);
 
   database.prepare(
     "INSERT INTO mora_timing_knowledge (user_id, review_id, known_at) VALUES (?, ?, ?)",

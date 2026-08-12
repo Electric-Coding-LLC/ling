@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const root = new URL("../", import.meta.url);
+const MAX_IOS_LAUNCH_DECODED_BYTES = 25 * 1024 * 1024;
 
 async function layoutAssetPath(field) {
   const layout = await readFile(new URL("app/layout.tsx", root), "utf8");
@@ -50,30 +51,26 @@ test("manifest declares a standalone app with content-addressed icons", async ()
 
 test("Safari cold launches use content-addressed Ling startup artwork", async () => {
   const layout = await readFile(new URL("app/layout.tsx", root), "utf8");
-  const startupImageBase = layout.match(
-    /safariStartupImageBase\s*=\s*"(https:\/\/raw\.githubusercontent\.com\/[^"]+)"/,
+  const startupImage = layout.match(
+    /safariStartupImage\s*=\s*"(https:\/\/raw\.githubusercontent\.com\/Electric-Coding-LLC\/ling\/main\/public\/launch\/(ling-launch-[a-f0-9]{8}\.png))"/,
   );
-  const startupImages = [...layout.matchAll(
-    /url:\s*`\$\{safariStartupImageBase\}\/([^`]+)`,\s*media:\s*"\(device-width: (\d+)px\) and \(device-height: (\d+)px\) and \(-webkit-device-pixel-ratio: (\d+)\)"/g,
-  )];
 
-  assert.match(layout, /startupImage:\s*safariStartupImages/);
-  assert.equal(
-    startupImageBase?.[1],
-    "https://raw.githubusercontent.com/Electric-Coding-LLC/ling/main/public/launch",
+  assert.ok(startupImage, "Safari must declare one universal startup image");
+  assert.match(layout, /startupImage:\s*safariStartupImage/);
+
+  const filename = startupImage[2];
+  const path = `/launch/${filename}`;
+  const bytes = await readPublicAsset(path);
+  const pixelWidth = bytes.readUInt32BE(16);
+  const pixelHeight = bytes.readUInt32BE(20);
+
+  assertContentAddressed(path, bytes, ".png");
+  assert.equal(bytes.readUInt8(24), 8, `${path} must be an 8-bit PNG`);
+  assert.ok(
+    pixelWidth * pixelHeight * 4 < MAX_IOS_LAUNCH_DECODED_BYTES,
+    `${path} must remain below the iOS launch-screen decode limit`,
   );
-  assert.equal(startupImages.length, 13);
-  assert.equal(new Set(startupImages.map((match) => match[1])).size, 13);
-
-  for (const [, filename, logicalWidth, logicalHeight, pixelRatio] of startupImages) {
-    const path = `/launch/${filename}`;
-    assert.match(path, /^\/launch\/ling-launch-\d+x\d+-\d+x-[a-f0-9]{8}\.png$/);
-
-    const bytes = await readPublicAsset(path);
-    assertContentAddressed(path, bytes, ".png");
-    assert.equal(bytes.readUInt32BE(16), Number(logicalWidth) * Number(pixelRatio));
-    assert.equal(bytes.readUInt32BE(20), Number(logicalHeight) * Number(pixelRatio));
-  }
+  assert.deepEqual(await readdir(new URL("public/launch", root)), [filename]);
 
   assert.match(layout, /themeColor:\s*"#171714"/);
 });

@@ -63,6 +63,12 @@ test("every Foundation gateway teaches every current station on its branch", () 
 
   assert.equal(getFoundationTour("sound"), FOUNDATION_TOURS.sound);
 
+  const grammarTourCopy = FOUNDATION_TOURS.grammar.stations
+    .map(({ description }) => description)
+    .join(" ");
+  assert.doesNotMatch(grammarTourCopy, /何時|誰|な-adjective|reservation|going to work|meeting/);
+  assert.match(grammarTourCopy, /familiar.*い-adjectives/);
+
   for (const station of FOUNDATION_TOURS.japan.stations) {
     const japaneseExamples = station.description.match(/[\p{Script=Hiragana}\p{Script=Han}]+/gu) ?? [];
     assert.ok(japaneseExamples.length > 0, `japan/${station.id} needs a Japanese example`);

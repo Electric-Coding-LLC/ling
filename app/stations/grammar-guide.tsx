@@ -6,10 +6,12 @@ import {
   isGrammarKnowledge,
   type GrammarItem,
   type GrammarKnowledge,
+  type GrammarLessonExample,
   type GrammarReviewDirection,
   type GrammarStation,
   type GrammarTerm,
 } from "@/src/modules/learning/grammar";
+import { getJapaneseMorae } from "@/src/modules/romaji";
 import { FlashcardCountdown, FlashcardReview } from "./flashcard-review";
 import { StationOptions } from "./station-options";
 import { useFlashcardAudio } from "./use-flashcard-audio";
@@ -144,6 +146,7 @@ function GrammarTermTooltip({
 export function GrammarGuide({ station }: { readonly station: GrammarStation }) {
   const {
     activeAudioIndex,
+    activeBeatIndex,
     audioError,
     audioPlaying,
     audioRef,
@@ -194,7 +197,11 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
 
   function playItem(item: GrammarItem) {
     if (!item.audio) return;
-    playAudio({ index: itemIndex(item), src: item.audio });
+    playAudio({
+      beatCount: grammarItemBeatCount(item),
+      index: itemIndex(item),
+      src: item.audio,
+    });
   }
 
   function activateCard() {
@@ -209,14 +216,6 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
     setKnowledgeError(false);
     setReviewIndex(0);
     setActiveReview({ cards: shuffle(station.items), direction });
-  }
-
-  function openItemReview(item: GrammarItem) {
-    stopAudio();
-    setAnswerRevealed(false);
-    setKnowledgeError(false);
-    setReviewIndex(0);
-    setActiveReview({ cards: [item], direction: "japanese-to-meaning" });
   }
 
   function closeReview() {
@@ -324,7 +323,9 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
     const playing = audioPlaying && activeAudioIndex === itemIndex(item);
     const content = (
       <>
-        <span className="grammar-reference-japanese" lang="ja">{item.japanese}</span>
+        <span className="grammar-reference-japanese" lang="ja">
+          {renderSpokenSentence(item, playing ? activeBeatIndex : null)}
+        </span>
         <span className="grammar-reference-meaning">{item.meaning}</span>
         {detailed ? (
           <>
@@ -360,6 +361,21 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
       <div className="grammar-reference-item" key={item.id} {...itemState}>
         {content}
       </div>
+    );
+  }
+
+  function renderLessonExample(example: GrammarLessonExample) {
+    const item = station.items[example.itemIndex];
+    if (!item) throw new Error(`Missing ${station.name} lesson item ${example.itemIndex}`);
+
+    return (
+      <section className="grammar-concept" key={`${example.itemIndex}-${example.heading}`}>
+        <header className="grammar-concept-heading">
+          <h2>{example.heading}</h2>
+          <p>{renderGrammarText(example.explanation)}</p>
+        </header>
+        <div className="grammar-example-list">{renderReferenceItem(item, false)}</div>
+      </section>
     );
   }
 
@@ -427,13 +443,7 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
 
         {station.lesson ? (
           <div aria-label={`${station.name} lesson`} className="grammar-concepts">
-            <section className="grammar-concept">
-              <header className="grammar-concept-heading">
-                <h2>Let’s hear the whole sentence first</h2>
-                <p>私はクリスです means “I am Chris.” Tap the sentence and listen for its four parts.</p>
-              </header>
-              <div className="grammar-example-list">{renderReferenceItem(station.items[0], false)}</div>
-            </section>
+            {station.lesson.examples.slice(0, 1).map(renderLessonExample)}
 
             <section aria-labelledby={`${station.id}-lesson-title`} className="grammar-concept">
               <header className="grammar-concept-heading">
@@ -450,21 +460,7 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
               </ol>
             </section>
 
-            <section className="grammar-concept">
-              <header className="grammar-concept-heading">
-                <h2>Let’s use the same pattern again</h2>
-                <p>This time, 今日は is like saying “As for today…” Then 会議です tells us there is a meeting.</p>
-              </header>
-              <div className="grammar-example-list">{renderReferenceItem(station.items[1], false)}</div>
-            </section>
-
-            <section className="grammar-concept">
-              <header className="grammar-concept-heading">
-                <h2>Now, let’s say “also” with も</h2>
-                <p>も takes the place of は and adds “also.” 私も旅行者です means “I am also a traveler.”</p>
-              </header>
-              <div className="grammar-example-list">{renderReferenceItem(station.items[2], false)}</div>
-            </section>
+            {station.lesson.examples.slice(1).map(renderLessonExample)}
           </div>
         ) : (
           <div aria-label={`${station.name} sentence patterns`} className="grammar-reference-list">
@@ -472,26 +468,17 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
           </div>
         )}
 
-        <section aria-labelledby={`${station.id}-practice-title`} className="station-practice grammar-practice">
-          <header className="grammar-concept-heading">
-            <h2 id={`${station.id}-practice-title`}>Now it’s your turn</h2>
-            <p>Pick a sentence and see if you can remember its meaning before you reveal it.</p>
-          </header>
-          <div className="station-practice-list grammar-practice-list">
-            {station.items.map((item) => (
-              <button
-                aria-label={`Practice ${item.japanese}`}
-                className="station-practice-word grammar-practice-sentence"
-                data-known={knownItems["japanese-to-meaning"].has(item.id) ? "true" : undefined}
-                key={item.id}
-                onClick={() => openItemReview(item)}
-                type="button"
-              >
-                <span lang="ja">{item.japanese}</span>
-              </button>
-            ))}
-          </div>
-        </section>
+        {station.lesson ? (
+          <section aria-labelledby={`${station.id}-more-title`} className="grammar-concept">
+            <header className="grammar-concept-heading">
+              <h2 id={`${station.id}-more-title`}>{station.lesson.moreHeading}</h2>
+              <p>{renderGrammarText(station.lesson.moreExplanation)}</p>
+            </header>
+            <div className="grammar-reference-list">
+              {station.items.slice(3).map((item) => renderReferenceItem(item, false))}
+            </div>
+          </section>
+        ) : null}
 
         {audioError ? (
           <p className="station-audio-error" role="alert">
@@ -520,7 +507,7 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
                   ? "Answer revealed"
                   : `Reveal answer for ${meaningFirst ? activeCard.meaning : activeCard.japanese}`}
               announcement={answerRevealed
-                ? `${activeCard.japanese} ${activeCard.meaning} ${activeCard.note}`
+                ? `${activeCard.japanese} ${activeCard.meaning}`
                 : ""}
               key={`${activeReview.direction}-${reviewIndex}-${activeCard.id}`}
               onActivate={activateCard}
@@ -532,22 +519,29 @@ export function GrammarGuide({ station }: { readonly station: GrammarStation }) 
                   <span className="vocabulary-review-prompt">{activeCard.meaning}</span>
                 ) : (
                   <span className="vocabulary-review-word vocabulary-review-prompt-word" lang="ja">
-                    {activeCard.japanese}
+                    {renderSpokenSentence(
+                      activeCard,
+                      audioPlaying && activeAudioIndex === itemIndex(activeCard)
+                        ? activeBeatIndex
+                        : null,
+                    )}
                   </span>
                 )}
                 <span className="vocabulary-review-answer-slot">
                   {answerRevealed ? (
-                    <span className="vocabulary-review-answer grammar-review-answer">
+                    <span className="vocabulary-review-answer">
                       {meaningFirst ? (
-                        <span className="vocabulary-review-word" lang="ja">{activeCard.japanese}</span>
+                        <span className="vocabulary-review-word" lang="ja">
+                          {renderSpokenSentence(
+                            activeCard,
+                            audioPlaying && activeAudioIndex === itemIndex(activeCard)
+                              ? activeBeatIndex
+                              : null,
+                          )}
+                        </span>
                       ) : (
                         <span className="vocabulary-review-meaning">{activeCard.meaning}</span>
                       )}
-                      <span className="grammar-review-pattern">
-                        <span>Sentence shape</span>
-                        {activeCard.pattern}
-                      </span>
-                      <span className="grammar-review-note">{activeCard.note}</span>
                     </span>
                   ) : (
                     <FlashcardCountdown onComplete={activateCard} />
@@ -593,6 +587,43 @@ function formatDirectionProgress(
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function grammarItemBeatCount(item: GrammarItem) {
+  return item.spokenParts?.reduce(
+    (count, part) => count + getJapaneseMorae(part.reading).length,
+    0,
+  );
+}
+
+function renderSpokenSentence(item: GrammarItem, activeBeatIndex: number | null) {
+  if (!item.spokenParts?.length) return item.japanese;
+
+  let elapsedBeats = 0;
+  const spokenText = item.spokenParts.map((part) => part.japanese).join("");
+  const punctuation = item.japanese.slice(spokenText.length);
+
+  return (
+    <>
+      {item.spokenParts.map((part, index) => {
+        const nextElapsedBeats = elapsedBeats + getJapaneseMorae(part.reading).length;
+        const active = activeBeatIndex !== null
+          && activeBeatIndex >= elapsedBeats
+          && activeBeatIndex < nextElapsedBeats;
+        elapsedBeats = nextElapsedBeats;
+        return (
+          <span
+            className="grammar-reference-spoken-part"
+            data-active={active ? "true" : undefined}
+            key={`${part.japanese}-${index}`}
+          >
+            {part.japanese}
+          </span>
+        );
+      })}
+      {punctuation}
+    </>
+  );
 }
 
 function shuffle<T>(entries: readonly T[]): T[] {

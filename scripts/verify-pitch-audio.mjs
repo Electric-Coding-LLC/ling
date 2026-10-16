@@ -2,12 +2,34 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import {
+  getPitchLevels,
   PITCH_ACCENT_ITEMS,
 } from "../src/modules/learning/pitch-accent.ts";
+import { getJapaneseMorae } from "../src/modules/romaji.ts";
+import { WORDS_STATION } from "../src/modules/learning/vocabulary.ts";
 
 const root = new URL("../", import.meta.url);
 const EXPECTED_SAMPLE_RATE = 22_050;
 const MIN_PITCH_SEPARATION_HZ = 8;
+
+const water = WORDS_STATION.items.find(({ id }) => id === "mizu");
+assert.ok(water, "Words must include water");
+const waterMorae = getJapaneseMorae(water.word);
+const waterPitch = getPitchLevels(waterMorae.length, water.pitchAccent);
+
+const verifiedItems = [
+  ...PITCH_ACCENT_ITEMS,
+  {
+    ...water,
+    morae: waterMorae,
+    pitch: waterPitch,
+    validationShape: waterPitch[0] === "high"
+      ? "early-fall"
+      : waterPitch.at(-1) === "low"
+        ? "later-fall"
+        : "sustained-high",
+  },
+];
 
 function parsePcmWave(buffer) {
   assert.equal(buffer.toString("ascii", 0, 4), "RIFF");
@@ -168,7 +190,7 @@ function verifyShape(item, medians) {
 
 const report = [];
 
-for (const item of PITCH_ACCENT_ITEMS) {
+for (const item of verifiedItems) {
   const file = new URL(`public${item.audio}`, root);
   const wave = parsePcmWave(await readFile(file));
   const duration = wave.samples.length / wave.sampleRate;
